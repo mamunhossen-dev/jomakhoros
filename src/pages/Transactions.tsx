@@ -97,7 +97,7 @@ export default function Transactions() {
                   {transactions.map((tx) => (
                     <TableRow key={tx.id}>
                       <TableCell className="whitespace-nowrap text-sm">
-                        {format(new Date(tx.date), 'MMM dd, yyyy')}
+                        {format(new Date(tx.date), 'dd MMM, yyyy')}
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate text-sm">
                         {tx.description || '—'}
