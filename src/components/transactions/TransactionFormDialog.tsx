@@ -121,7 +121,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">তারিখ</Label>
             <Input
               id="date"
               type="date"
