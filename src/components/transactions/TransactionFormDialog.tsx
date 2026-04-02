@@ -67,7 +67,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display">
-            {isEdit ? 'Edit Transaction' : type === 'income' ? 'Add Income' : 'Add Expense'}
+            {isEdit ? 'লেনদেন সম্পাদনা' : type === 'income' ? 'আয় যোগ করুন' : 'ব্যয় যোগ করুন'}
           </DialogTitle>
         </DialogHeader>
 
