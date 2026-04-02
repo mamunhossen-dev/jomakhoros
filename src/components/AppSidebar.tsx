@@ -6,32 +6,26 @@ import {
   Settings,
   LogOut,
   DollarSign,
+  Tag,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
 } from '@/components/ui/sidebar';
 
 const mainItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Transactions', url: '/transactions', icon: ArrowUpDown },
-  { title: 'Budgets', url: '/budgets', icon: Wallet },
-  { title: 'Analytics', url: '/analytics', icon: PieChart },
+  { title: 'ড্যাশবোর্ড', url: '/', icon: LayoutDashboard },
+  { title: 'লেনদেন', url: '/transactions', icon: ArrowUpDown },
+  { title: 'ক্যাটাগরি', url: '/categories', icon: Tag },
+  { title: 'বাজেট', url: '/budgets', icon: Wallet },
+  { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart },
 ];
 
 const secondaryItems = [
-  { title: 'Settings', url: '/settings', icon: Settings },
+  { title: 'সেটিংস', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -48,33 +42,23 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarContent className="bg-sidebar pt-4">
-        {/* Logo */}
         <div className="flex items-center gap-2 px-4 pb-6">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
             <DollarSign className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
-            <span className="font-display text-lg font-bold text-sidebar-foreground">
-              MoneyWise
-            </span>
+            <span className="font-display text-lg font-bold text-sidebar-foreground">MoneyWise</span>
           )}
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">
-            Menu
-          </SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">মেনু</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === '/'}
-                      className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
+                    <NavLink to={item.url} end={item.url === '/'} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -86,19 +70,13 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">
-            General
-          </SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">সাধারণ</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
+                    <NavLink to={item.url} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -111,12 +89,9 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="bg-sidebar p-4">
-        <button
-          onClick={handleSignOut}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-        >
+        <button onClick={handleSignOut} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground">
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Sign Out</span>}
+          {!collapsed && <span>সাইন আউট</span>}
         </button>
       </SidebarFooter>
     </Sidebar>

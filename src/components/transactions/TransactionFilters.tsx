@@ -24,28 +24,18 @@ export function TransactionFilters({ filters, onChange }: Props) {
   return (
     <div className="flex flex-wrap items-end gap-3">
       <div className="space-y-1">
-        <Label className="text-xs text-muted-foreground">From</Label>
-        <Input
-          type="date"
-          className="h-9 w-[150px]"
-          value={filters.dateFrom}
-          onChange={(e) => onChange({ ...filters, dateFrom: e.target.value })}
-        />
+        <Label className="text-xs text-muted-foreground">থেকে</Label>
+        <Input type="date" className="h-9 w-[150px]" value={filters.dateFrom} onChange={(e) => onChange({ ...filters, dateFrom: e.target.value })} />
       </div>
       <div className="space-y-1">
-        <Label className="text-xs text-muted-foreground">To</Label>
-        <Input
-          type="date"
-          className="h-9 w-[150px]"
-          value={filters.dateTo}
-          onChange={(e) => onChange({ ...filters, dateTo: e.target.value })}
-        />
+        <Label className="text-xs text-muted-foreground">পর্যন্ত</Label>
+        <Input type="date" className="h-9 w-[150px]" value={filters.dateTo} onChange={(e) => onChange({ ...filters, dateTo: e.target.value })} />
       </div>
       <div className="space-y-1">
-        <Label className="text-xs text-muted-foreground">Category</Label>
+        <Label className="text-xs text-muted-foreground">ক্যাটাগরি</Label>
         <Select value={filters.categoryId} onValueChange={(v) => onChange({ ...filters, categoryId: v })}>
           <SelectTrigger className="h-9 w-[180px]">
-            <SelectValue placeholder="All categories" />
+            <SelectValue placeholder="সব ক্যাটাগরি" />
           </SelectTrigger>
           <SelectContent>
             {categories?.map((cat) => (
@@ -56,7 +46,7 @@ export function TransactionFilters({ filters, onChange }: Props) {
       </div>
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={() => onChange({ dateFrom: '', dateTo: '', categoryId: '' })}>
-          <X className="mr-1 h-3 w-3" /> Clear
+          <X className="mr-1 h-3 w-3" /> মুছুন
         </Button>
       )}
     </div>

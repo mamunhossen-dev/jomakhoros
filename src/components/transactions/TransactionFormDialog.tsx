@@ -67,7 +67,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display">
-            {isEdit ? 'Edit Transaction' : type === 'income' ? 'Add Income' : 'Add Expense'}
+            {isEdit ? 'লেনদেন সম্পাদনা' : type === 'income' ? 'আয় যোগ করুন' : 'ব্যয় যোগ করুন'}
           </DialogTitle>
         </DialogHeader>
 
@@ -80,7 +80,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
               className={type === 'income' ? 'bg-success hover:bg-success/90 flex-1' : 'flex-1'}
               onClick={() => { setType('income'); setCategoryId(''); }}
             >
-              Income
+              আয়
             </Button>
             <Button
               type="button"
@@ -88,12 +88,12 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
               className={type === 'expense' ? 'bg-destructive hover:bg-destructive/90 flex-1' : 'flex-1'}
               onClick={() => { setType('expense'); setCategoryId(''); }}
             >
-              Expense
+              ব্যয়
             </Button>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">পরিমাণ (৳)</Label>
             <Input
               id="amount"
               type="number"
@@ -107,10 +107,10 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category">ক্যাটাগরি</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent>
                 {categories?.map((cat) => (
@@ -121,7 +121,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">তারিখ</Label>
             <Input
               id="date"
               type="date"
@@ -132,10 +132,10 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">বিবরণ (ঐচ্ছিক)</Label>
             <Textarea
               id="description"
-              placeholder="What was this for?"
+              placeholder="এটি কিসের জন্য ছিল?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -143,7 +143,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? 'Saving...' : isEdit ? 'Update Transaction' : 'Add Transaction'}
+            {isPending ? 'সংরক্ষণ হচ্ছে...' : isEdit ? 'আপডেট করুন' : 'যোগ করুন'}
           </Button>
         </form>
       </DialogContent>
