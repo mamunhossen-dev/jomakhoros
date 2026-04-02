@@ -93,7 +93,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">পরিমাণ (৳)</Label>
             <Input
               id="amount"
               type="number"
