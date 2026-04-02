@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import Index from "./pages/Index";
+import Transactions from "./pages/Transactions";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
               }
             >
               <Route path="/" element={<Index />} />
+              <Route path="/transactions" element={<Transactions />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
