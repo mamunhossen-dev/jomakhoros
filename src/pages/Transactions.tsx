@@ -66,7 +66,7 @@ export default function Transactions() {
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="font-display text-lg">Transaction History</CardTitle>
+            <CardTitle className="font-display text-lg">লেনদেনের ইতিহাস</CardTitle>
             <TransactionFilters filters={filters} onChange={setFilters} />
           </div>
         </CardHeader>
