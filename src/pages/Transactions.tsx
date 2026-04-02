@@ -85,11 +85,11 @@ export default function Transactions() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>বিবরণ</TableHead>
+                    <TableHead>ক্যাটাগরি</TableHead>
+                    <TableHead>ধরন</TableHead>
+                    <TableHead className="text-right">পরিমাণ</TableHead>
                     <TableHead className="w-[80px]" />
                   </TableRow>
                 </TableHeader>
