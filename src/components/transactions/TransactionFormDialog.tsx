@@ -107,10 +107,10 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category">ক্যাটাগরি</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent>
                 {categories?.map((cat) => (
