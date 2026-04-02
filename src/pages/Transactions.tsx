@@ -149,16 +149,16 @@ export default function Transactions() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete transaction?</AlertDialogTitle>
-            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>লেনদেন মুছে ফেলবেন?</AlertDialogTitle>
+            <AlertDialogDescription>এটি পূর্বাবস্থায় ফেরানো যাবে না।</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>বাতিল</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/90"
               onClick={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }}
             >
-              Delete
+              মুছে ফেলুন
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
