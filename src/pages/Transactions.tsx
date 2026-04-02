@@ -78,7 +78,7 @@ export default function Transactions() {
           ) : !transactions?.length ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Plus className="mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-muted-foreground">No transactions yet. Add your first one!</p>
+              <p className="text-muted-foreground">কোনো লেনদেন নেই। প্রথমটি যোগ করুন!</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
