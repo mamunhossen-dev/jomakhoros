@@ -88,7 +88,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
               className={type === 'expense' ? 'bg-destructive hover:bg-destructive/90 flex-1' : 'flex-1'}
               onClick={() => { setType('expense'); setCategoryId(''); }}
             >
-              Expense
+              ব্যয়
             </Button>
           </div>
 
