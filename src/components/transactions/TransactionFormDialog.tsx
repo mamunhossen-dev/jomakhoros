@@ -80,7 +80,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
               className={type === 'income' ? 'bg-success hover:bg-success/90 flex-1' : 'flex-1'}
               onClick={() => { setType('income'); setCategoryId(''); }}
             >
-              Income
+              আয়
             </Button>
             <Button
               type="button"
