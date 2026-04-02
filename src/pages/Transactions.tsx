@@ -50,15 +50,15 @@ export default function Transactions() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold">Transactions</h1>
-          <p className="text-muted-foreground">Manage your income and expenses.</p>
+          <h1 className="font-display text-2xl font-bold">লেনদেন</h1>
+          <p className="text-muted-foreground">আপনার আয় ও ব্যয় পরিচালনা করুন।</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => openAdd('income')} className="bg-success hover:bg-success/90">
-            <TrendingUp className="mr-1 h-4 w-4" /> Add Income
+            <TrendingUp className="mr-1 h-4 w-4" /> আয় যোগ
           </Button>
           <Button onClick={() => openAdd('expense')} variant="destructive">
-            <TrendingDown className="mr-1 h-4 w-4" /> Add Expense
+            <TrendingDown className="mr-1 h-4 w-4" /> ব্যয় যোগ
           </Button>
         </div>
       </div>
