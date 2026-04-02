@@ -132,10 +132,10 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">বিবরণ (ঐচ্ছিক)</Label>
             <Textarea
               id="description"
-              placeholder="What was this for?"
+              placeholder="এটি কিসের জন্য ছিল?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -143,7 +143,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? 'Saving...' : isEdit ? 'Update Transaction' : 'Add Transaction'}
+            {isPending ? 'সংরক্ষণ হচ্ছে...' : isEdit ? 'আপডেট করুন' : 'যোগ করুন'}
           </Button>
         </form>
       </DialogContent>
