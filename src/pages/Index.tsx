@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, Wallet, ArrowUpDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTransactions } from '@/hooks/useTransactions';
+import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { formatTaka } from '@/lib/currency';
 import { format, subMonths } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -11,6 +13,13 @@ import { useNavigate } from 'react-router-dom';
 export default function Index() {
   const { data: transactions, isLoading } = useTransactions();
   const navigate = useNavigate();
+  const [formOpen, setFormOpen] = useState(false);
+  const [defaultType, setDefaultType] = useState<'income' | 'expense'>('expense');
+
+  const openAdd = (type: 'income' | 'expense') => {
+    setDefaultType(type);
+    setFormOpen(true);
+  };
 
   const { totalIncome, totalExpense, balance, recentTxs, chartData } = useMemo(() => {
     if (!transactions) return { totalIncome: 0, totalExpense: 0, balance: 0, recentTxs: [], chartData: [] };
@@ -48,9 +57,19 @@ export default function Index() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold">ড্যাশবোর্ড</h1>
-        <p className="text-muted-foreground">স্বাগতম! আপনার আর্থিক সারসংক্ষেপ দেখুন।</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold">ড্যাশবোর্ড</h1>
+          <p className="text-muted-foreground">স্বাগতম! আপনার আর্থিক সারসংক্ষেপ দেখুন।</p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => openAdd('income')} className="bg-success hover:bg-success/90">
+            <TrendingUp className="mr-1 h-4 w-4" /> আয় যোগ
+          </Button>
+          <Button onClick={() => openAdd('expense')} variant="destructive">
+            <TrendingDown className="mr-1 h-4 w-4" /> ব্যয় যোগ
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -134,6 +153,13 @@ export default function Index() {
           </CardContent>
         </Card>
       </div>
+
+      <TransactionFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        defaultType={defaultType}
+        editTransaction={null}
+      />
     </div>
   );
 }

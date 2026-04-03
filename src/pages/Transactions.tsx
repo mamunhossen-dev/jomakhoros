@@ -73,6 +73,9 @@ export default function Transactions() {
           <Button onClick={() => openAdd('expense')} variant="destructive">
             <TrendingDown className="mr-1 h-4 w-4" /> ব্যয় যোগ
           </Button>
+          <Button onClick={handleExportPdf} variant="outline" disabled={!transactions?.length}>
+            <FileDown className="mr-1 h-4 w-4" /> PDF
+          </Button>
         </div>
       </div>
 
