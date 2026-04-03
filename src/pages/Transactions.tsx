@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, TrendingUp, TrendingDown, Pencil, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,6 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { useTransactions, useDeleteTransaction, Transaction } from '@/hooks/useTransactions';
+import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/contexts/AuthContext';
+import { exportTransactionsPdf } from '@/lib/exportPdf';
 import {
   AlertDialog,
   AlertDialogAction,
