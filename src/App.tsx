@@ -10,6 +10,8 @@ import Index from "./pages/Index";
 import Transactions from "./pages/Transactions";
 import Categories from "./pages/Categories";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
+import Budgets from "./pages/Budgets";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
