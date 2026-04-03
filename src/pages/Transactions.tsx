@@ -36,7 +36,17 @@ export default function Transactions() {
     categoryId: filters.categoryId || undefined,
   });
 
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
   const deleteMutation = useDeleteTransaction();
+
+  const handleExportPdf = () => {
+    if (!transactions?.length) return;
+    exportTransactionsPdf(transactions, profile?.display_name || '', user?.email || '', {
+      dateFrom: filters.dateFrom || undefined,
+      dateTo: filters.dateTo || undefined,
+    });
+  };
 
   const openAdd = (type: 'income' | 'expense') => {
     setEditTx(null);
