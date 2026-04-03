@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, TrendingUp, TrendingDown, Pencil, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,6 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { useTransactions, useDeleteTransaction, Transaction } from '@/hooks/useTransactions';
+import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/contexts/AuthContext';
+import { exportTransactionsPdf } from '@/lib/exportPdf';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +36,17 @@ export default function Transactions() {
     categoryId: filters.categoryId || undefined,
   });
 
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
   const deleteMutation = useDeleteTransaction();
+
+  const handleExportPdf = () => {
+    if (!transactions?.length) return;
+    exportTransactionsPdf(transactions, profile?.display_name || '', user?.email || '', {
+      dateFrom: filters.dateFrom || undefined,
+      dateTo: filters.dateTo || undefined,
+    });
+  };
 
   const openAdd = (type: 'income' | 'expense') => {
     setEditTx(null);
@@ -59,6 +72,9 @@ export default function Transactions() {
           </Button>
           <Button onClick={() => openAdd('expense')} variant="destructive">
             <TrendingDown className="mr-1 h-4 w-4" /> ব্যয় যোগ
+          </Button>
+          <Button onClick={handleExportPdf} variant="outline" disabled={!transactions?.length}>
+            <FileDown className="mr-1 h-4 w-4" /> PDF
           </Button>
         </div>
       </div>
