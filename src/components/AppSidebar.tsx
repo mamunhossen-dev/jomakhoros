@@ -9,9 +9,13 @@ import {
   Tag,
   Smartphone,
   HandCoins,
+  MessageSquare,
+  CreditCard,
+  Shield,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -26,6 +30,8 @@ const mainItems = [
   { title: 'দেনা/পাওনা', url: '/loans', icon: HandCoins },
   { title: 'বাজেট', url: '/budgets', icon: Wallet },
   { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart },
+  { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare },
+  { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard },
 ];
 
 const secondaryItems = [
@@ -36,6 +42,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { signOut } = useAuth();
+  const { isAdmin, isModerator } = useSubscription();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -72,6 +79,24 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {(isAdmin || isModerator) && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">অ্যাডমিন</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/admin" className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                      <Shield className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>অ্যাডমিন প্যানেল</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">সাধারণ</SidebarGroupLabel>
