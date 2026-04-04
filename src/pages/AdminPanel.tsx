@@ -106,7 +106,7 @@ export default function AdminPanel() {
 
   const assignRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
+      const { error } = await supabase.from('user_roles').insert([{ user_id: userId, role: role as any }]);
       if (error) throw error;
     },
     onSuccess: () => { toast.success('ভূমিকা যোগ হয়েছে'); setRoleUserId(''); setNewRole(''); },
