@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,7 +10,10 @@ import { TransactionFilters } from '@/components/transactions/TransactionFilters
 import { useTransactions, useDeleteTransaction, Transaction } from '@/hooks/useTransactions';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { exportTransactionsPdf } from '@/lib/exportPdf';
+import { toast } from 'sonner';
+import { subDays } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
