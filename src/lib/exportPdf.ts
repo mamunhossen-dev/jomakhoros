@@ -109,5 +109,5 @@ export function exportTransactionsPdf(
     doc.text('JomaKhoros - Your Personal Finance Manager', 14, doc.internal.pageSize.getHeight() - 8);
   }
 
-  doc.save(`MoneyWise_Statement_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+  doc.save(`JomaKhoros_Statement_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
 }

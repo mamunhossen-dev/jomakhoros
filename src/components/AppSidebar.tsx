@@ -51,7 +51,7 @@ export function AppSidebar() {
             <DollarSign className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
-            <span className="font-display text-lg font-bold text-sidebar-foreground">MoneyWise</span>
+            <span className="font-display text-lg font-bold text-sidebar-foreground">JomaKhoros</span>
           )}
         </div>
 
