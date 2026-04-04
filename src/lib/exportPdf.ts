@@ -19,7 +19,7 @@ export function exportTransactionsPdf(
   // Title
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
-  doc.text('MoneyWise', 14, 18);
+  doc.text('JomaKhoros', 14, 18);
   doc.setFontSize(9);
   doc.text('Transaction Statement / Lenden Biboron', 14, 25);
 
