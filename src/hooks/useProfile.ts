@@ -23,10 +23,14 @@ export function useProfile() {
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, display_name }: { id: string; display_name: string }) => {
+    mutationFn: async ({ id, display_name, phone, address }: { id: string; display_name: string; phone?: string | null; address?: string | null }) => {
+      const updateData: Record<string, any> = { display_name };
+      if (phone !== undefined) updateData.phone = phone;
+      if (address !== undefined) updateData.address = address;
+
       const { data, error } = await supabase
         .from('profiles')
-        .update({ display_name })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
