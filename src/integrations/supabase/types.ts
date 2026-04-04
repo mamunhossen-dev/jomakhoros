@@ -76,6 +76,33 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          message: string
+          name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message: string
+          name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string
+          name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       loans: {
         Row: {
           amount: number
@@ -115,28 +142,91 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      payment_requests: {
         Row: {
-          avatar_url: string | null
+          admin_note: string | null
+          amount: number
           created_at: string
-          display_name: string | null
           id: string
+          payment_method: string
+          plan: string
+          status: string
+          transaction_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          avatar_url?: string | null
+          admin_note?: string | null
+          amount: number
           created_at?: string
-          display_name?: string | null
           id?: string
+          payment_method: string
+          plan: string
+          status?: string
+          transaction_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_method?: string
+          plan?: string
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          account_type: string
+          address: string | null
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          payment_status: string | null
+          phone: string | null
+          subscription_end: string | null
+          subscription_start: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_type?: string
+          address?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          payment_status?: string | null
+          phone?: string | null
+          subscription_end?: string | null
+          subscription_start?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_type?: string
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          payment_status?: string | null
+          phone?: string | null
+          subscription_end?: string | null
+          subscription_start?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -183,6 +273,24 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallets: {
         Row: {
           balance: number
@@ -218,9 +326,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       loan_type: "dena" | "paona"
       transaction_type: "income" | "expense"
     }
@@ -350,6 +465,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       loan_type: ["dena", "paona"],
       transaction_type: ["income", "expense"],
     },
