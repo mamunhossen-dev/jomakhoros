@@ -7,6 +7,8 @@ import {
   LogOut,
   DollarSign,
   Tag,
+  Smartphone,
+  HandCoins,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +22,8 @@ const mainItems = [
   { title: 'ড্যাশবোর্ড', url: '/', icon: LayoutDashboard },
   { title: 'লেনদেন', url: '/transactions', icon: ArrowUpDown },
   { title: 'ক্যাটাগরি', url: '/categories', icon: Tag },
+  { title: 'ওয়ালেট', url: '/wallets', icon: Smartphone },
+  { title: 'দেনা/পাওনা', url: '/loans', icon: HandCoins },
   { title: 'বাজেট', url: '/budgets', icon: Wallet },
   { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart },
 ];

@@ -76,6 +76,45 @@ export type Database = {
         }
         Relationships: []
       }
+      loans: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          is_settled: boolean
+          person_name: string
+          type: Database["public"]["Enums"]["loan_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_settled?: boolean
+          person_name: string
+          type: Database["public"]["Enums"]["loan_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_settled?: boolean
+          person_name?: string
+          type?: Database["public"]["Enums"]["loan_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -144,6 +183,36 @@ export type Database = {
           },
         ]
       }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+          wallet_type: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+          wallet_type?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+          wallet_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -152,6 +221,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      loan_type: "dena" | "paona"
       transaction_type: "income" | "expense"
     }
     CompositeTypes: {
@@ -280,6 +350,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      loan_type: ["dena", "paona"],
       transaction_type: ["income", "expense"],
     },
   },

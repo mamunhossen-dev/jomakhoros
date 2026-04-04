@@ -12,6 +12,8 @@ import Categories from "./pages/Categories";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Budgets from "./pages/Budgets";
+import Wallets from "./pages/Wallets";
+import Loans from "./pages/Loans";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -39,6 +41,8 @@ const App = () => (
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/budgets" element={<Budgets />} />
+              <Route path="/wallets" element={<Wallets />} />
+              <Route path="/loans" element={<Loans />} />
               <Route path="/analytics" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
