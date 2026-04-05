@@ -47,7 +47,7 @@ export default function Onboarding() {
   // Redirect if onboarding already completed
   useEffect(() => {
     if (profile && profile.onboarding_completed) {
-      navigate('/', replace);
+      navigate('/', { replace: true });
     }
   }, [profile, navigate]);
 
