@@ -38,8 +38,7 @@ export default function Register() {
     if (error) {
       toast({ title: 'রেজিস্ট্রেশন ব্যর্থ', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'ইমেইল চেক করুন', description: 'আমরা আপনাকে একটি নিশ্চিতকরণ লিংক পাঠিয়েছি।' });
-      navigate('/login');
+      toast({ title: 'ইমেইল চেক করুন', description: 'আমরা আপনাকে একটি নিশ্চিতকরণ লিংক পাঠিয়েছি। লিংকে ক্লিক করলে স্বয়ংক্রিয়ভাবে লগইন হবে।' });
     }
   };
 
@@ -74,7 +73,7 @@ export default function Register() {
 
           <div>
             <h2 className="font-display text-2xl font-bold">অ্যাকাউন্ট তৈরি করুন</h2>
-            <p className="mt-1 text-muted-foreground">বিনামূল্যে শুরু করুন — ১ মাস ফ্রি ট্রায়াল!</p>
+            <p className="mt-1 text-muted-foreground">বিনামূল্যে শুরু করুন — হিসাব রাখুন নিশ্চিন্তে!</p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">

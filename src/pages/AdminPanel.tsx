@@ -233,13 +233,26 @@ export default function AdminPanel() {
                           <p className="text-sm font-medium">{u.display_name || 'নাম নেই'}</p>
                           <p className="text-xs text-muted-foreground">UID: {u.user_id.substring(0, 12)}...</p>
                         </div>
-                        <Badge variant="outline" className={
-                          u.account_type === 'pro' ? 'text-success border-success/30'
-                          : u.account_type === 'trial' ? 'text-primary border-primary/30'
-                          : 'text-muted-foreground'
-                        }>
-                          {u.account_type === 'pro' ? 'প্রো' : u.account_type === 'trial' ? 'ট্রায়াল' : 'ফ্রি'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          {!u.onboarding_completed && (
+                            <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/30">অনবোর্ডিং</Badge>
+                          )}
+                          <Badge variant="outline" className={
+                            u.account_type === 'pro' ? 'text-success border-success/30'
+                            : u.account_type === 'trial' ? 'text-primary border-primary/30'
+                            : 'text-muted-foreground'
+                          }>
+                            {u.account_type === 'pro' ? 'প্রো' : u.account_type === 'trial' ? 'ট্রায়াল' : 'ফ্রি'}
+                          </Badge>
+                          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={async () => {
+                            const { error } = await supabase.from('profiles').update({ onboarding_completed: false }).eq('user_id', u.user_id);
+                            if (error) { toast.error(error.message); return; }
+                            qc.invalidateQueries({ queryKey: ['admin_users'] });
+                            toast.success('অনবোর্ডিং রিসেট হয়েছে');
+                          }}>
+                            রিসেট
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
