@@ -74,7 +74,7 @@ export default function Register() {
 
           <div>
             <h2 className="font-display text-2xl font-bold">অ্যাকাউন্ট তৈরি করুন</h2>
-            <p className="mt-1 text-muted-foreground">বিনামূল্যে শুরু করুন — ১ মাস ফ্রি ট্রায়াল!</p>
+            <p className="mt-1 text-muted-foreground">বিনামূল্যে শুরু করুন — হিসাব রাখুন নিশ্চিন্তে!</p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
