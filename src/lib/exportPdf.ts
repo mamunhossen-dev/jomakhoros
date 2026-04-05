@@ -19,9 +19,9 @@ export function exportTransactionsPdf(
   // Title
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
-  doc.text('JomaKhoros', 14, 18);
+  doc.text('JomaKhoros.com', 14, 18);
   doc.setFontSize(9);
-  doc.text('Transaction Statement / Lenden Biboron', 14, 25);
+  doc.text('Transaction Statement', 14, 25);
 
   // User info
   doc.setFontSize(10);
