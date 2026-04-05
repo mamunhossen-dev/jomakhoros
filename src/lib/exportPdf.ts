@@ -106,7 +106,7 @@ export function exportTransactionsPdf(
     doc.setFontSize(7);
     doc.setTextColor(150);
     doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
-    doc.text('JomaKhoros - Your Personal Finance Manager', 14, doc.internal.pageSize.getHeight() - 8);
+    doc.text('JomaKhoros.com - Your Personal Finance Manager', 14, doc.internal.pageSize.getHeight() - 8);
   }
 
   doc.save(`JomaKhoros_Statement_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
