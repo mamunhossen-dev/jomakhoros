@@ -189,6 +189,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          onboarding_completed: boolean
           payment_status: string | null
           phone: string | null
           subscription_end: string | null
@@ -205,6 +206,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          onboarding_completed?: boolean
           payment_status?: string | null
           phone?: string | null
           subscription_end?: string | null
@@ -221,6 +223,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          onboarding_completed?: boolean
           payment_status?: string | null
           phone?: string | null
           subscription_end?: string | null
