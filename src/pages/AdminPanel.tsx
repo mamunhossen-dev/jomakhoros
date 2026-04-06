@@ -233,17 +233,36 @@ export default function AdminPanel() {
                           <p className="text-sm font-medium">{u.display_name || 'নাম নেই'}</p>
                           <p className="text-xs text-muted-foreground">UID: {u.user_id.substring(0, 12)}...</p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {!u.onboarding_completed && (
                             <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/30">অনবোর্ডিং</Badge>
                           )}
-                          <Badge variant="outline" className={
-                            u.account_type === 'pro' ? 'text-success border-success/30'
-                            : u.account_type === 'trial' ? 'text-primary border-primary/30'
-                            : 'text-muted-foreground'
-                          }>
-                            {u.account_type === 'pro' ? 'প্রো' : u.account_type === 'trial' ? 'ট্রায়াল' : 'ফ্রি'}
-                          </Badge>
+                          <Select
+                            value={u.account_type}
+                            onValueChange={async (val) => {
+                              const updateData: Record<string, any> = { account_type: val };
+                              if (val === 'pro') {
+                                const subEnd = new Date();
+                                subEnd.setMonth(subEnd.getMonth() + 1);
+                                updateData.subscription_start = new Date().toISOString();
+                                updateData.subscription_end = subEnd.toISOString();
+                                updateData.payment_status = 'paid';
+                              }
+                              const { error } = await supabase.from('profiles').update(updateData).eq('user_id', u.user_id);
+                              if (error) { toast.error(error.message); return; }
+                              qc.invalidateQueries({ queryKey: ['admin_users'] });
+                              toast.success('স্ট্যাটাস আপডেট হয়েছে');
+                            }}
+                          >
+                            <SelectTrigger className="h-7 w-24 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="trial">ট্রায়াল</SelectItem>
+                              <SelectItem value="free">ফ্রি</SelectItem>
+                              <SelectItem value="pro">প্রো</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <Button variant="outline" size="sm" className="h-7 text-xs" onClick={async () => {
                             const { error } = await supabase.from('profiles').update({ onboarding_completed: false }).eq('user_id', u.user_id);
                             if (error) { toast.error(error.message); return; }
