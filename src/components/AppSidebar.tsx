@@ -60,12 +60,19 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="offcanvas" className="border-r-0 md:collapsible-icon">
       <SidebarContent className="bg-sidebar pt-4">
-        <div className="flex items-center gap-2 px-4 pb-6">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
-            <DollarSign className="h-5 w-5 text-sidebar-primary-foreground" />
+        <div className="flex items-center justify-between px-4 pb-6">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
+              <DollarSign className="h-5 w-5 text-sidebar-primary-foreground" />
+            </div>
+            {!collapsed && (
+              <span className="font-display text-lg font-bold text-sidebar-foreground">JomaKhoros</span>
+            )}
           </div>
-          {!collapsed && (
-            <span className="font-display text-lg font-bold text-sidebar-foreground">JomaKhoros</span>
+          {isMobile && (
+            <button onClick={closeMobileSidebar} className="rounded-lg p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground">
+              <X className="h-5 w-5" />
+            </button>
           )}
         </div>
 
@@ -76,7 +83,7 @@ export function AppSidebar() {
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === '/'} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                    <NavLink to={item.url} end={item.url === '/'} onClick={closeMobileSidebar} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="mr-2 h-4 w-4 shrink-0" />
                       <span className="truncate">{item.title}</span>
                     </NavLink>
@@ -94,7 +101,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink to="/admin" className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                    <NavLink to="/admin" onClick={closeMobileSidebar} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <Shield className="mr-2 h-4 w-4 shrink-0" />
                       <span className="truncate">অ্যাডমিন প্যানেল</span>
                     </NavLink>
@@ -112,7 +119,7 @@ export function AppSidebar() {
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                    <NavLink to={item.url} onClick={closeMobileSidebar} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="mr-2 h-4 w-4 shrink-0" />
                       <span className="truncate">{item.title}</span>
                     </NavLink>
