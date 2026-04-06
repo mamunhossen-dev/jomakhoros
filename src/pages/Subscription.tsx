@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { useProfile } from '@/hooks/useProfile';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -62,7 +63,7 @@ export default function Subscription() {
     }
   };
 
-  const accountType = profile?.account_type || 'trial';
+  const { accountType } = useSubscription();
   const isActive = accountType === 'pro' || accountType === 'trial';
 
   return (

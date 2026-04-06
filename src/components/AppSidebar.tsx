@@ -12,11 +12,13 @@ import {
   MessageSquare,
   CreditCard,
   Shield,
+  X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
@@ -39,11 +41,16 @@ const secondaryItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const { signOut } = useAuth();
   const { isAdmin, isModerator } = useSubscription();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  const closeMobileSidebar = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   const handleSignOut = async () => {
     await signOut();
