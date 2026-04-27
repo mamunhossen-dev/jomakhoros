@@ -3,22 +3,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+export type TransactionType = 'income' | 'expense' | 'transfer';
+
 export type Transaction = {
   id: string;
   user_id: string;
   amount: number;
-  type: 'income' | 'expense';
+  type: TransactionType;
   category_id: string | null;
+  wallet_id: string | null;
+  to_wallet_id: string | null;
   description: string | null;
   date: string;
   created_at: string;
   category?: { id: string; name: string; type: 'income' | 'expense' } | null;
+  wallet?: { id: string; name: string; wallet_type: string } | null;
+  to_wallet?: { id: string; name: string; wallet_type: string } | null;
 };
 
 export type TransactionInput = {
   amount: number;
-  type: 'income' | 'expense';
+  type: TransactionType;
   category_id: string | null;
+  wallet_id: string | null;
+  to_wallet_id: string | null;
   description: string | null;
   date: string;
 };
@@ -31,7 +39,7 @@ export function useTransactions(filters?: { dateFrom?: string; dateTo?: string; 
     queryFn: async () => {
       let query = supabase
         .from('transactions')
-        .select('*, category:categories(id, name, type)')
+        .select('*, category:categories(id, name, type), wallet:wallets!transactions_wallet_id_fkey(id, name, wallet_type), to_wallet:wallets!transactions_to_wallet_id_fkey(id, name, wallet_type)')
         .order('date', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -41,7 +49,7 @@ export function useTransactions(filters?: { dateFrom?: string; dateTo?: string; 
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Transaction[];
+      return data as unknown as Transaction[];
     },
     enabled: !!user,
   });
@@ -79,7 +87,8 @@ export function useCreateTransaction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Transaction added successfully');
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success('লেনদেন সংরক্ষিত হয়েছে');
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -101,7 +110,8 @@ export function useUpdateTransaction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Transaction updated');
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success('লেনদেন আপডেট হয়েছে');
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -117,7 +127,8 @@ export function useDeleteTransaction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Transaction deleted');
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success('লেনদেন মুছে ফেলা হয়েছে');
     },
     onError: (err: Error) => toast.error(err.message),
   });
