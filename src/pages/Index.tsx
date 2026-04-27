@@ -42,7 +42,7 @@ export default function Index() {
       const bucket = monthMap.get(tx.date.substring(0, 7));
       if (bucket) {
         if (tx.type === 'income') bucket.income += Number(tx.amount);
-        else bucket.expense += Number(tx.amount);
+        else if (tx.type === 'expense') bucket.expense += Number(tx.amount);
       }
     });
 
