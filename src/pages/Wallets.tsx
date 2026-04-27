@@ -36,6 +36,7 @@ export default function Wallets() {
   const [formOpen, setFormOpen] = useState(false);
   const [editWallet, setEditWallet] = useState<WalletType | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [transferOpen, setTransferOpen] = useState(false);
 
   // Form state
   const [name, setName] = useState('');
@@ -81,7 +82,12 @@ export default function Wallets() {
           <h1 className="font-display text-2xl font-bold">ওয়ালেট ও ব্যাংক</h1>
           <p className="text-muted-foreground">আপনার সব ওয়ালেট ও ব্যাংক অ্যাকাউন্টের ব্যালেন্স ট্র্যাক করুন।</p>
         </div>
-        <Button onClick={openAdd}><Plus className="mr-1 h-4 w-4" /> ওয়ালেট যোগ</Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setTransferOpen(true)} disabled={!wallets || wallets.length < 2}>
+            <ArrowRightLeft className="mr-1 h-4 w-4" /> ব্যালেন্স ট্রান্সফার
+          </Button>
+          <Button onClick={openAdd}><Plus className="mr-1 h-4 w-4" /> ওয়ালেট যোগ</Button>
+        </div>
       </div>
 
       {/* Total balance */}
