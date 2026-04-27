@@ -142,6 +142,117 @@ export default function AdminPanel() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  // ============== NOTIFICATIONS ==============
+  const { data: notifications, isLoading: notifLoading } = useQuery({
+    queryKey: ['admin_notifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
+  const saveNotification = useMutation({
+    mutationFn: async () => {
+      if (!notifTitle.trim() || !notifBody.trim()) throw new Error('শিরোনাম ও বার্তা প্রয়োজন');
+      if (editingNotif) {
+        const { error } = await supabase.from('notifications').update({
+          title: notifTitle, body: notifBody,
+        }).eq('id', editingNotif);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('notifications').insert({
+          title: notifTitle, body: notifBody, created_by: user?.id, is_active: true,
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      setNotifTitle(''); setNotifBody(''); setEditingNotif(null);
+      toast.success(editingNotif ? 'নোটিফিকেশন আপডেট হয়েছে' : 'নোটিফিকেশন পাঠানো হয়েছে');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const toggleNotif = useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { error } = await supabase.from('notifications').update({ is_active }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const deleteNotif = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('notifications').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      toast.success('মুছে ফেলা হয়েছে');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const startEditNotif = (n: any) => {
+    setEditingNotif(n.id);
+    setNotifTitle(n.title);
+    setNotifBody(n.body);
+  };
+
+  // ============== SUPPORT MESSAGES ==============
+  const { data: allMessages } = useQuery({
+    queryKey: ['admin_support_messages'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('support_messages').select('*').order('created_at', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin || isModerator,
+  });
+
+  useEffect(() => {
+    if (!isAdmin && !isModerator) return;
+    const ch = supabase
+      .channel('admin-support-all')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => {
+        qc.invalidateQueries({ queryKey: ['admin_support_messages'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isAdmin, isModerator, qc]);
+
+  const conversations: Record<string, any[]> = {};
+  (allMessages || []).forEach(m => {
+    if (!conversations[m.user_id]) conversations[m.user_id] = [];
+    conversations[m.user_id].push(m);
+  });
+  const conversationUserIds = Object.keys(conversations);
+
+  const sendSupportReply = async () => {
+    if (!supportText.trim() || !selectedConvUser || !user) return;
+    const { error } = await supabase.from('support_messages').insert({
+      user_id: selectedConvUser,
+      sender_id: user.id,
+      is_from_admin: true,
+      message: supportText.trim(),
+    });
+    if (error) { toast.error(error.message); return; }
+    setSupportText('');
+  };
+
+  useEffect(() => {
+    if (supportEndRef.current) supportEndRef.current.scrollTop = supportEndRef.current.scrollHeight;
+  }, [selectedConvUser, allMessages]);
+
   const copyUid = (uid: string) => {
     navigator.clipboard.writeText(uid);
     toast.success('UID কপি হয়েছে');
