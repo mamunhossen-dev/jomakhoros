@@ -20,8 +20,19 @@ import { toast } from 'sonner';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
+  const { user } = useAuth();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Notifications state
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifBody, setNotifBody] = useState('');
+  const [editingNotif, setEditingNotif] = useState<string | null>(null);
+
+  // Support state
+  const [selectedConvUser, setSelectedConvUser] = useState<string | null>(null);
+  const [supportText, setSupportText] = useState('');
+  const supportEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch all users (profiles)
   const { data: users, isLoading: usersLoading } = useQuery({
