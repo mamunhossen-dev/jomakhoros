@@ -195,6 +195,8 @@ export default function Wallets() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <BalanceTransferDialog open={transferOpen} onOpenChange={setTransferOpen} />
     </div>
   );
 }
