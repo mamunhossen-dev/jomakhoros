@@ -3,8 +3,6 @@ import {
   ArrowUpDown,
   PieChart,
   Wallet,
-  Settings,
-  LogOut,
   DollarSign,
   Tag,
   Smartphone,
@@ -15,13 +13,11 @@ import {
   X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
-import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from '@/components/ui/sidebar';
 
 const mainItems = [
@@ -34,10 +30,6 @@ const mainItems = [
   { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart },
   { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare },
   { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard },
-];
-
-const secondaryItems = [
-  { title: 'সেটিংস', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
