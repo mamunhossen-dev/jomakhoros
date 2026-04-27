@@ -27,10 +27,10 @@ export default function Index() {
     let totalIncome = 0, totalExpense = 0;
     transactions.forEach((tx) => {
       if (tx.type === 'income') totalIncome += Number(tx.amount);
-      else totalExpense += Number(tx.amount);
+      else if (tx.type === 'expense') totalExpense += Number(tx.amount);
     });
 
-    const recentTxs = transactions.slice(0, 5);
+    const recentTxs = transactions.filter((tx) => tx.type !== 'transfer').slice(0, 5);
 
     const months: { key: string; label: string; income: number; expense: number }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -42,7 +42,7 @@ export default function Index() {
       const bucket = monthMap.get(tx.date.substring(0, 7));
       if (bucket) {
         if (tx.type === 'income') bucket.income += Number(tx.amount);
-        else bucket.expense += Number(tx.amount);
+        else if (tx.type === 'expense') bucket.expense += Number(tx.amount);
       }
     });
 
