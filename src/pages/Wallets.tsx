@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Pencil, Trash2, Wallet, Smartphone } from 'lucide-react';
+import { Plus, Pencil, Trash2, Wallet, Smartphone, ArrowRightLeft } from 'lucide-react';
 import { useWallets, useCreateWallet, useUpdateWallet, useDeleteWallet, Wallet as WalletType } from '@/hooks/useWallets';
+import { BalanceTransferDialog } from '@/components/wallets/BalanceTransferDialog';
 import { formatTaka } from '@/lib/currency';
 
 const WALLET_TYPES = [
