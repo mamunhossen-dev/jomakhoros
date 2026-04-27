@@ -121,49 +121,72 @@ export default function Transactions() {
                     <TableHead>বিবরণ</TableHead>
                     <TableHead>ক্যাটাগরি</TableHead>
                     <TableHead>ধরন</TableHead>
+                    <TableHead>ওয়ালেট</TableHead>
                     <TableHead className="text-right">পরিমাণ</TableHead>
                     <TableHead className="w-[80px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((tx) => (
-                    <TableRow key={tx.id}>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {format(new Date(tx.date), 'dd MMM, yyyy')}
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-sm">
-                        {tx.description || '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="text-xs font-normal">
-                          {tx.category?.name || 'Uncategorized'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={tx.type === 'income'
-                            ? 'border-success/30 bg-success/10 text-success'
-                            : 'border-destructive/30 bg-destructive/10 text-destructive'}
-                        >
-                          {tx.type === 'income' ? 'আয়' : 'ব্যয়'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className={`text-right font-medium ${tx.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                        {tx.type === 'income' ? '+' : '-'}৳{Number(tx.amount).toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(tx)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteId(tx.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {transactions.map((tx) => {
+                    const isTransfer = tx.type === 'transfer';
+                    const sign = tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : '↔';
+                    const amountColor = tx.type === 'income' ? 'text-success' : tx.type === 'expense' ? 'text-destructive' : 'text-primary';
+                    return (
+                      <TableRow key={tx.id}>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {format(new Date(tx.date), 'dd MMM, yyyy')}
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate text-sm">
+                          {tx.description || '—'}
+                        </TableCell>
+                        <TableCell>
+                          {isTransfer ? (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          ) : (
+                            <Badge variant="secondary" className="text-xs font-normal">
+                              {tx.category?.name || 'Uncategorized'}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              tx.type === 'income' ? 'border-success/30 bg-success/10 text-success'
+                              : tx.type === 'expense' ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                              : 'border-primary/30 bg-primary/10 text-primary'
+                            }
+                          >
+                            {tx.type === 'income' ? 'আয়' : tx.type === 'expense' ? 'ব্যয়' : 'ট্রান্সফার'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {isTransfer ? (
+                            <span className="whitespace-nowrap">
+                              {tx.wallet?.name || '?'} <span className="text-muted-foreground">→</span> {tx.to_wallet?.name || '?'}
+                            </span>
+                          ) : (
+                            <span className="whitespace-nowrap">{tx.wallet?.name || '—'}</span>
+                          )}
+                        </TableCell>
+                        <TableCell className={`text-right font-medium ${amountColor}`}>
+                          {sign}৳{Number(tx.amount).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            {!isTransfer && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(tx)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteId(tx.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
