@@ -1,22 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
+  const { user } = useAuth();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Notifications state
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifBody, setNotifBody] = useState('');
+  const [editingNotif, setEditingNotif] = useState<string | null>(null);
+
+  // Support state
+  const [selectedConvUser, setSelectedConvUser] = useState<string | null>(null);
+  const [supportText, setSupportText] = useState('');
+  const supportEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch all users (profiles)
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -126,6 +142,117 @@ export default function AdminPanel() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  // ============== NOTIFICATIONS ==============
+  const { data: notifications, isLoading: notifLoading } = useQuery({
+    queryKey: ['admin_notifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
+  const saveNotification = useMutation({
+    mutationFn: async () => {
+      if (!notifTitle.trim() || !notifBody.trim()) throw new Error('শিরোনাম ও বার্তা প্রয়োজন');
+      if (editingNotif) {
+        const { error } = await supabase.from('notifications').update({
+          title: notifTitle, body: notifBody,
+        }).eq('id', editingNotif);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('notifications').insert({
+          title: notifTitle, body: notifBody, created_by: user?.id, is_active: true,
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      setNotifTitle(''); setNotifBody(''); setEditingNotif(null);
+      toast.success(editingNotif ? 'নোটিফিকেশন আপডেট হয়েছে' : 'নোটিফিকেশন পাঠানো হয়েছে');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const toggleNotif = useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { error } = await supabase.from('notifications').update({ is_active }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const deleteNotif = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('notifications').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      toast.success('মুছে ফেলা হয়েছে');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const startEditNotif = (n: any) => {
+    setEditingNotif(n.id);
+    setNotifTitle(n.title);
+    setNotifBody(n.body);
+  };
+
+  // ============== SUPPORT MESSAGES ==============
+  const { data: allMessages } = useQuery({
+    queryKey: ['admin_support_messages'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('support_messages').select('*').order('created_at', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin || isModerator,
+  });
+
+  useEffect(() => {
+    if (!isAdmin && !isModerator) return;
+    const ch = supabase
+      .channel('admin-support-all')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => {
+        qc.invalidateQueries({ queryKey: ['admin_support_messages'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isAdmin, isModerator, qc]);
+
+  const conversations: Record<string, any[]> = {};
+  (allMessages || []).forEach(m => {
+    if (!conversations[m.user_id]) conversations[m.user_id] = [];
+    conversations[m.user_id].push(m);
+  });
+  const conversationUserIds = Object.keys(conversations);
+
+  const sendSupportReply = async () => {
+    if (!supportText.trim() || !selectedConvUser || !user) return;
+    const { error } = await supabase.from('support_messages').insert({
+      user_id: selectedConvUser,
+      sender_id: user.id,
+      is_from_admin: true,
+      message: supportText.trim(),
+    });
+    if (error) { toast.error(error.message); return; }
+    setSupportText('');
+  };
+
+  useEffect(() => {
+    if (supportEndRef.current) supportEndRef.current.scrollTop = supportEndRef.current.scrollHeight;
+  }, [selectedConvUser, allMessages]);
+
   const copyUid = (uid: string) => {
     navigator.clipboard.writeText(uid);
     toast.success('UID কপি হয়েছে');
@@ -168,6 +295,8 @@ export default function AdminPanel() {
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="payments"><CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট</TabsTrigger>
           <TabsTrigger value="feedback"><MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক</TabsTrigger>
+          <TabsTrigger value="support"><Send className="mr-1 h-3.5 w-3.5" /> সাপোর্ট</TabsTrigger>
+          {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
         </TabsList>
 
@@ -359,6 +488,167 @@ export default function AdminPanel() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+        )}
+
+        {/* Support Tab */}
+        <TabsContent value="support">
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="font-display text-lg">সাপোর্ট কথোপকথন</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-[260px_1fr]">
+                {/* Conversations list */}
+                <div className="border rounded-lg overflow-hidden">
+                  <ScrollArea className="h-[400px]">
+                    {!conversationUserIds.length ? (
+                      <p className="p-4 text-center text-xs text-muted-foreground">কোনো কথোপকথন নেই</p>
+                    ) : (
+                      <div className="divide-y">
+                        {conversationUserIds.map(uid => {
+                          const u = users?.find(x => x.user_id === uid);
+                          const msgs = conversations[uid];
+                          const last = msgs[msgs.length - 1];
+                          const unread = msgs.filter(m => !m.is_from_admin && !m.is_read).length;
+                          return (
+                            <button
+                              key={uid}
+                              onClick={() => setSelectedConvUser(uid)}
+                              className={`w-full text-left p-3 hover:bg-muted/50 ${selectedConvUser === uid ? 'bg-muted' : ''}`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-sm font-medium truncate">{u?.display_name || uid.substring(0, 8)}</p>
+                                {unread > 0 && <Badge className="text-[10px] h-4 px-1.5">{unread}</Badge>}
+                              </div>
+                              <p className="text-[11px] text-muted-foreground truncate">{last?.message}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </div>
+
+                {/* Active conversation */}
+                <div className="border rounded-lg flex flex-col h-[400px]">
+                  {!selectedConvUser ? (
+                    <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+                      বামে একটি কথোপকথন বেছে নিন
+                    </div>
+                  ) : (
+                    <>
+                      <div className="border-b p-2 text-xs font-medium">
+                        {users?.find(u => u.user_id === selectedConvUser)?.display_name || selectedConvUser.substring(0, 12)}
+                      </div>
+                      <div ref={supportEndRef} className="flex-1 overflow-y-auto p-3 space-y-2">
+                        {conversations[selectedConvUser]?.map(m => (
+                          <div key={m.id} className={`flex ${m.is_from_admin ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[80%] rounded-lg px-3 py-2 ${m.is_from_admin ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                              <p className="text-sm whitespace-pre-wrap">{m.message}</p>
+                              <p className={`mt-1 text-[10px] ${m.is_from_admin ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                {format(new Date(m.created_at), 'dd MMM, hh:mm a')}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="border-t p-2 flex gap-1">
+                        <Textarea
+                          value={supportText}
+                          onChange={e => setSupportText(e.target.value)}
+                          placeholder="উত্তর লিখুন..."
+                          rows={1}
+                          className="min-h-9 resize-none text-sm"
+                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
+                        />
+                        <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim()}>
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Notifications Tab (Admin only) */}
+        {isAdmin && (
+          <TabsContent value="notifications">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="border-0 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="font-display text-lg flex items-center gap-2">
+                    {editingNotif ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                    {editingNotif ? 'নোটিফিকেশন এডিট' : 'নতুন নোটিফিকেশন'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">শিরোনাম</Label>
+                    <Input value={notifTitle} onChange={e => setNotifTitle(e.target.value)} placeholder="সংক্ষিপ্ত শিরোনাম" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">বার্তা</Label>
+                    <Textarea value={notifBody} onChange={e => setNotifBody(e.target.value)} placeholder="পূর্ণ বার্তা লিখুন..." rows={8} />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={() => saveNotification.mutate()} disabled={saveNotification.isPending} className="flex-1">
+                      {editingNotif ? 'আপডেট' : 'সবার কাছে পাঠান'}
+                    </Button>
+                    {editingNotif && (
+                      <Button variant="outline" onClick={() => { setEditingNotif(null); setNotifTitle(''); setNotifBody(''); }}>বাতিল</Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm">
+                <CardHeader><CardTitle className="font-display text-lg">সব নোটিফিকেশন ({notifications?.length || 0})</CardTitle></CardHeader>
+                <CardContent>
+                  {notifLoading ? (
+                    <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16" />)}</div>
+                  ) : !notifications?.length ? (
+                    <p className="text-center py-6 text-sm text-muted-foreground">কোনো নোটিফিকেশন নেই</p>
+                  ) : (
+                    <ScrollArea className="h-[400px] pr-2">
+                      <div className="space-y-2">
+                        {notifications.map(n => (
+                          <div key={n.id} className="rounded-lg border p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1">
+                                  <p className="text-sm font-medium truncate">{n.title}</p>
+                                  {n.is_default && <Badge variant="outline" className="text-[10px]">ডিফল্ট</Badge>}
+                                </div>
+                                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(n.created_at), 'dd MMM yyyy')}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                              <div className="flex items-center gap-2">
+                                <Switch checked={n.is_active} onCheckedChange={(v) => toggleNotif.mutate({ id: n.id, is_active: v })} />
+                                <span className="text-xs text-muted-foreground">{n.is_active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEditNotif(n)}>
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteNotif.mutate(n.id)}>
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         )}
       </Tabs>

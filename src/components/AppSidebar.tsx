@@ -3,8 +3,6 @@ import {
   ArrowUpDown,
   PieChart,
   Wallet,
-  Settings,
-  LogOut,
   DollarSign,
   Tag,
   Smartphone,
@@ -15,13 +13,11 @@ import {
   X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
-import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from '@/components/ui/sidebar';
 
 const mainItems = [
@@ -36,25 +32,14 @@ const mainItems = [
   { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard },
 ];
 
-const secondaryItems = [
-  { title: 'সেটিংস', url: '/settings', icon: Settings },
-];
-
 export function AppSidebar() {
   const { state, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { signOut } = useAuth();
   const { isAdmin, isModerator } = useSubscription();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const closeMobileSidebar = () => {
     if (isMobile) setOpenMobile(false);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
   };
 
   return (
@@ -111,32 +96,7 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">সাধারণ</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} onClick={closeMobileSidebar} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="mr-2 h-4 w-4 shrink-0" />
-                      <span className="truncate">{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="bg-sidebar p-4">
-        <button onClick={handleSignOut} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground">
-          <LogOut className="h-4 w-4 shrink-0" />
-          <span className="truncate">সাইন আউট</span>
-        </button>
-      </SidebarFooter>
     </Sidebar>
   );
 }
