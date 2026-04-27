@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories, useCreateTransaction, useUpdateTransaction, Transaction } from '@/hooks/useTransactions';
+import { useWallets } from '@/hooks/useWallets';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
@@ -18,26 +20,30 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
   const [type, setType] = useState<'income' | 'expense'>(defaultType);
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [walletId, setWalletId] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const { data: categories } = useCategories(type);
+  const { data: wallets } = useWallets();
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction();
 
-  const isEdit = !!editTransaction;
+  const isEdit = !!editTransaction && editTransaction.type !== 'transfer';
 
   useEffect(() => {
-    if (editTransaction) {
+    if (editTransaction && editTransaction.type !== 'transfer') {
       setType(editTransaction.type);
       setAmount(String(editTransaction.amount));
       setCategoryId(editTransaction.category_id || '');
+      setWalletId(editTransaction.wallet_id || '');
       setDescription(editTransaction.description || '');
       setDate(editTransaction.date);
     } else {
       setType(defaultType);
       setAmount('');
       setCategoryId('');
+      setWalletId('');
       setDescription('');
       setDate(new Date().toISOString().split('T')[0]);
     }
@@ -45,15 +51,25 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!walletId) {
+      toast.error('একটি ওয়ালেট নির্বাচন করুন');
+      return;
+    }
+    if (!categoryId) {
+      toast.error('একটি ক্যাটাগরি নির্বাচন করুন');
+      return;
+    }
     const payload = {
       amount: parseFloat(amount),
       type,
       category_id: categoryId || null,
+      wallet_id: walletId,
+      to_wallet_id: null,
       description: description.trim() || null,
       date,
     };
 
-    if (isEdit) {
+    if (isEdit && editTransaction) {
       updateMutation.mutate({ ...payload, id: editTransaction.id }, { onSuccess: () => onOpenChange(false) });
     } else {
       createMutation.mutate(payload, { onSuccess: () => onOpenChange(false) });
@@ -61,6 +77,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const noWallets = wallets && wallets.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,6 +138,25 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="wallet">ওয়ালেট</Label>
+            <Select value={walletId} onValueChange={setWalletId}>
+              <SelectTrigger>
+                <SelectValue placeholder={noWallets ? 'প্রথমে একটি ওয়ালেট যোগ করুন' : 'ওয়ালেট নির্বাচন করুন'} />
+              </SelectTrigger>
+              <SelectContent>
+                {wallets?.map((w) => (
+                  <SelectItem key={w.id} value={w.id}>
+                    {w.name} (৳{Number(w.balance).toFixed(2)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {noWallets && (
+              <p className="text-xs text-destructive">লেনদেন যোগ করতে আগে একটি ওয়ালেট তৈরি করুন।</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="date">তারিখ</Label>
             <Input
               id="date"
@@ -142,7 +178,7 @@ export function TransactionFormDialog({ open, onOpenChange, defaultType = 'expen
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || noWallets}>
             {isPending ? 'সংরক্ষণ হচ্ছে...' : isEdit ? 'আপডেট করুন' : 'যোগ করুন'}
           </Button>
         </form>
