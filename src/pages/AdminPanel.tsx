@@ -73,7 +73,7 @@ export default function AdminPanel() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Fetch all users (profiles)
+  // Fetch all users (profiles) — only when Users tab is open
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['admin_users'],
     queryFn: async () => {
@@ -81,10 +81,11 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && activeTab === 'users',
+    staleTime: 30_000,
   });
 
-  // Fetch all user roles
+  // Fetch all user roles — only when Users tab is open
   const { data: allRoles } = useQuery({
     queryKey: ['admin_all_roles'],
     queryFn: async () => {
@@ -92,7 +93,8 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && activeTab === 'users',
+    staleTime: 30_000,
   });
 
   // Fetch all feedback
