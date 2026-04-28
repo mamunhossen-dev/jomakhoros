@@ -750,6 +750,36 @@ export default function AdminPanel() {
               <CardTitle className="font-display text-lg">সাপোর্ট কথোপকথন</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Ticket-number search bar */}
+              <div className="mb-3 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={ticketSearch}
+                    onChange={e => setTicketSearch(e.target.value)}
+                    placeholder="টিকেট নাম্বার দিয়ে খুঁজুন (যেমন: TKT-260428-001)"
+                    className="h-9 pl-8 pr-8 text-sm font-mono"
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (openTicketByNumber(ticketSearch)) setTicketSearch(''); } }}
+                  />
+                  {ticketSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setTicketSearch('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => { if (openTicketByNumber(ticketSearch)) setTicketSearch(''); }}
+                  disabled={!ticketSearch.trim()}
+                >
+                  খুঁজুন
+                </Button>
+              </div>
+
               {/* Status filter bar */}
               {(() => {
                 const counts: Record<string, number> = { all: ticketIds.length };
