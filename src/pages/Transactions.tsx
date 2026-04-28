@@ -32,7 +32,7 @@ export default function Transactions() {
   const [defaultType, setDefaultType] = useState<'income' | 'expense'>('expense');
   const [editTx, setEditTx] = useState<Transaction | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', categoryId: '' });
+  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', categoryId: '', type: '', walletId: '' });
 
   const { data: allTransactions, isLoading } = useTransactions({
     dateFrom: filters.dateFrom || undefined,
@@ -49,10 +49,13 @@ export default function Transactions() {
   // Free users: only last 15 days
   const transactions = useMemo(() => {
     if (!allTransactions) return undefined;
-    if (!isFree) return allTransactions;
+    let list = allTransactions;
+    if (filters.type) list = list.filter(tx => tx.type === filters.type);
+    if (filters.walletId) list = list.filter(tx => tx.wallet_id === filters.walletId || tx.to_wallet_id === filters.walletId);
+    if (!isFree) return list;
     const cutoff = format(subDays(new Date(), 15), 'yyyy-MM-dd');
-    return allTransactions.filter(tx => tx.date >= cutoff);
-  }, [allTransactions, isFree]);
+    return list.filter(tx => tx.date >= cutoff);
+  }, [allTransactions, isFree, filters.type, filters.walletId]);
 
   const handleExportPdf = async () => {
     if (isFree) {
