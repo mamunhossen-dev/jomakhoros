@@ -70,6 +70,22 @@ export default function Transactions() {
     }
   };
 
+  const handleExportImage = async () => {
+    if (isFree) {
+      toast.error('ইমেজ এক্সপোর্ট প্রো ফিচার। আপগ্রেড করুন!');
+      return;
+    }
+    if (!transactions?.length) return;
+    try {
+      await exportTransactionsImage(transactions, profile?.display_name || '', user?.email || '', {
+        dateFrom: filters.dateFrom || undefined,
+        dateTo: filters.dateTo || undefined,
+      }, wallets);
+    } catch (e) {
+      toast.error('ইমেজ তৈরি করা যায়নি');
+    }
+  };
+
   const openAdd = (type: 'income' | 'expense') => {
     setEditTx(null);
     setDefaultType(type);
