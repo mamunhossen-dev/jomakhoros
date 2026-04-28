@@ -479,8 +479,54 @@ export default function AdminPanel() {
                             </Button>
                           </div>
 
-                          {/* Row 4: Join date */}
-                          <p className="text-[10px] text-muted-foreground">যোগদান: {format(new Date(u.created_at), 'dd MMM yyyy')}</p>
+                          {/* Row 3b: Pro subscription end date editor */}
+                          {u.account_type === 'pro' && (
+                            <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-border/30">
+                              <Label className="text-[11px] text-muted-foreground">প্রো মেয়াদ শেষ:</Label>
+                              <Input
+                                type="date"
+                                className="h-7 w-[150px] text-[11px]"
+                                defaultValue={u.subscription_end ? new Date(u.subscription_end).toISOString().slice(0, 10) : ''}
+                                onChange={async (e) => {
+                                  const val = e.target.value;
+                                  if (!val) return;
+                                  const { error } = await supabase.from('profiles').update({
+                                    subscription_end: new Date(val + 'T23:59:59').toISOString(),
+                                    subscription_start: u.subscription_start || new Date().toISOString(),
+                                    payment_status: 'paid',
+                                  }).eq('user_id', u.user_id);
+                                  if (error) { toast.error(error.message); return; }
+                                  qc.invalidateQueries({ queryKey: ['admin_users'] });
+                                  toast.success('মেয়াদ আপডেট হয়েছে');
+                                }}
+                              />
+                              {[1, 3, 6, 12].map(m => (
+                                <Button key={m} variant="outline" size="sm" className="h-7 text-[11px] px-2" onClick={async () => {
+                                  const base = u.subscription_end && new Date(u.subscription_end) > new Date()
+                                    ? new Date(u.subscription_end)
+                                    : new Date();
+                                  base.setMonth(base.getMonth() + m);
+                                  const { error } = await supabase.from('profiles').update({
+                                    account_type: 'pro',
+                                    subscription_start: u.subscription_start || new Date().toISOString(),
+                                    subscription_end: base.toISOString(),
+                                    payment_status: 'paid',
+                                  }).eq('user_id', u.user_id);
+                                  if (error) { toast.error(error.message); return; }
+                                  qc.invalidateQueries({ queryKey: ['admin_users'] });
+                                  toast.success(`+${m} মাস যোগ হয়েছে`);
+                                }}>
+                                  +{m}মা
+                                </Button>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Row 4: Join date + sub end */}
+                          <p className="text-[10px] text-muted-foreground">
+                            যোগদান: {format(new Date(u.created_at), 'dd MMM yyyy')}
+                            {u.subscription_end && ` • প্রো শেষ: ${format(new Date(u.subscription_end), 'dd MMM yyyy')}`}
+                          </p>
                         </div>
                       );
                     })}
