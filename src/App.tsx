@@ -86,6 +86,7 @@ const App = () => (
             </Route>
             <Route path="/" element={<HomeRoute />}>
               <Route index element={<Index />} />
+            </Route>
             <Route
               element={
                 <ProtectedRoute>
