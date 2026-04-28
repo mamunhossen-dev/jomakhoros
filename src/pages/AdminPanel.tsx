@@ -263,6 +263,49 @@ export default function AdminPanel() {
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin, isModerator, qc]);
 
+  // Support thread statuses
+  const { data: threads } = useQuery({
+    queryKey: ['admin_support_threads'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('support_threads').select('*');
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin || isModerator,
+  });
+
+  useEffect(() => {
+    if (!isAdmin && !isModerator) return;
+    const ch = supabase
+      .channel('admin-support-threads')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_threads' }, () => {
+        qc.invalidateQueries({ queryKey: ['admin_support_threads'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isAdmin, isModerator, qc]);
+
+  const threadByUser: Record<string, any> = {};
+  (threads || []).forEach(t => { threadByUser[t.user_id] = t; });
+
+  const getThreadStatus = (uid: string): SupportStatus =>
+    (threadByUser[uid]?.status as SupportStatus) || 'new';
+
+  const updateThreadStatus = useMutation({
+    mutationFn: async ({ uid, status }: { uid: string; status: SupportStatus }) => {
+      // upsert by user_id (unique)
+      const { error } = await supabase
+        .from('support_threads')
+        .upsert({ user_id: uid, status }, { onConflict: 'user_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_support_threads'] });
+      toast.success('স্ট্যাটাস আপডেট হয়েছে');
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const conversations: Record<string, any[]> = {};
   (allMessages || []).forEach(m => {
     if (!conversations[m.user_id]) conversations[m.user_id] = [];
