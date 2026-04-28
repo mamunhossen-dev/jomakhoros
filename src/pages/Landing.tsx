@@ -15,7 +15,7 @@ const features = [
   { icon: Tag, title: 'স্মার্ট ক্যাটাগরি', desc: 'আয়-ব্যয় সাজান আপনার মতো করে।', color: 'from-violet-500 to-purple-600' },
   { icon: BarChart3, title: 'লাইভ অ্যানালিটিক্স', desc: 'চার্ট ও রিপোর্টে স্পষ্ট চিত্র।', color: 'from-indigo-500 to-blue-600' },
   { icon: PiggyBank, title: 'বাজেট ও সঞ্চয়', desc: 'লক্ষ্য সেট করে সঞ্চয় বাড়ান।', color: 'from-pink-500 to-rose-600' },
-  { icon: ShieldCheck, title: '১০০% নিরাপদ', desc: 'আপনার ডেটা সম্পূর্ণ সুরক্ষিত।', color: 'from-emerald-500 to-teal-600' },
+  { icon: Bell, title: 'স্মার্ট রিমাইন্ডার', desc: 'প্রতিদিনের খরচ লিখতে ভুলবেন না।', color: 'from-emerald-500 to-teal-600' },
   { icon: Smartphone, title: 'মোবাইল ফ্রেন্ডলি', desc: 'যেকোনো ডিভাইসে নিখুঁত।', color: 'from-amber-500 to-orange-600' },
   { icon: FileText, title: 'PDF রিপোর্ট', desc: 'মাসিক রিপোর্ট ডাউনলোড করুন এক ক্লিকে।', color: 'from-sky-500 to-blue-600' },
   { icon: Target, title: 'লোন ট্র্যাকিং', desc: 'ধার দেওয়া-নেওয়ার হিসাব রাখুন।', color: 'from-fuchsia-500 to-pink-600' },
