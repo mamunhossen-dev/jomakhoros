@@ -214,7 +214,8 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && activeTab === 'notifications',
+    staleTime: 60_000,
   });
 
   const saveNotification = useMutation({
