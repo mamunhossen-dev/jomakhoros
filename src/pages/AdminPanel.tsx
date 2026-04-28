@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { CopyTicketButton } from '@/components/support/CopyTicketButton';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -861,7 +862,10 @@ export default function AdminPanel() {
                                   <p className="text-sm font-medium truncate">{u?.display_name || (uid ? uid.substring(0, 8) : '—')}</p>
                                   {unread > 0 && <Badge className="text-[10px] h-4 px-1.5">{unread}</Badge>}
                                 </div>
-                                <p className="text-[10px] font-mono font-semibold text-primary mt-0.5">{getTicketNumber(tid) || `#${tid.substring(0, 8)}`}</p>
+                                <div className="mt-0.5 flex items-center gap-1">
+                                  <p className="text-[10px] font-mono font-semibold text-primary truncate">টিকেট: {getTicketNumber(tid) || `#${tid.substring(0, 8)}`}</p>
+                                  <CopyTicketButton value={getTicketNumber(tid) || tid} size={10} />
+                                </div>
                                 <div className="mt-1 flex items-center justify-between gap-2">
                                   <p className="text-[11px] text-muted-foreground truncate flex-1">{last?.message || 'নতুন টিকেট'}</p>
                                   <span className={cn(
@@ -917,7 +921,10 @@ export default function AdminPanel() {
                           <span className="truncate">
                             {users?.find(u => u.user_id === primaryUid)?.display_name || (primaryUid ? primaryUid.substring(0, 12) : '—')}
                           </span>
-                          <span className="text-[10px] font-mono font-semibold text-primary shrink-0">{getTicketNumber(displayedTicketId) || `#${displayedTicketId.substring(0, 8)}`}</span>
+                          <span className="text-[10px] font-mono font-semibold text-primary shrink-0 flex items-center gap-1">
+                            {getTicketNumber(displayedTicketId) || `#${displayedTicketId.substring(0, 8)}`}
+                            <CopyTicketButton value={getTicketNumber(displayedTicketId) || displayedTicketId} size={11} />
+                          </span>
                         </div>
                         {isAdminReadOnly ? (
                           <span className={cn(

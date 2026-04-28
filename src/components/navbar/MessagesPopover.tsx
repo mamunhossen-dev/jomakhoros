@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SupportStatus } from '@/lib/supportStatus';
+import { CopyTicketButton } from '@/components/support/CopyTicketButton';
 
 const STATUS_BANNER: Record<SupportStatus, { text: string; cls: string }> = {
   new: {
@@ -249,14 +250,19 @@ export function MessagesPopover() {
             <h3 className="font-display text-sm font-semibold">
               {isReadOnly ? 'পুরানো কথোপকথন' : 'সাপোর্ট মেসেজ'}
             </h3>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
               {(() => {
                 const displayedThread = isReadOnly
                   ? (closedThreads || []).find(t => t.ticket_id === viewingOldTicketId)
                   : activeThread;
                 const tn = displayedThread?.ticket_number;
-                if (tn) return `টিকেট: ${tn}`;
-                return isReadOnly ? 'শুধুমাত্র পড়ার জন্য' : 'আমাদের টিমের সাথে যোগাযোগ করুন';
+                if (tn) return (
+                  <>
+                    <span className="truncate">টিকেট: <span className="font-mono font-semibold text-foreground/80">{tn}</span></span>
+                    <CopyTicketButton value={tn} />
+                  </>
+                );
+                return <span>{isReadOnly ? 'শুধুমাত্র পড়ার জন্য' : 'আমাদের টিমের সাথে যোগাযোগ করুন'}</span>;
               })()}
             </p>
           </div>
@@ -341,9 +347,12 @@ export function MessagesPopover() {
                             </span>
                           </div>
                           {t.ticket_number && (
-                            <p className="mt-0.5 text-[10px] font-mono font-semibold text-primary">
-                              {t.ticket_number}
-                            </p>
+                            <div className="mt-0.5 flex items-center gap-1">
+                              <p className="text-[10px] font-mono font-semibold text-primary">
+                                {t.ticket_number}
+                              </p>
+                              <CopyTicketButton value={t.ticket_number} size={10} />
+                            </div>
                           )}
                           <p className="mt-1 line-clamp-2 text-xs text-foreground/80">{preview}</p>
                         </button>
