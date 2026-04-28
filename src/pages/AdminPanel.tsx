@@ -858,7 +858,6 @@ export default function AdminPanel() {
                   )}
                 </div>
               </div>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
