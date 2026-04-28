@@ -43,12 +43,12 @@ export default function Login() {
   return (
     <div className="flex min-h-screen">
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-sidebar p-10">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-primary">
             <DollarSign className="h-6 w-6 text-sidebar-primary-foreground" />
           </div>
           <span className="font-display text-xl font-bold text-sidebar-foreground">JomaKhoros</span>
-        </div>
+        </Link>
         <div>
           <h1 className="font-display text-4xl font-bold leading-tight text-sidebar-foreground">
             আপনার আর্থিক<br />নিয়ন্ত্রণ নিন
