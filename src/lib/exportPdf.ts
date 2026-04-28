@@ -37,11 +37,11 @@ export function exportTransactionsPdf(
   doc.setFontSize(8);
   doc.text(`Generated: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, pageWidth - 14, 47, { align: 'right' });
 
-  // Summary
+  // Summary (transfers excluded from income/expense totals)
   let totalIncome = 0, totalExpense = 0;
   transactions.forEach(tx => {
     if (tx.type === 'income') totalIncome += Number(tx.amount);
-    else totalExpense += Number(tx.amount);
+    else if (tx.type === 'expense') totalExpense += Number(tx.amount);
   });
 
   doc.setTextColor(0, 0, 0);
