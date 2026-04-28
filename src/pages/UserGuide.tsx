@@ -99,6 +99,7 @@ function InfoCard({ icon: Icon, title, desc, color }: { icon: any; title: string
 }
 
 export default function UserGuide() {
+  const { user } = useAuth();
   const guideRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
 
