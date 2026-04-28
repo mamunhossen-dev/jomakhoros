@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown } from 'lucide-react';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { STATUS_LIST, getStatusMeta, type SupportStatus } from '@/lib/supportStatus';
 import { cn } from '@/lib/utils';
@@ -36,6 +36,8 @@ export default function AdminPanel() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [supportText, setSupportText] = useState('');
   const [statusFilter, setStatusFilter] = useState<SupportStatus | 'all'>('all');
+  const [adminArchiveOpen, setAdminArchiveOpen] = useState(false);
+  const [adminViewingOldTicketId, setAdminViewingOldTicketId] = useState<string | null>(null);
   const supportEndRef = useRef<HTMLDivElement>(null);
 
   // App settings: terms checkbox toggle
@@ -796,7 +798,7 @@ export default function AdminPanel() {
                             return (
                               <button
                                 key={tid}
-                                onClick={() => setSelectedTicketId(tid)}
+                                onClick={() => { setSelectedTicketId(tid); setAdminViewingOldTicketId(null); setAdminArchiveOpen(false); }}
                                 className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${selectedTicketId === tid ? 'bg-muted' : ''}`}
                               >
                                 <div className="flex items-center justify-between gap-2">
@@ -829,17 +831,47 @@ export default function AdminPanel() {
                     <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                       বামে একটি কথোপকথন বেছে নিন
                     </div>
-                  ) : (
+                  ) : (() => {
+                    const primaryUid = getTicketUserId(selectedTicketId) || '';
+                    // Other closed tickets for the same user (excluding currently selected)
+                    const userArchivedTickets = ticketIds.filter(tid =>
+                      tid !== selectedTicketId &&
+                      getTicketUserId(tid) === primaryUid &&
+                      getThreadStatusByTicket(tid) === 'closed'
+                    );
+                    const displayedTicketId = adminViewingOldTicketId ?? selectedTicketId;
+                    const isAdminReadOnly = !!adminViewingOldTicketId;
+                    const displayedStatus = getThreadStatusByTicket(displayedTicketId);
+                    const displayedMeta = getStatusMeta(displayedStatus);
+                    const DisplayedIcon = displayedMeta.icon;
+                    return (
                     <>
                       <div className="border-b p-2 flex items-center justify-between gap-2">
-                        <div className="text-sm font-medium truncate">
-                          {(() => {
-                            const uid = getTicketUserId(selectedTicketId) || '';
-                            return users?.find(u => u.user_id === uid)?.display_name || (uid ? uid.substring(0, 12) : '—');
-                          })()}
-                          <span className="ml-2 text-[10px] text-muted-foreground font-normal">#{selectedTicketId.substring(0, 8)}</span>
+                        <div className="text-sm font-medium truncate flex items-center gap-2 min-w-0">
+                          {isAdminReadOnly && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 text-xs shrink-0"
+                              onClick={() => setAdminViewingOldTicketId(null)}
+                            >
+                              <ArrowLeft className="mr-1 h-3.5 w-3.5" /> ফিরে যান
+                            </Button>
+                          )}
+                          <span className="truncate">
+                            {users?.find(u => u.user_id === primaryUid)?.display_name || (primaryUid ? primaryUid.substring(0, 12) : '—')}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-normal shrink-0">#{displayedTicketId.substring(0, 8)}</span>
                         </div>
-                        {(() => {
+                        {isAdminReadOnly ? (
+                          <span className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium',
+                            displayedMeta.badgeClass
+                          )}>
+                            <DisplayedIcon className="h-3 w-3" />
+                            <span>{displayedMeta.label}</span>
+                          </span>
+                        ) : (() => {
                           const current = getStatusMeta(getThreadStatusByTicket(selectedTicketId));
                           const CurIcon = current.icon;
                           return (
@@ -876,8 +908,16 @@ export default function AdminPanel() {
                           );
                         })()}
                       </div>
+
+                      {isAdminReadOnly && (
+                        <div className="mx-3 mt-3 flex items-start gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-xs text-gray-700 dark:border-gray-500/30 dark:bg-gray-500/10 dark:text-gray-300">
+                          <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                          <span className="leading-relaxed">এই টিকেটটি বন্ধ — শুধুমাত্র পড়ার জন্য (আর্কাইভ)</span>
+                        </div>
+                      )}
+
                       <div ref={supportEndRef} className="flex-1 overflow-y-auto p-3 space-y-2">
-                        {(conversationsByTicket[selectedTicketId] || []).map(m => (
+                        {(conversationsByTicket[displayedTicketId] || []).map(m => (
                           <div key={m.id} className={`flex ${m.is_from_admin ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[80%] rounded-lg px-3 py-2 ${m.is_from_admin ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                               <p className="text-sm whitespace-pre-wrap">{m.message}</p>
@@ -887,23 +927,84 @@ export default function AdminPanel() {
                             </div>
                           </div>
                         ))}
+
+                        {/* Admin-side archive: other closed tickets of the same user */}
+                        {!isAdminReadOnly && userArchivedTickets.length > 0 && (
+                          <div className="mt-3 border-t pt-3">
+                            <button
+                              type="button"
+                              onClick={() => setAdminArchiveOpen(o => !o)}
+                              className="flex w-full items-center justify-between rounded-md bg-muted/60 px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <FolderArchive className="h-3.5 w-3.5" />
+                                এই ইউজারের পুরানো কথোপকথন ({userArchivedTickets.length})
+                              </span>
+                              {adminArchiveOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                            </button>
+                            {adminArchiveOpen && (
+                              <div className="mt-2 space-y-1.5">
+                                {userArchivedTickets.map(tid => {
+                                  const msgs = conversationsByTicket[tid] || [];
+                                  const first = msgs[0];
+                                  const preview = first?.message || 'কোনো মেসেজ নেই';
+                                  const dateRef = first?.created_at || msgs[msgs.length - 1]?.created_at;
+                                  return (
+                                    <button
+                                      key={tid}
+                                      type="button"
+                                      onClick={() => { setAdminViewingOldTicketId(tid); setAdminArchiveOpen(false); }}
+                                      className="w-full text-left rounded-md border border-border/60 bg-background px-3 py-2 hover:bg-muted/40 transition-colors"
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-[10px] text-muted-foreground">
+                                          {dateRef ? format(new Date(dateRef), 'dd MMM yyyy') : '—'}
+                                          <span className="ml-2">#{tid.substring(0, 8)}</span>
+                                        </span>
+                                        <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-semibold text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
+                                          বন্ধ
+                                        </span>
+                                      </div>
+                                      <p className="mt-1 line-clamp-2 text-xs text-foreground/80">{preview}</p>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="border-t p-2 flex gap-1">
-                        <Textarea
-                          value={supportText}
-                          onChange={e => setSupportText(e.target.value)}
-                          placeholder={getThreadStatusByTicket(selectedTicketId) === 'closed' ? 'টিকেটটি বন্ধ। স্ট্যাটাস "ওপেন" করুন।' : 'উত্তর লিখুন...'}
-                          rows={1}
-                          disabled={getThreadStatusByTicket(selectedTicketId) === 'closed'}
-                          className="min-h-9 resize-none text-sm"
-                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
-                        />
-                        <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim() || getThreadStatusByTicket(selectedTicketId) === 'closed'}>
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
+
+                      {isAdminReadOnly ? (
+                        <div className="border-t p-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => setAdminViewingOldTicketId(null)}
+                          >
+                            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> চলমান কথোপকথনে ফিরে যান
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="border-t p-2 flex gap-1">
+                          <Textarea
+                            value={supportText}
+                            onChange={e => setSupportText(e.target.value)}
+                            placeholder={getThreadStatusByTicket(selectedTicketId) === 'closed' ? 'টিকেটটি বন্ধ। স্ট্যাটাস "ওপেন" করুন।' : 'উত্তর লিখুন...'}
+                            rows={1}
+                            disabled={getThreadStatusByTicket(selectedTicketId) === 'closed'}
+                            className="min-h-9 resize-none text-sm"
+                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
+                          />
+                          <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim() || getThreadStatusByTicket(selectedTicketId) === 'closed'}>
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
             </CardContent>
