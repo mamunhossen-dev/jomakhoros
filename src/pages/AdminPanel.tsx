@@ -433,7 +433,7 @@ export default function AdminPanel() {
         <p className="text-muted-foreground">সাইট ও ব্যবহারকারী পরিচালনা করুন।</p>
       </div>
 
-      <Tabs defaultValue="payments">
+      <Tabs defaultValue="payments" onValueChange={(v) => { if (v === 'feedback') markFeedbackSeen(); }}>
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="payments"><CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট</TabsTrigger>
           <TabsTrigger value="feedback"><MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক</TabsTrigger>
