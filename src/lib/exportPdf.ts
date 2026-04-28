@@ -1,13 +1,15 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Transaction } from '@/hooks/useTransactions';
+import type { Wallet } from '@/hooks/useWallets';
 import { format } from 'date-fns';
 
 export function exportTransactionsPdf(
   transactions: Transaction[],
   userName: string,
   userEmail: string,
-  filters?: { dateFrom?: string; dateTo?: string }
+  filters?: { dateFrom?: string; dateTo?: string },
+  wallets?: Wallet[]
 ) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
