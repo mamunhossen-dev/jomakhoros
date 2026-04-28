@@ -89,10 +89,10 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><Suspense fallback={<PageFallback />}><Onboarding /></Suspense></ProtectedRoute>} />
             <Route element={<AuthAwareLayout><Outlet /></AuthAwareLayout>}>
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/user-guide" element={<UserGuide />} />
+              <Route path="/terms" element={<Suspense fallback={<PageFallback />}><Terms /></Suspense>} />
+              <Route path="/user-guide" element={<Suspense fallback={<PageFallback />}><UserGuide /></Suspense>} />
             </Route>
             <Route path="/" element={<HomeRoute />}>
               <Route index element={<Index />} />
@@ -106,16 +106,16 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/budgets" element={<Budgets />} />
-              <Route path="/wallets" element={<Wallets />} />
-              <Route path="/loans" element={<Loans />} />
-              <Route path="/analytics" element={<Reports />} />
-              <Route path="/feedback" element={<Feedback />} />
-              <Route path="/subscription" element={<Subscription />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/transactions" element={<Suspense fallback={<PageFallback />}><Transactions /></Suspense>} />
+              <Route path="/categories" element={<Suspense fallback={<PageFallback />}><Categories /></Suspense>} />
+              <Route path="/budgets" element={<Suspense fallback={<PageFallback />}><Budgets /></Suspense>} />
+              <Route path="/wallets" element={<Suspense fallback={<PageFallback />}><Wallets /></Suspense>} />
+              <Route path="/loans" element={<Suspense fallback={<PageFallback />}><Loans /></Suspense>} />
+              <Route path="/analytics" element={<Suspense fallback={<PageFallback />}><Reports /></Suspense>} />
+              <Route path="/feedback" element={<Suspense fallback={<PageFallback />}><Feedback /></Suspense>} />
+              <Route path="/subscription" element={<Suspense fallback={<PageFallback />}><Subscription /></Suspense>} />
+              <Route path="/admin" element={<Suspense fallback={<PageFallback />}><AdminPanel /></Suspense>} />
+              <Route path="/settings" element={<Suspense fallback={<PageFallback />}><Settings /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
