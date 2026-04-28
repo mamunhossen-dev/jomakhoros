@@ -1,11 +1,13 @@
+import { memo } from 'react';
 import { Search } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Input } from '@/components/ui/input';
 import { NotificationsPopover } from '@/components/navbar/NotificationsPopover';
 import { MessagesPopover } from '@/components/navbar/MessagesPopover';
 import { UserMenu } from '@/components/navbar/UserMenu';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-export function AppNavbar() {
+function AppNavbarBase() {
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 lg:px-6">
       <div className="flex items-center gap-4">
@@ -20,10 +22,13 @@ export function AppNavbar() {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
-        <MessagesPopover />
-        <NotificationsPopover />
+        {/* Each badge popover is isolated — a failed fetch never breaks the navbar. */}
+        <ErrorBoundary><MessagesPopover /></ErrorBoundary>
+        <ErrorBoundary><NotificationsPopover /></ErrorBoundary>
         <UserMenu />
       </div>
     </header>
   );
 }
+
+export const AppNavbar = memo(AppNavbarBase);

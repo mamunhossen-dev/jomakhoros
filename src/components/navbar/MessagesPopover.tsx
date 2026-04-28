@@ -137,7 +137,7 @@ export function MessagesPopover() {
     enabled: !!user && !!displayedTicketId,
   });
 
-  // Unread count across ALL admin->user messages
+  // Unread count across ALL admin->user messages — badge data: poll, fail silently to 0
   const { data: unreadCount } = useQuery({
     queryKey: ['support_unread', user?.id],
     queryFn: async () => {
@@ -151,6 +151,11 @@ export function MessagesPopover() {
       return count || 0;
     },
     enabled: !!user,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
+    retry: 0,
+    placeholderData: 0,
   });
 
   // Realtime
