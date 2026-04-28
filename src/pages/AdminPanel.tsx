@@ -921,7 +921,10 @@ export default function AdminPanel() {
                           <span className="truncate">
                             {users?.find(u => u.user_id === primaryUid)?.display_name || (primaryUid ? primaryUid.substring(0, 12) : '—')}
                           </span>
-                          <span className="text-[10px] font-mono font-semibold text-primary shrink-0">{getTicketNumber(displayedTicketId) || `#${displayedTicketId.substring(0, 8)}`}</span>
+                          <span className="text-[10px] font-mono font-semibold text-primary shrink-0 flex items-center gap-1">
+                            {getTicketNumber(displayedTicketId) || `#${displayedTicketId.substring(0, 8)}`}
+                            <CopyTicketButton value={getTicketNumber(displayedTicketId) || displayedTicketId} size={11} />
+                          </span>
                         </div>
                         {isAdminReadOnly ? (
                           <span className={cn(
