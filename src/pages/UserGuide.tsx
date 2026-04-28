@@ -230,6 +230,27 @@ export default function UserGuide() {
               <InfoCard key={i} {...p} color="bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300" />
             ))}
           </div>
+
+          {/* Important Security Notice */}
+          <Card className="mt-3 border-l-4 border-l-emerald-500 bg-emerald-50 dark:bg-emerald-950/30">
+            <CardContent className="flex gap-3 p-4">
+              <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-600" />
+              <div className="space-y-1">
+                <p className="font-semibold text-emerald-900 dark:text-emerald-200">
+                  গুরুত্বপূর্ণ: ওয়ালেট ব্যালেন্স সম্পর্কে স্পষ্টীকরণ
+                </p>
+                <p className="text-sm text-emerald-800 dark:text-emerald-300">
+                  JomaKhoros-এ যে ব্যালেন্স যোগ করা হয় তা <strong>সম্পূর্ণ ভার্চুয়াল ও ম্যানুয়াল হিসাবরক্ষণের তথ্য</strong> মাত্র — এটি আপনার আসল ব্যাংক, বিকাশ, নগদ বা রকেট অ্যাকাউন্টের সাথে <strong>কোনোভাবেই সংযুক্ত নয়</strong>।
+                </p>
+                <ul className="ml-4 list-disc space-y-1 text-sm text-emerald-800 dark:text-emerald-300">
+                  <li>আমরা আপনার আসল অ্যাকাউন্টের কোনো তথ্য, পিন, OTP বা পাসওয়ার্ড <strong>চাই না এবং সংরক্ষণ করি না</strong>।</li>
+                  <li>এখানে দেওয়া ব্যালেন্স আপনার নিজস্ব হিসাব রাখার জন্য — এটি দিয়ে কোনো টাকা পাঠানো, তোলা বা লেনদেন করা যায় না।</li>
+                  <li>এই অ্যাপ থেকে কেউ আপনার আসল টাকা <strong>হ্যাক বা স্ক্যাম করতে পারবে না</strong>, কারণ অ্যাপটি কোনো আর্থিক প্রতিষ্ঠানের সাথে সরাসরি সংযুক্ত নয়।</li>
+                  <li>মনে করুন এটি একটি <strong>ডিজিটাল খাতা/ডায়েরি</strong> — আপনি কাগজে যেভাবে আয়-ব্যয় লিখে রাখতেন, ঠিক সেভাবেই এখানে লিখে রাখছেন।</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Category Management */}
