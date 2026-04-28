@@ -832,8 +832,8 @@ export default function AdminPanel() {
               })()}
 
               <div className="grid gap-3 md:grid-cols-[280px_1fr]">
-                {/* Conversations list */}
-                <div className="border rounded-lg overflow-hidden">
+                {/* Conversations list — hidden on mobile when a ticket is selected */}
+                <div className={cn("border rounded-lg overflow-hidden", selectedTicketId && "hidden md:block")}>
                   <ScrollArea className="h-[420px]">
                     {(() => {
                       const visible = ticketIds.filter(tid =>
