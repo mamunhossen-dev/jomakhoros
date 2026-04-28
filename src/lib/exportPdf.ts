@@ -130,7 +130,6 @@ export function exportTransactionsPdf(
       },
       margin: { left: 14, right: 14 },
     });
-    // @ts-expect-error lastAutoTable provided by plugin
     tableStartY = (doc as any).lastAutoTable.finalY + 8;
   }
 
