@@ -19,12 +19,19 @@ export function NotificationsPopover() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*')
+        .select('id, title, body, created_at, is_active')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
       if (error) throw error;
       return data;
     },
+    // Badge data: poll instead of constantly refetching, fail silently to []
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
+    retry: 0,
+    placeholderData: [],
   });
 
   const { data: reads } = useQuery({
@@ -38,6 +45,11 @@ export function NotificationsPopover() {
       return data?.map(r => r.notification_id) || [];
     },
     enabled: !!user,
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
+    retry: 0,
+    placeholderData: [],
   });
 
   // Realtime subscription
