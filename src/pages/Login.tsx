@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable';
+import { useBrand } from '@/hooks/useBrand';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const brand = useBrand();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +49,7 @@ export default function Login() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-primary">
             <DollarSign className="h-6 w-6 text-sidebar-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold text-sidebar-foreground">JomaKhoros</span>
+          <span className="font-display text-xl font-bold text-sidebar-foreground">{brand.name}</span>
         </Link>
         <div>
           <h1 className="font-display text-4xl font-bold leading-tight text-sidebar-foreground">
@@ -57,7 +59,7 @@ export default function Login() {
             আয়-ব্যয় ট্র্যাক করুন, বাজেট সেট করুন, সঞ্চয় বাড়ান — সব এক জায়গায়।
           </p>
         </div>
-        <p className="text-sm text-sidebar-foreground/40">© 2026 JomaKhoros</p>
+        <p className="text-sm text-sidebar-foreground/40">© 2026 {brand.name}</p>
       </div>
 
       <div className="flex flex-1 items-center justify-center p-6 relative">
@@ -69,7 +71,7 @@ export default function Login() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <DollarSign className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display text-lg font-bold">JomaKhoros</span>
+            <span className="font-display text-lg font-bold">{brand.name}</span>
           </Link>
 
           <div>
