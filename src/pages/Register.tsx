@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable';
+import { useAppSetting } from '@/hooks/useAppSetting';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -17,10 +18,11 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { data: termsEnabled = true } = useAppSetting<boolean>('terms_checkbox_enabled', true);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreedToTerms) {
+    if (termsEnabled && !agreedToTerms) {
       toast({ title: 'ত্রুটি', description: 'শর্তাবলীতে সম্মত হতে হবে।', variant: 'destructive' });
       return;
     }
