@@ -105,7 +105,7 @@ export default function Settings() {
                   </div>
                   <div>
                     <p className="font-medium">{displayName || 'নাম নেই'}</p>
-                    <div className="flex gap-1 mt-1">
+                    <div className="flex gap-1 mt-1 flex-wrap">
                       <Badge variant="outline" className={accountType === 'pro' ? 'text-success border-success/30' : accountType === 'trial' ? 'text-primary border-primary/30' : 'text-muted-foreground'}>
                         <Crown className="mr-1 h-3 w-3" />
                         {accountType === 'pro' ? 'প্রো' : accountType === 'trial' ? 'ট্রায়াল' : 'ফ্রি'}
@@ -113,6 +113,13 @@ export default function Settings() {
                       {isAdmin && <Badge variant="outline" className="text-destructive border-destructive/30">অ্যাডমিন</Badge>}
                       {isModerator && <Badge variant="outline" className="text-yellow-600 border-yellow-600/30">মডারেটর</Badge>}
                     </div>
+                    {accountType === 'pro' && profile?.subscription_end && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(profile.subscription_end).getFullYear() >= 2099 
+                          ? 'লাইফটাইম ♾' 
+                          : `প্রো মেয়াদ: ${format(new Date(profile.subscription_end), 'dd MMM, yyyy')}`}
+                      </p>
+                    )}
                   </div>
                 </div>
 
