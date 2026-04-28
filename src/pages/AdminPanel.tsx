@@ -885,8 +885,8 @@ export default function AdminPanel() {
                   </ScrollArea>
                 </div>
 
-                {/* Active conversation */}
-                <div className="border rounded-lg flex flex-col h-[420px]">
+                {/* Active conversation — hidden on mobile when no ticket selected */}
+                <div className={cn("border rounded-lg flex flex-col h-[420px] md:h-[420px]", !selectedTicketId && "hidden md:flex")}>
                   {!selectedTicketId ? (
                     <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                       বামে একটি কথোপকথন বেছে নিন
