@@ -41,52 +41,85 @@ export function MessagesPopover() {
   const [text, setText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages } = useQuery({
-    queryKey: ['support_messages', user?.id],
+  // Active (non-closed) ticket for this user — most recent one.
+  // If none exists, fall back to the latest ticket (likely closed) so we still show last conversation context.
+  const { data: activeThread } = useQuery({
+    queryKey: ['support_active_thread', user?.id],
     queryFn: async () => {
+      const { data: openOnes, error } = await supabase
+        .from('support_threads')
+        .select('*')
+        .eq('user_id', user!.id)
+        .neq('status', 'closed')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      if (openOnes && openOnes.length) return openOnes[0];
+
+      const { data: latest, error: e2 } = await supabase
+        .from('support_threads')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (e2) throw e2;
+      return latest?.[0] || null;
+    },
+    enabled: !!user,
+  });
+
+  const activeTicketId: string | null = activeThread?.ticket_id ?? null;
+  const status: SupportStatus = (activeThread?.status as SupportStatus) || 'new';
+  const isClosed = status === 'closed';
+  const banner = STATUS_BANNER[status];
+
+  // Messages for the active ticket only
+  const { data: messages } = useQuery({
+    queryKey: ['support_messages_ticket', activeTicketId],
+    queryFn: async () => {
+      if (!activeTicketId) return [];
       const { data, error } = await supabase
         .from('support_messages')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('ticket_id', activeTicketId)
         .order('created_at', { ascending: true });
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !!activeTicketId,
   });
 
-  const { data: thread } = useQuery({
-    queryKey: ['support_thread', user?.id],
+  // Unread count across ALL admin->user messages of this user (so badge still works even if no active ticket cached)
+  const { data: unreadCount } = useQuery({
+    queryKey: ['support_unread', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('support_threads')
-        .select('*')
+      const { count, error } = await supabase
+        .from('support_messages')
+        .select('id', { count: 'exact', head: true })
         .eq('user_id', user!.id)
-        .maybeSingle();
+        .eq('is_from_admin', true)
+        .eq('is_read', false);
       if (error) throw error;
-      return data;
+      return count || 0;
     },
     enabled: !!user,
   });
 
-  const status: SupportStatus = (thread?.status as SupportStatus) || 'new';
-  const isClosed = status === 'closed';
-  const banner = STATUS_BANNER[status];
-
-  // Realtime
+  // Realtime: refresh on any change for this user
   useEffect(() => {
     if (!user) return;
     const ch = supabase
       .channel(`support-${user.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages', filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ['support_messages', user.id] });
+        qc.invalidateQueries({ queryKey: ['support_messages_ticket', activeTicketId] });
+        qc.invalidateQueries({ queryKey: ['support_unread', user.id] });
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_threads', filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ['support_thread', user.id] });
+        qc.invalidateQueries({ queryKey: ['support_active_thread', user.id] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user, qc]);
+  }, [user, qc, activeTicketId]);
 
   // Auto scroll
   useEffect(() => {
@@ -95,25 +128,39 @@ export function MessagesPopover() {
     }
   }, [open, messages]);
 
-  const unread = (messages || []).filter(m => m.is_from_admin && !m.is_read).length;
-
-  // Mark admin messages as read when opened
+  // Mark admin messages in active ticket as read
   useEffect(() => {
     if (!open || !user || !messages?.length) return;
     const ids = messages.filter(m => m.is_from_admin && !m.is_read).map(m => m.id);
     if (!ids.length) return;
     supabase.from('support_messages').update({ is_read: true }).in('id', ids).then(() => {
-      qc.invalidateQueries({ queryKey: ['support_messages', user.id] });
+      qc.invalidateQueries({ queryKey: ['support_messages_ticket', activeTicketId] });
+      qc.invalidateQueries({ queryKey: ['support_unread', user.id] });
     });
-  }, [open, messages, user, qc]);
+  }, [open, messages, user, qc, activeTicketId]);
 
   const send = async () => {
     if (!text.trim() || !user || isClosed) return;
+
+    // Ensure we have an active ticket; if none, create one first.
+    let ticketId = activeTicketId;
+    if (!ticketId) {
+      const { data: newThread, error: tErr } = await supabase
+        .from('support_threads')
+        .insert({ user_id: user.id, status: 'new' })
+        .select()
+        .single();
+      if (tErr) { toast.error(tErr.message); return; }
+      ticketId = newThread.ticket_id;
+      qc.invalidateQueries({ queryKey: ['support_active_thread', user.id] });
+    }
+
     const { error } = await supabase.from('support_messages').insert({
       user_id: user.id,
       sender_id: user.id,
       is_from_admin: false,
       message: text.trim(),
+      ticket_id: ticketId!,
     });
     if (error) { toast.error(error.message); return; }
     setText('');
@@ -121,14 +168,19 @@ export function MessagesPopover() {
 
   const openNewTicket = async () => {
     if (!user) return;
-    // Reopen thread to "new" so user can send again; history is preserved.
-    const { error } = await supabase
+    // Insert a brand new ticket. Old closed ticket stays archived.
+    const { data: newThread, error } = await supabase
       .from('support_threads')
-      .upsert({ user_id: user.id, status: 'new' }, { onConflict: 'user_id' });
+      .insert({ user_id: user.id, status: 'new' })
+      .select()
+      .single();
     if (error) { toast.error(error.message); return; }
-    qc.invalidateQueries({ queryKey: ['support_thread', user.id] });
+    qc.setQueryData(['support_active_thread', user.id], newThread);
+    qc.invalidateQueries({ queryKey: ['support_active_thread', user.id] });
     toast.success('নতুন টিকেট খোলা হয়েছে');
   };
+
+  const unread = unreadCount || 0;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -147,7 +199,7 @@ export function MessagesPopover() {
           <h3 className="font-display text-sm font-semibold">সাপোর্ট মেসেজ</h3>
           <p className="text-xs text-muted-foreground">আমাদের টিমের সাথে যোগাযোগ করুন</p>
         </div>
-        {messages?.length ? (
+        {activeThread ? (
           <div className={`mx-3 mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs transition-colors ${banner.cls}`}>
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span className="leading-relaxed">{banner.text}</span>
