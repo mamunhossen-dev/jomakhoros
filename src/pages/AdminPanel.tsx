@@ -100,6 +100,35 @@ export default function AdminPanel() {
     enabled: isAdmin || isModerator,
   });
 
+  // Realtime: refresh feedback list on any change
+  useEffect(() => {
+    if (!isAdmin && !isModerator) return;
+    const ch = supabase
+      .channel('admin-feedback')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' }, () => {
+        qc.invalidateQueries({ queryKey: ['admin_feedback'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isAdmin, isModerator, qc]);
+
+  // Track last-viewed feedback timestamp via localStorage to compute unread count
+  const FEEDBACK_SEEN_KEY = 'admin_feedback_last_seen';
+  const [feedbackLastSeen, setFeedbackLastSeen] = useState<number>(() => {
+    const v = typeof window !== 'undefined' ? localStorage.getItem(FEEDBACK_SEEN_KEY) : null;
+    return v ? Number(v) : 0;
+  });
+
+  const feedbackUnreadCount = (feedbacks || []).filter(
+    f => new Date(f.created_at).getTime() > feedbackLastSeen
+  ).length;
+
+  const markFeedbackSeen = () => {
+    const now = Date.now();
+    localStorage.setItem(FEEDBACK_SEEN_KEY, String(now));
+    setFeedbackLastSeen(now);
+  };
+
   // Fetch payment requests
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['admin_payments'],
