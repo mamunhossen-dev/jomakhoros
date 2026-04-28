@@ -798,7 +798,7 @@ export default function AdminPanel() {
                             return (
                               <button
                                 key={tid}
-                                onClick={() => setSelectedTicketId(tid)}
+                                onClick={() => { setSelectedTicketId(tid); setAdminViewingOldTicketId(null); setAdminArchiveOpen(false); }}
                                 className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${selectedTicketId === tid ? 'bg-muted' : ''}`}
                               >
                                 <div className="flex items-center justify-between gap-2">
