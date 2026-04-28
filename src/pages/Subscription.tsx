@@ -179,7 +179,7 @@ export default function Subscription() {
                 <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5">
                   <div>
                     <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
-                    <p className="text-xs text-muted-foreground">{p.payment_method} • {p.transaction_id}</p>
+                    <p className="text-xs text-muted-foreground">{p.payment_method === 'bkash' ? 'বিকাশ' : p.payment_method === 'nagad' ? 'নগদ' : p.payment_method === 'rocket' ? 'রকেট' : p.payment_method === 'bank' ? 'ব্যাংক (DBBL)' : p.payment_method} • {p.transaction_id}</p>
                     <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM, yyyy')}</p>
                   </div>
                   <Badge
