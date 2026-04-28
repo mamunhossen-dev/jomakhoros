@@ -21,14 +21,12 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CopyTicketButton } from '@/components/support/CopyTicketButton';
-import { useAdminBadges } from '@/hooks/useAdminBadges';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
   const { user } = useAuth();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<string>('payments');
 
   // Notifications state
   const [notifTitle, setNotifTitle] = useState('');
@@ -73,7 +71,7 @@ export default function AdminPanel() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Fetch all users (profiles) — only when Users tab is open
+  // Fetch all users (profiles)
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['admin_users'],
     queryFn: async () => {
@@ -81,11 +79,10 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin && activeTab === 'users',
-    staleTime: 30_000,
+    enabled: isAdmin,
   });
 
-  // Fetch all user roles — only when Users tab is open
+  // Fetch all user roles
   const { data: allRoles } = useQuery({
     queryKey: ['admin_all_roles'],
     queryFn: async () => {
@@ -93,25 +90,23 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin && activeTab === 'users',
-    staleTime: 30_000,
+    enabled: isAdmin,
   });
 
-  // Fetch all feedback — only when Feedback tab is open
+  // Fetch all feedback
   const { data: feedbacks, isLoading: feedbackLoading } = useQuery({
     queryKey: ['admin_feedback'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(500);
+      const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: (isAdmin || isModerator) && activeTab === 'feedback',
-    staleTime: 30_000,
+    enabled: isAdmin || isModerator,
   });
 
-  // Realtime refresh only while feedback tab is open
+  // Realtime: refresh feedback list on any change
   useEffect(() => {
-    if ((!isAdmin && !isModerator) || activeTab !== 'feedback') return;
+    if (!isAdmin && !isModerator) return;
     const ch = supabase
       .channel('admin-feedback')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' }, () => {
@@ -119,27 +114,34 @@ export default function AdminPanel() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [isAdmin, isModerator, qc, activeTab]);
+  }, [isAdmin, isModerator, qc]);
 
-  // Shared admin badge counts (also used by sidebar dot)
-  const {
-    pendingPaymentsCount,
-    feedbackUnreadCount,
-    newUsersCount,
-    markFeedbackSeen,
-    markUsersSeen,
-  } = useAdminBadges();
+  // Track last-viewed feedback timestamp via localStorage to compute unread count
+  const FEEDBACK_SEEN_KEY = 'admin_feedback_last_seen';
+  const [feedbackLastSeen, setFeedbackLastSeen] = useState<number>(() => {
+    const v = typeof window !== 'undefined' ? localStorage.getItem(FEEDBACK_SEEN_KEY) : null;
+    return v ? Number(v) : 0;
+  });
 
-  // Fetch payment requests — payments tab is the default tab so eager-load
+  const feedbackUnreadCount = (feedbacks || []).filter(
+    f => new Date(f.created_at).getTime() > feedbackLastSeen
+  ).length;
+
+  const markFeedbackSeen = () => {
+    const now = Date.now();
+    localStorage.setItem(FEEDBACK_SEEN_KEY, String(now));
+    setFeedbackLastSeen(now);
+  };
+
+  // Fetch payment requests
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['admin_payments'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('payment_requests').select('*').order('created_at', { ascending: false }).limit(500);
+      const { data, error } = await supabase.from('payment_requests').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: (isAdmin || isModerator) && activeTab === 'payments',
-    staleTime: 30_000,
+    enabled: isAdmin || isModerator,
   });
 
   // Approve payment mutation
@@ -214,8 +216,7 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin && activeTab === 'notifications',
-    staleTime: 60_000,
+    enabled: isAdmin,
   });
 
   const saveNotification = useMutation({
@@ -281,12 +282,11 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: (isAdmin || isModerator) && activeTab === 'support',
-    staleTime: 30_000,
+    enabled: isAdmin || isModerator,
   });
 
   useEffect(() => {
-    if ((!isAdmin && !isModerator) || activeTab !== 'support') return;
+    if (!isAdmin && !isModerator) return;
     const ch = supabase
       .channel('admin-support-all')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => {
@@ -294,10 +294,9 @@ export default function AdminPanel() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [isAdmin, isModerator, qc, activeTab]);
+  }, [isAdmin, isModerator, qc]);
 
-  // Support thread statuses — kept always-on to power the support tab badge,
-  // but small payload + staleTime keeps it cheap.
+  // Support thread statuses
   const { data: threads } = useQuery({
     queryKey: ['admin_support_threads'],
     queryFn: async () => {
@@ -306,7 +305,6 @@ export default function AdminPanel() {
       return data;
     },
     enabled: isAdmin || isModerator,
-    staleTime: 30_000,
   });
 
   useEffect(() => {
@@ -464,20 +462,9 @@ export default function AdminPanel() {
         <p className="text-muted-foreground">সাইট ও ব্যবহারকারী পরিচালনা করুন।</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => {
-        setActiveTab(v);
-        if (v === 'feedback') markFeedbackSeen();
-        if (v === 'users') markUsersSeen();
-      }}>
+      <Tabs defaultValue="payments" onValueChange={(v) => { if (v === 'feedback') markFeedbackSeen(); }}>
         <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="payments" className="relative">
-            <CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট
-            {pendingPaymentsCount > 0 && (
-              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-in fade-in zoom-in">
-                {pendingPaymentsCount > 99 ? '99+' : pendingPaymentsCount}
-              </span>
-            )}
-          </TabsTrigger>
+          <TabsTrigger value="payments"><CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট</TabsTrigger>
           <TabsTrigger value="feedback" className="relative">
             <MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক
             {feedbackUnreadCount > 0 && (
@@ -495,16 +482,7 @@ export default function AdminPanel() {
             )}
           </TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
-          {isAdmin && (
-            <TabsTrigger value="users" className="relative">
-              <Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী
-              {newUsersCount > 0 && (
-                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-in fade-in zoom-in">
-                  {newUsersCount > 99 ? '99+' : newUsersCount}
-                </span>
-              )}
-            </TabsTrigger>
-          )}
+          {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
 
