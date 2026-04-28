@@ -130,9 +130,9 @@ export default function Landing() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-base">
-                <Link to="/user-guide">
-                  <BookOpen className="h-5 w-5" /> কীভাবে কাজ করে
-                </Link>
+                <a href="#features">
+                  <Sparkles className="h-5 w-5" /> ফিচারগুলো দেখুন
+                </a>
               </Button>
             </div>
             <div className="mt-6 flex items-center justify-center gap-1 text-sm text-muted-foreground">
