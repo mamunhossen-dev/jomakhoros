@@ -15,6 +15,7 @@ import {
 import { NavLink } from '@/components/NavLink';
 import { Link } from 'react-router-dom';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useAdminBadges } from '@/hooks/useAdminBadges';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
