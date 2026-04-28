@@ -292,6 +292,11 @@ export default function AdminPanel() {
   const getThreadStatusByTicket = (ticketId: string): SupportStatus =>
     (threadByTicket[ticketId]?.status as SupportStatus) || 'new';
 
+  // Count of tickets needing admin attention (new + open + pending)
+  const attentionCount = (threads || []).filter(t =>
+    t.status === 'new' || t.status === 'open' || t.status === 'pending'
+  ).length;
+
   const updateThreadStatus = useMutation({
     mutationFn: async ({ ticketId, status }: { ticketId: string; status: SupportStatus }) => {
       const { error } = await supabase
@@ -403,7 +408,14 @@ export default function AdminPanel() {
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="payments"><CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট</TabsTrigger>
           <TabsTrigger value="feedback"><MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক</TabsTrigger>
-          <TabsTrigger value="support"><Send className="mr-1 h-3.5 w-3.5" /> সাপোর্ট</TabsTrigger>
+          <TabsTrigger value="support" className="relative">
+            <Send className="mr-1 h-3.5 w-3.5" /> সাপোর্ট
+            {attentionCount > 0 && (
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-in fade-in zoom-in">
+                {attentionCount > 99 ? '99+' : attentionCount}
+              </span>
+            )}
+          </TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
