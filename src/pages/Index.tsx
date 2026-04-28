@@ -32,10 +32,10 @@ export default function Index() {
 
     const recentTxs = transactions.filter((tx) => tx.type !== 'transfer').slice(0, 5);
 
-    const months: { key: string; label: string; income: number; expense: number }[] = [];
+    const months: { key: string; label: string; income: number; expense: number; savings: number }[] = [];
     for (let i = -3; i <= 3; i++) {
       const d = addMonths(new Date(), i);
-      months.push({ key: format(d, 'yyyy-MM'), label: format(d, 'MMM'), income: 0, expense: 0 });
+      months.push({ key: format(d, 'yyyy-MM'), label: format(d, 'MMM'), income: 0, expense: 0, savings: 0 });
     }
     const monthMap = new Map(months.map((m) => [m.key, m]));
     transactions.forEach((tx) => {
@@ -44,6 +44,10 @@ export default function Index() {
         if (tx.type === 'income') bucket.income += Number(tx.amount);
         else if (tx.type === 'expense') bucket.expense += Number(tx.amount);
       }
+    });
+
+    months.forEach((month) => {
+      month.savings = month.income - month.expense;
     });
 
     return { totalIncome, totalExpense, balance: totalIncome - totalExpense, recentTxs, chartData: months };
@@ -111,6 +115,7 @@ export default function Index() {
                   <Legend />
                   <Line type="monotone" dataKey="income" name="আয়" stroke="hsl(var(--success))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
                   <Line type="monotone" dataKey="expense" name="ব্যয়" stroke="hsl(var(--destructive))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="savings" name="সেভিং" stroke="hsl(var(--savings))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             )}
