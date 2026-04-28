@@ -327,6 +327,63 @@ export default function UserGuide() {
           </CardContent>
         </Card>
       </div>
+
+      {/* CTA for unauthenticated users */}
+      {!user && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5">
+          <CardContent className="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+              <Sparkles className="h-7 w-7" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-display text-xl font-bold sm:text-2xl">আজই শুরু করুন আপনার আর্থিক যাত্রা</h3>
+              <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                JomaKhoros-এ বিনামূল্যে অ্যাকাউন্ট খুলুন এবং সহজেই আপনার আয়-ব্যয় ট্র্যাক করা শুরু করুন।
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button asChild size="lg">
+                <Link to="/register">
+                  <UserPlus className="h-4 w-4" /> রেজিস্ট্রেশন করুন
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/login">
+                  <LogIn className="h-4 w-4" /> লগইন করুন
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
+  if (user) return content;
+
+  // Public layout for unauthenticated visitors
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Wallet className="h-5 w-5" />
+            </div>
+            <span className="font-display text-lg font-bold">JomaKhoros</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/login">লগইন</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link to="/register">রেজিস্ট্রেশন</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto max-w-5xl px-4 py-6">{content}</main>
     </div>
   );
 }
+
