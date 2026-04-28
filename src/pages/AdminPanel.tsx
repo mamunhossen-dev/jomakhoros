@@ -519,13 +519,27 @@ export default function AdminPanel() {
                                   +{m}মা
                                 </Button>
                               ))}
+                              <Button variant="outline" size="sm" className="h-7 text-[11px] px-2 border-primary/40 text-primary" onClick={async () => {
+                                const lifetimeEnd = new Date('2099-12-31T23:59:59').toISOString();
+                                const { error } = await supabase.from('profiles').update({
+                                  account_type: 'pro',
+                                  subscription_start: u.subscription_start || new Date().toISOString(),
+                                  subscription_end: lifetimeEnd,
+                                  payment_status: 'paid',
+                                }).eq('user_id', u.user_id);
+                                if (error) { toast.error(error.message); return; }
+                                qc.invalidateQueries({ queryKey: ['admin_users'] });
+                                toast.success('লাইফটাইম প্রো সক্রিয়');
+                              }}>
+                                ♾ লাইফটাইম
+                              </Button>
                             </div>
                           )}
 
                           {/* Row 4: Join date + sub end */}
                           <p className="text-[10px] text-muted-foreground">
                             যোগদান: {format(new Date(u.created_at), 'dd MMM yyyy')}
-                            {u.subscription_end && ` • প্রো শেষ: ${format(new Date(u.subscription_end), 'dd MMM yyyy')}`}
+                            {u.subscription_end && ` • প্রো শেষ: ${new Date(u.subscription_end).getFullYear() >= 2099 ? 'লাইফটাইম' : format(new Date(u.subscription_end), 'dd MMM yyyy')}`}
                           </p>
                         </div>
                       );
