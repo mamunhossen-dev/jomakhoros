@@ -908,6 +908,14 @@ export default function AdminPanel() {
                     <>
                       <div className="border-b p-2 flex items-center justify-between gap-2">
                         <div className="text-sm font-medium truncate flex items-center gap-2 min-w-0">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs shrink-0 md:hidden"
+                            onClick={() => { setSelectedTicketId(null); setAdminViewingOldTicketId(null); }}
+                          >
+                            <ArrowLeft className="h-3.5 w-3.5" />
+                          </Button>
                           {isAdminReadOnly && (
                             <Button
                               size="sm"
