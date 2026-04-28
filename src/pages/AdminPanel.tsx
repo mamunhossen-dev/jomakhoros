@@ -24,6 +24,7 @@ import { CopyTicketButton } from '@/components/support/CopyTicketButton';
 import { AboutPageEditor } from '@/components/admin/AboutPageEditor';
 import { SubscriptionEditor } from '@/components/admin/SubscriptionEditor';
 import { TermsEditor } from '@/components/admin/TermsEditor';
+import { LandingPageEditor } from '@/components/admin/LandingPageEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1224,6 +1225,9 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
 
+            <div className="mt-6">
+              <LandingPageEditor />
+            </div>
             <div className="mt-6">
               <AboutPageEditor />
             </div>
