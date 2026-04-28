@@ -116,6 +116,7 @@ export function useUpdateWallet() {
           const catName = isIncome ? OPENING_CAT_NAME : CLOSING_CAT_NAME;
           const catId = await ensureCategory(user!.id, catName, isIncome ? 'income' : 'expense');
           const today = new Date().toISOString().slice(0, 10);
+          const walletName = input.name ?? prev.name;
           await supabase.from('transactions').insert({
             user_id: user!.id,
             amount: amt,
@@ -123,7 +124,7 @@ export function useUpdateWallet() {
             category_id: catId,
             wallet_id: null,
             to_wallet_id: null,
-            description: `${input.name ?? prev.name} - ব্যালেন্স সমন্বয়`,
+            description: `${walletName} - ব্যালেন্স ${isIncome ? 'বৃদ্ধি' : 'হ্রাস'} (ম্যানুয়াল সমন্বয়)`,
             date: today,
           });
         }
