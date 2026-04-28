@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SupportStatus } from '@/lib/supportStatus';
+import { CopyTicketButton } from '@/components/support/CopyTicketButton';
 
 const STATUS_BANNER: Record<SupportStatus, { text: string; cls: string }> = {
   new: {
