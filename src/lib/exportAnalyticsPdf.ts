@@ -196,50 +196,213 @@ export async function exportAnalyticsImage(
   userEmail: string,
   filters?: { dateFrom?: string; dateTo?: string }
 ) {
-  const doc = await buildAnalyticsPdf(data, userName, userEmail, filters);
-  const pdfBlob = doc.output('blob');
-  const arrayBuffer = await pdfBlob.arrayBuffer();
+  // Direct canvas render — mirrors PDF layout, fast, no pdfjs/worker.
+  const W = 1240; // ~A4 width @ 150dpi
+  const PAD = 40;
+  const contentW = W - PAD * 2;
 
-  const pdfjs: any = await import('pdfjs-dist');
-  // @ts-ignore - vite url import
-  const workerUrl = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+  // Estimate height
+  const totalExp = data.categories.reduce((s, c) => s + c.value, 0) || 1;
+  const tsRows = data.timeSeries.length;
+  const catRows = data.categories.length;
+  const insightLines = data.insights.length + (data.kpi.savingsRate ? 1 : 0);
+  const H =
+    260 + // header + KPIs
+    50 + (tsRows + 1) * 36 + 30 + // time series table
+    50 + (catRows + 1) * 36 + 30 + // category table
+    50 + insightLines * 28 + 60; // insights + footer
 
-  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-  const scale = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
 
-  const canvases: HTMLCanvasElement[] = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const viewport = page.getViewport({ scale });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d')!;
-    await page.render({ canvasContext: ctx, viewport, canvas } as any).promise;
-    canvases.push(canvas);
-  }
+  // Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
 
-  const width = canvases[0].width;
-  const totalHeight = canvases.reduce((s, c) => s + c.height, 0);
-  const out = document.createElement('canvas');
-  out.width = width;
-  out.height = totalHeight;
-  const octx = out.getContext('2d')!;
-  octx.fillStyle = '#ffffff';
-  octx.fillRect(0, 0, width, totalHeight);
-  let y = 0;
-  for (const c of canvases) {
-    octx.drawImage(c, 0, y);
-    y += c.height;
-  }
+  // Header bar
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, W, 180);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px Helvetica, Arial, sans-serif';
+  ctx.fillText('JomaKhoros.com', PAD, 60);
+  ctx.font = '16px Helvetica, Arial, sans-serif';
+  ctx.fillText('Analytics Report', PAD, 88);
+  ctx.font = '14px Helvetica, Arial, sans-serif';
+  ctx.fillText(`Name: ${userName || 'N/A'}`, PAD, 118);
+  ctx.fillText(`Email: ${userEmail}`, PAD, 138);
+  const fromLabel = filters?.dateFrom || 'All';
+  const toLabel = filters?.dateTo || 'All';
+  ctx.fillText(`Period: ${fromLabel} to ${toLabel}`, PAD, 158);
+  ctx.textAlign = 'right';
+  ctx.font = '12px Helvetica, Arial, sans-serif';
+  ctx.fillText(`Generated: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, W - PAD, 158);
+  ctx.textAlign = 'left';
 
-  const dataUrl = out.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = `JomaKhoros_Analytics_${format(new Date(), 'yyyy-MM-dd')}.png`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  // KPI cards
+  const cards = [
+    { label: 'Total Income', value: `TK ${data.kpi.income.toFixed(2)}`, color: '#16a34a', bg: '#f0fdf4' },
+    { label: 'Total Expense', value: `TK ${data.kpi.expense.toFixed(2)}`, color: '#dc2626', bg: '#fef2f2' },
+    { label: 'Current Balance', value: `TK ${data.kpi.balance.toFixed(2)}`, color: data.kpi.balance >= 0 ? '#16a34a' : '#dc2626', bg: '#eff6ff' },
+    { label: 'Savings', value: `TK ${data.kpi.savings.toFixed(2)}`, color: '#2563eb', bg: '#eff6ff' },
+    { label: 'Savings Rate', value: `${data.kpi.savingsRate.toFixed(1)}%`, color: '#7c3aed', bg: '#f5f3ff' },
+  ];
+  const cardGap = 12;
+  const cardW = (contentW - cardGap * 4) / 5;
+  const cardY = 210;
+  cards.forEach((c, i) => {
+    const x = PAD + i * (cardW + cardGap);
+    ctx.fillStyle = c.bg;
+    roundRect(ctx, x, cardY, cardW, 80, 8);
+    ctx.fill();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px Helvetica, Arial, sans-serif';
+    ctx.fillText(c.label, x + 12, cardY + 24);
+    ctx.fillStyle = c.color;
+    ctx.font = 'bold 18px Helvetica, Arial, sans-serif';
+    ctx.fillText(c.value, x + 12, cardY + 56);
+  });
+
+  let y = cardY + 110;
+
+  // Income vs Expense table
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 18px Helvetica, Arial, sans-serif';
+  ctx.fillText('Income vs Expense', PAD, y);
+  y += 14;
+  y = drawTable(
+    ctx,
+    PAD,
+    y,
+    contentW,
+    ['Period', 'Income', 'Expense', 'Net'],
+    data.timeSeries.map(r => [
+      toEnglishPeriod(r.month),
+      `TK ${r.income.toFixed(2)}`,
+      `TK ${r.expense.toFixed(2)}`,
+      `TK ${(r.income - r.expense).toFixed(2)}`,
+    ]),
+  );
+
+  y += 30;
+
+  // Category breakdown
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 18px Helvetica, Arial, sans-serif';
+  ctx.fillText('Category-wise Expense', PAD, y);
+  y += 14;
+  y = drawTable(
+    ctx,
+    PAD,
+    y,
+    contentW,
+    ['Category', 'Amount', '% of Total'],
+    data.categories.map(c => [
+      toEnglishCategory(c.name),
+      `TK ${c.value.toFixed(2)}`,
+      `${((c.value / totalExp) * 100).toFixed(1)}%`,
+    ]),
+  );
+
+  y += 30;
+
+  // Insights
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 18px Helvetica, Arial, sans-serif';
+  ctx.fillText('Smart Insights', PAD, y);
+  y += 24;
+  ctx.fillStyle = '#475569';
+  ctx.font = '14px Helvetica, Arial, sans-serif';
+  const topCategory = data.categories[0];
+  const totalExpense = data.kpi.expense || 1;
+  const englishInsights = [
+    topCategory
+      ? `- Highest spending category: ${toEnglishCategory(topCategory.name)} — TK ${topCategory.value.toFixed(2)} (${((topCategory.value / totalExpense) * 100).toFixed(1)}% of total expense)`
+      : '',
+    data.kpi.savingsRate >= 20
+      ? `- Great job! You saved ${data.kpi.savingsRate.toFixed(1)}% of your income.`
+      : data.kpi.savingsRate < 0
+        ? '- Warning: expenses are higher than income in this period.'
+        : `- Savings rate is ${data.kpi.savingsRate.toFixed(1)}%. Try to improve it over time.`,
+  ].filter(Boolean);
+  englishInsights.forEach((line) => {
+    ctx.fillText(line, PAD, y);
+    y += 24;
+  });
+
+  // Footer
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11px Helvetica, Arial, sans-serif';
+  ctx.fillText('JomaKhoros.com - Analytics Report', PAD, H - 20);
+  ctx.textAlign = 'right';
+  ctx.fillText(`Generated ${format(new Date(), 'dd MMM yyyy')}`, W - PAD, H - 20);
+  ctx.textAlign = 'left';
+
+  // Download
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `JomaKhoros_Analytics_${format(new Date(), 'yyyy-MM-dd')}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
 }
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawTable(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  headers: string[],
+  rows: string[][],
+): number {
+  const rowH = 36;
+  const colW = w / headers.length;
+
+  // Header row
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(x, y, w, rowH);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 14px Helvetica, Arial, sans-serif';
+  headers.forEach((h, i) => {
+    ctx.fillText(h, x + i * colW + 12, y + 24);
+  });
+  let cy = y + rowH;
+
+  // Body rows
+  ctx.font = '13px Helvetica, Arial, sans-serif';
+  rows.forEach((row, ri) => {
+    if (ri % 2 === 0) {
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(x, cy, w, rowH);
+    }
+    ctx.fillStyle = '#0f172a';
+    row.forEach((cell, ci) => {
+      ctx.fillText(String(cell), x + ci * colW + 12, cy + 24);
+    });
+    cy += rowH;
+  });
+
+  // Border
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, cy - y);
+  return cy;
+}
+
 
