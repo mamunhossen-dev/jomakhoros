@@ -17,6 +17,7 @@ import { NavLink } from '@/components/NavLink';
 import { Link } from 'react-router-dom';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useBrand } from '@/hooks/useBrand';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
@@ -40,6 +41,7 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const { isAdmin, isModerator } = useSubscription();
   const isMobile = useIsMobile();
+  const brand = useBrand();
 
   const closeMobileSidebar = () => {
     if (isMobile) setOpenMobile(false);
