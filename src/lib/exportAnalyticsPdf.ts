@@ -1,9 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
-import { BENGALI_WEB_FONT, registerBengaliFont } from './pdfFont';
 
-const FONT = 'NotoBengali';
+const FONT = 'helvetica';
 
 export type AnalyticsKpi = {
   income: number;
@@ -21,68 +20,28 @@ export type AnalyticsExportData = {
   insights: string[];
 };
 
-const containsBengali = (value: unknown) => typeof value === 'string' && /[\u0980-\u09FF]/.test(value);
+const BN_MONTHS: Record<string, string> = {
+  'জানু': 'Jan', 'ফেব': 'Feb', 'মার্চ': 'Mar', 'এপ্রি': 'Apr', 'মে': 'May', 'জুন': 'Jun',
+  'জুলা': 'Jul', 'আগ': 'Aug', 'সেপ': 'Sep', 'অক্টো': 'Oct', 'নভে': 'Nov', 'ডিসে': 'Dec',
+};
 
-function drawBengaliTextAsImage(
-  doc: jsPDF,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  options: { fontSize?: number; color?: string; lineHeight?: number } = {}
-) {
-  if (!text.trim()) return 0;
-
-  const fontSize = options.fontSize ?? 9;
-  const lineHeight = options.lineHeight ?? 1.55;
-  const pxPerMm = 3.78;
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return 0;
-
-  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
-  const words = text.split(' ');
-  const maxPxWidth = maxWidth * pxPerMm;
-  const lines: string[] = [];
-  let line = '';
-
-  words.forEach((word) => {
-    const test = line ? `${line} ${word}` : word;
-    if (ctx.measureText(test).width > maxPxWidth && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = test;
-    }
-  });
-  if (line) lines.push(line);
-
-  const linePxHeight = fontSize * pxPerMm * lineHeight;
-  canvas.width = Math.ceil(maxPxWidth + 8);
-  canvas.height = Math.ceil(lines.length * linePxHeight + 8);
-  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
-  ctx.fillStyle = options.color ?? '#475569';
-  ctx.textBaseline = 'top';
-  lines.forEach((row, index) => ctx.fillText(row, 0, 4 + index * linePxHeight));
-
-  const imageHeight = canvas.height / pxPerMm;
-  doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, maxWidth, imageHeight);
-  return imageHeight;
+function toEnglishPeriod(label: string) {
+  return Object.entries(BN_MONTHS).reduce((text, [bn, en]) => text.replace(bn, en), label);
 }
 
-function hideBengaliAutoTableText(cellData: any) {
-  if (cellData.section === 'body' && containsBengali(cellData.cell.raw)) {
-    cellData.cell.text = [''];
-  }
-}
-
-function drawBengaliAutoTableText(doc: jsPDF, cellData: any) {
-  if (cellData.section !== 'body' || !containsBengali(cellData.cell.raw)) return;
-  drawBengaliTextAsImage(doc, String(cellData.cell.raw), cellData.cell.x + 2, cellData.cell.y + 3, cellData.cell.width - 4, {
-    fontSize: 8,
-    color: '#334155',
-    lineHeight: 1.25,
-  });
+function toEnglishCategory(name: string) {
+  if (!/[\u0980-\u09FF]/.test(name)) return name || 'Uncategorized';
+  const normalized = name.toLowerCase();
+  if (/বাসা|বাড়ি|বাড়ি|হাউজিং|ভাড়া|ভাড়া/.test(normalized)) return 'Housing';
+  if (/খাবার|ফুড|রেস্টুরেন্ট/.test(normalized)) return 'Food';
+  if (/যাতায়াত|যাতায়াত|পরিবহন|ট্রান্সপোর্ট/.test(normalized)) return 'Transport';
+  if (/স্বাস্থ্য|মেডিকেল|ঔষধ/.test(normalized)) return 'Health';
+  if (/শিক্ষা|স্কুল|কলেজ/.test(normalized)) return 'Education';
+  if (/বিনোদন/.test(normalized)) return 'Entertainment';
+  if (/শপিং|কেনাকাটা/.test(normalized)) return 'Shopping';
+  if (/বিল|ইউটিলিটি|বিদ্যুৎ|গ্যাস/.test(normalized)) return 'Bills';
+  if (/অশ্রেণী|অশ্রেনী/.test(normalized)) return 'Uncategorized';
+  return 'Category';
 }
 
 export async function exportAnalyticsPdf(
