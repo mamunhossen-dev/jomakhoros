@@ -546,7 +546,7 @@ export default function AdminPanel() {
                           {/* Row 4: Join date + sub end */}
                           <p className="text-[10px] text-muted-foreground">
                             যোগদান: {format(new Date(u.created_at), 'dd MMM yyyy')}
-                            {u.subscription_end && ` • প্রো শেষ: ${new Date(u.subscription_end).getFullYear() >= 2099 ? 'লাইফটাইম' : format(new Date(u.subscription_end), 'dd MMM yyyy')}`}
+                            {u.account_type === 'pro' && u.subscription_end && ` • প্রো শেষ: ${new Date(u.subscription_end).getFullYear() >= 2099 ? 'লাইফটাইম' : format(new Date(u.subscription_end), 'dd MMM yyyy')}`}
                           </p>
                         </div>
                       );
