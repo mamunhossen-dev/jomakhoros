@@ -9,13 +9,13 @@ const BN_FONT = 'NotoBengali';
 const EN_FONT = 'helvetica';
 const BN_REGEX = /[\u0980-\u09FF]/;
 
-export async function exportTransactionsPdf(
+export async function buildTransactionsPdf(
   transactions: Transaction[],
   userName: string,
   userEmail: string,
   filters?: { dateFrom?: string; dateTo?: string },
   wallets?: Wallet[]
-) {
+): Promise<jsPDF> {
   const doc = new jsPDF();
   // Register Bengali font (used only for description cells that contain Bengali)
   await registerBengaliFont(doc);
