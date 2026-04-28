@@ -37,11 +37,11 @@ export function exportTransactionsPdf(
   doc.setFontSize(8);
   doc.text(`Generated: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, pageWidth - 14, 47, { align: 'right' });
 
-  // Summary
+  // Summary (transfers excluded from income/expense totals)
   let totalIncome = 0, totalExpense = 0;
   transactions.forEach(tx => {
     if (tx.type === 'income') totalIncome += Number(tx.amount);
-    else totalExpense += Number(tx.amount);
+    else if (tx.type === 'expense') totalExpense += Number(tx.amount);
   });
 
   doc.setTextColor(0, 0, 0);
@@ -70,17 +70,25 @@ export function exportTransactionsPdf(
   doc.text(`TK ${balance.toFixed(2)}`, 140, summaryY + 14);
 
   // Table
-  const tableData = transactions.map(tx => [
-    format(new Date(tx.date), 'dd MMM yyyy'),
-    tx.description || '-',
-    tx.category?.name || 'Uncategorized',
-    tx.type === 'income' ? 'Income' : 'Expense',
-    `${tx.type === 'income' ? '+' : '-'} TK ${Number(tx.amount).toFixed(2)}`,
-  ]);
+  const tableData = transactions.map(tx => {
+    const typeLabel = tx.type === 'income' ? 'Income' : tx.type === 'expense' ? 'Expense' : 'Transfer';
+    const sign = tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : '↔';
+    const amount = `${sign} TK ${Number(tx.amount).toFixed(2)}`;
+    const category = tx.type === 'transfer'
+      ? `${tx.wallet?.name || '?'} -> ${tx.to_wallet?.name || '?'}`
+      : (tx.category?.name || 'Uncategorized');
+    return [
+      format(new Date(tx.date), 'dd MMM yyyy'),
+      tx.description || '-',
+      category,
+      typeLabel,
+      amount,
+    ];
+  });
 
   autoTable(doc, {
     startY: summaryY + 24,
-    head: [['Date', 'Description', 'Category', 'Type', 'Amount']],
+    head: [['Date', 'Description', 'Category / Wallets', 'Type', 'Amount']],
     body: tableData,
     headStyles: { fillColor: [30, 41, 59], fontSize: 8, halign: 'left' },
     bodyStyles: { fontSize: 8 },
@@ -93,7 +101,8 @@ export function exportTransactionsPdf(
       if (data.section === 'body' && data.column.index === 4) {
         const text = String(data.cell.raw);
         if (text.startsWith('+')) data.cell.styles.textColor = [22, 163, 74];
-        else data.cell.styles.textColor = [220, 38, 38];
+        else if (text.startsWith('-')) data.cell.styles.textColor = [220, 38, 38];
+        else data.cell.styles.textColor = [37, 99, 235];
       }
     },
     margin: { left: 14, right: 14 },
