@@ -82,9 +82,10 @@ export async function exportAnalyticsPdf(
       `TK ${r.expense.toFixed(2)}`,
       `TK ${(r.income - r.expense).toFixed(2)}`,
     ]),
-    headStyles: { fillColor: [30, 41, 59], fontSize: 9 },
-    bodyStyles: { fontSize: 8 },
+    headStyles: { fillColor: [30, 41, 59], fontSize: 9, font: FONT },
+    bodyStyles: { fontSize: 8, font: FONT },
     alternateRowStyles: { fillColor: [248, 250, 252] },
+    styles: { font: FONT },
     margin: { left: 14, right: 14 },
     didDrawPage: () => {
       doc.setFontSize(11);
@@ -108,9 +109,10 @@ export async function exportAnalyticsPdf(
       `TK ${c.value.toFixed(2)}`,
       `${((c.value / totalExp) * 100).toFixed(1)}%`,
     ]),
-    headStyles: { fillColor: [30, 41, 59], fontSize: 9 },
-    bodyStyles: { fontSize: 8 },
+    headStyles: { fillColor: [30, 41, 59], fontSize: 9, font: FONT },
+    bodyStyles: { fontSize: 8, font: FONT },
     alternateRowStyles: { fillColor: [248, 250, 252] },
+    styles: { font: FONT },
     margin: { left: 14, right: 14 },
   });
 
