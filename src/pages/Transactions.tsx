@@ -204,9 +204,23 @@ export default function Transactions() {
               {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
           ) : !transactions?.length ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Plus className="mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-muted-foreground">কোনো লেনদেন নেই। প্রথমটি যোগ করুন!</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="relative mb-4">
+                <div className="absolute inset-0 animate-pulse rounded-full bg-primary/10 blur-xl" />
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-sm">
+                  <Receipt className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <p className="font-medium">কোনো লেনদেন নেই</p>
+              <p className="mt-1 text-sm text-muted-foreground">আপনার প্রথম লেনদেন যোগ করে শুরু করুন!</p>
+              <div className="mt-4 flex gap-2">
+                <Button onClick={() => openAdd('income')} size="sm" className="bg-success hover:bg-success/90">
+                  <TrendingUp className="mr-1 h-3.5 w-3.5" /> আয় যোগ
+                </Button>
+                <Button onClick={() => openAdd('expense')} size="sm" variant="destructive">
+                  <TrendingDown className="mr-1 h-3.5 w-3.5" /> ব্যয় যোগ
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
