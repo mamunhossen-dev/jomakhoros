@@ -51,7 +51,6 @@ export async function exportAnalyticsPdf(
   filters?: { dateFrom?: string; dateTo?: string }
 ) {
   const doc = new jsPDF();
-  await registerBengaliFont(doc);
   doc.setFont(FONT, 'normal');
   const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -100,7 +99,7 @@ export async function exportAnalyticsPdf(
     startY: y + 30,
     head: [['Period', 'Income', 'Expense', 'Net']],
     body: data.timeSeries.map(r => [
-      r.month,
+      toEnglishPeriod(r.month),
       `TK ${r.income.toFixed(2)}`,
       `TK ${r.expense.toFixed(2)}`,
       `TK ${(r.income - r.expense).toFixed(2)}`,
@@ -110,8 +109,6 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
-    didParseCell: hideBengaliAutoTableText,
-    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
     didDrawPage: () => {
       doc.setFontSize(11);
       doc.setTextColor(30, 41, 59);
@@ -130,7 +127,7 @@ export async function exportAnalyticsPdf(
     startY: cursorY + 2,
     head: [['Category', 'Amount', '% of Total']],
     body: data.categories.map(c => [
-      c.name,
+      toEnglishCategory(c.name),
       `TK ${c.value.toFixed(2)}`,
       `${((c.value / totalExp) * 100).toFixed(1)}%`,
     ]),
@@ -139,8 +136,6 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
-    didParseCell: hideBengaliAutoTableText,
-    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
   });
 
   cursorY = (doc as any).lastAutoTable.finalY + 10;
@@ -151,13 +146,25 @@ export async function exportAnalyticsPdf(
     doc.setTextColor(30, 41, 59);
     doc.text('Smart Insights', 14, cursorY);
     cursorY += 6;
-    for (const ins of data.insights) {
-      const renderedHeight = drawBengaliTextAsImage(doc, `- ${ins}`, 14, cursorY, pageWidth - 28, {
-        fontSize: 9,
-        color: '#475569',
-      });
-      cursorY += renderedHeight + 2;
-    }
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105);
+    const topCategory = data.categories[0];
+    const totalExpense = data.kpi.expense || 1;
+    const englishInsights = [
+      topCategory
+        ? `- Highest spending category: ${toEnglishCategory(topCategory.name)} — TK ${topCategory.value.toFixed(2)} (${((topCategory.value / totalExpense) * 100).toFixed(1)}% of total expense)`
+        : '',
+      data.kpi.savingsRate >= 20
+        ? `- Great job! You saved ${data.kpi.savingsRate.toFixed(1)}% of your income.`
+        : data.kpi.savingsRate < 0
+          ? '- Warning: expenses are higher than income in this period.'
+          : `- Savings rate is ${data.kpi.savingsRate.toFixed(1)}%. Try to improve it over time.`,
+    ].filter(Boolean);
+    englishInsights.forEach((insight) => {
+      const lines = doc.splitTextToSize(insight, pageWidth - 28);
+      doc.text(lines, 14, cursorY);
+      cursorY += lines.length * 5 + 1;
+    });
   }
 
   // Footer
