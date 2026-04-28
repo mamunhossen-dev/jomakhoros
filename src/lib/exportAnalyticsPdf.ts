@@ -1,6 +1,9 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { registerBengaliFont } from './pdfFont';
+
+const FONT = 'NotoBengali';
 
 export type AnalyticsKpi = {
   income: number;
@@ -18,13 +21,15 @@ export type AnalyticsExportData = {
   insights: string[];
 };
 
-export function exportAnalyticsPdf(
+export async function exportAnalyticsPdf(
   data: AnalyticsExportData,
   userName: string,
   userEmail: string,
   filters?: { dateFrom?: string; dateTo?: string }
 ) {
   const doc = new jsPDF();
+  await registerBengaliFont(doc);
+  doc.setFont(FONT, 'normal');
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header
