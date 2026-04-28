@@ -21,6 +21,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CopyTicketButton } from '@/components/support/CopyTicketButton';
+import { useAdminBadges } from '@/hooks/useAdminBadges';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
