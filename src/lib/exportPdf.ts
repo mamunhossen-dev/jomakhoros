@@ -184,5 +184,70 @@ export async function buildTransactionsPdf(
     doc.text('JomaKhoros.com - Your Personal Finance Manager', 14, doc.internal.pageSize.getHeight() - 8);
   }
 
+  return doc;
+}
+
+export async function exportTransactionsPdf(
+  transactions: Transaction[],
+  userName: string,
+  userEmail: string,
+  filters?: { dateFrom?: string; dateTo?: string },
+  wallets?: Wallet[]
+) {
+  const doc = await buildTransactionsPdf(transactions, userName, userEmail, filters, wallets);
   doc.save(`JomaKhoros_Statement_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+}
+
+export async function exportTransactionsImage(
+  transactions: Transaction[],
+  userName: string,
+  userEmail: string,
+  filters?: { dateFrom?: string; dateTo?: string },
+  wallets?: Wallet[]
+) {
+  const doc = await buildTransactionsPdf(transactions, userName, userEmail, filters, wallets);
+  const pdfBlob = doc.output('blob');
+  const arrayBuffer = await pdfBlob.arrayBuffer();
+
+  const pdfjs: any = await import('pdfjs-dist');
+  // @ts-ignore - vite url import
+  const workerUrl = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
+  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+
+  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+  const scale = 2;
+
+  const canvases: HTMLCanvasElement[] = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d')!;
+    await page.render({ canvasContext: ctx, viewport, canvas } as any).promise;
+    canvases.push(canvas);
+  }
+
+  const width = canvases[0].width;
+  const totalHeight = canvases.reduce((s, c) => s + c.height, 0);
+  const out = document.createElement('canvas');
+  out.width = width;
+  out.height = totalHeight;
+  const octx = out.getContext('2d')!;
+  octx.fillStyle = '#ffffff';
+  octx.fillRect(0, 0, width, totalHeight);
+  let y = 0;
+  for (const c of canvases) {
+    octx.drawImage(c, 0, y);
+    y += c.height;
+  }
+
+  const dataUrl = out.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `JomaKhoros_Statement_${format(new Date(), 'yyyy-MM-dd')}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
