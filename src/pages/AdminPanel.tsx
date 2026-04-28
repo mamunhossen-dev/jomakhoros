@@ -684,8 +684,8 @@ export default function AdminPanel() {
                           {t.dotClass && <span className={cn('h-2 w-2 rounded-full', t.dotClass)} />}
                           <span>{t.label}</span>
                           <span className={cn(
-                            'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold',
-                            active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
+                            'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold transition-colors',
+                            active ? COUNT_STYLES[t.key]?.active : COUNT_STYLES[t.key]?.idle
                           )}>
                             {counts[t.key] ?? 0}
                           </span>
