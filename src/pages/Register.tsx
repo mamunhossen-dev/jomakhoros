@@ -75,14 +75,17 @@ export default function Register() {
         <p className="text-sm text-sidebar-foreground/40">© 2026 JomaKhoros</p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center p-6">
+      <div className="flex flex-1 items-center justify-center p-6 relative">
+        <Link to="/" className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-primary font-medium">
+          ← হোম
+        </Link>
         <div className="w-full max-w-sm space-y-6">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
+          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <DollarSign className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-display text-lg font-bold">JomaKhoros</span>
-          </div>
+          </Link>
 
           <div>
             <h2 className="font-display text-2xl font-bold">অ্যাকাউন্ট তৈরি করুন</h2>

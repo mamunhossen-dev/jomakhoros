@@ -55,14 +55,25 @@ export default function Terms() {
             <h2 className="font-display text-xl font-semibold text-foreground">৪. পেমেন্ট যাচাই প্রক্রিয়া</h2>
             <ul className="list-disc pl-5 space-y-1">
               <li>ব্যবহারকারী সাবস্ক্রিপশন প্ল্যান নির্বাচন করবেন</li>
-              <li>বিকাশ / নগদ / রকেটে নম্বরে টাকা পাঠাবেন</li>
-              <li>পেমেন্ট পদ্ধতি ও ট্রানজেকশন আইডি জমা দেবেন</li>
+              <li>বিকাশ / নগদ / রকেট নম্বরে অথবা ব্যাংক একাউন্টে টাকা পাঠাবেন</li>
+              <li>পেমেন্ট পদ্ধতি ও ট্রানজেকশন/রেফারেন্স আইডি জমা দেবেন</li>
               <li>অ্যাডমিন যাচাই করে প্রো অ্যাকাউন্ট সক্রিয় করবেন</li>
             </ul>
             <div className="mt-3 rounded-lg bg-destructive/10 border border-destructive/20 p-3">
-              <p className="text-sm text-destructive font-medium">⚠️ পেমেন্ট নম্বর: 01770025816</p>
+              <p className="text-sm text-destructive font-medium">📱 মোবাইল পেমেন্ট নম্বর: 01770025816</p>
               <p className="text-xs text-destructive/80 mt-1">
-                এটি একটি ব্যক্তিগত নম্বর, মার্চেন্ট অ্যাকাউন্ট নয়। শুধুমাত্র সেন্ড মানি করুন।
+                এটি একটি ব্যক্তিগত নম্বর, মার্চেন্ট অ্যাকাউন্ট নয়। শুধুমাত্র <strong>সেন্ড মানি</strong> করুন (বিকাশ / নগদ / রকেট)।
+              </p>
+            </div>
+            <div className="mt-3 rounded-lg bg-primary/5 border border-primary/20 p-3">
+              <p className="text-sm text-primary font-medium">🏦 ব্যাংক একাউন্টের তথ্য</p>
+              <div className="text-xs text-foreground/80 mt-1.5 space-y-0.5">
+                <p><strong>ব্যাংক:</strong> Dutch Bangla Bank Limited</p>
+                <p><strong>একাউন্ট নম্বর:</strong> 1151580002115</p>
+                <p><strong>শাখা:</strong> Mirpur</p>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                ব্যাংক ট্রান্সফারের পর রেফারেন্স/ট্রানজেকশন আইডি অ্যাপে জমা দিন।
               </p>
             </div>
           </section>
