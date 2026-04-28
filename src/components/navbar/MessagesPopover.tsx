@@ -340,6 +340,11 @@ export function MessagesPopover() {
                               বন্ধ
                             </span>
                           </div>
+                          {t.ticket_number && (
+                            <p className="mt-0.5 text-[10px] font-mono font-semibold text-primary">
+                              {t.ticket_number}
+                            </p>
+                          )}
                           <p className="mt-1 line-clamp-2 text-xs text-foreground/80">{preview}</p>
                         </button>
                       );
