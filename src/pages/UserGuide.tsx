@@ -316,6 +316,35 @@ export default function UserGuide() {
           </div>
         </section>
 
+        {/* CTA for unauthenticated users */}
+        {!user && (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5">
+            <CardContent className="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+                <Sparkles className="h-7 w-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-display text-xl font-bold sm:text-2xl">আজই শুরু করুন আপনার আর্থিক যাত্রা</h3>
+                <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                  JomaKhoros-এ বিনামূল্যে অ্যাকাউন্ট খুলুন এবং সহজেই আপনার আয়-ব্যয় ট্র্যাক করা শুরু করুন।
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button asChild size="lg">
+                  <Link to="/register">
+                    <UserPlus className="h-4 w-4" /> রেজিস্ট্রেশন করুন
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/login">
+                    <LogIn className="h-4 w-4" /> লগইন করুন
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Footer brand */}
         <Card className="border-dashed bg-muted/30">
           <CardContent className="flex flex-col items-center gap-2 p-6 text-center">
@@ -327,35 +356,6 @@ export default function UserGuide() {
           </CardContent>
         </Card>
       </div>
-
-      {/* CTA for unauthenticated users */}
-      {!user && (
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5">
-          <CardContent className="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-              <Sparkles className="h-7 w-7" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-display text-xl font-bold sm:text-2xl">আজই শুরু করুন আপনার আর্থিক যাত্রা</h3>
-              <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                JomaKhoros-এ বিনামূল্যে অ্যাকাউন্ট খুলুন এবং সহজেই আপনার আয়-ব্যয় ট্র্যাক করা শুরু করুন।
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button asChild size="lg">
-                <Link to="/register">
-                  <UserPlus className="h-4 w-4" /> রেজিস্ট্রেশন করুন
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/login">
-                  <LogIn className="h-4 w-4" /> লগইন করুন
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 
