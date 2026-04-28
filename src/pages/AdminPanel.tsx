@@ -38,6 +38,7 @@ export default function AdminPanel() {
   const [statusFilter, setStatusFilter] = useState<SupportStatus | 'all'>('all');
   const [adminArchiveOpen, setAdminArchiveOpen] = useState(false);
   const [adminViewingOldTicketId, setAdminViewingOldTicketId] = useState<string | null>(null);
+  const [ticketSearch, setTicketSearch] = useState('');
   const supportEndRef = useRef<HTMLDivElement>(null);
 
   // App settings: terms checkbox toggle
