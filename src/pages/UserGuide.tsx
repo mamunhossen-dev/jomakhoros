@@ -3,32 +3,98 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   BookOpen, Sparkles, TrendingUp, TrendingDown, PieChart, PiggyBank,
-  Tag, Brain, Wallet, ShieldCheck, Smartphone, Download, Share2,
+  Tag, Brain, Wallet, ShieldCheck, Smartphone, Share2,
   FileImage, FileText, Lightbulb, CheckCircle2, ArrowRight,
+  UserPlus, Banknote, ListPlus, BarChart3, Edit3, Trash2,
+  Calendar, Target, Eye, Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-const steps = [
-  { icon: TrendingUp, color: 'bg-emerald-500', title: 'ধাপ ১: আয় যোগ করুন', desc: 'আপনার মাসিক বেতন, ব্যবসার আয় বা অন্য যেকোনো উৎস থেকে আয় সহজেই যোগ করুন।' },
-  { icon: TrendingDown, color: 'bg-rose-500', title: 'ধাপ ২: খরচ যোগ করুন', desc: 'প্রতিদিনের খরচ ক্যাটাগরি অনুযায়ী লিপিবদ্ধ করুন—বাজার, যাতায়াত, বিল ইত্যাদি।' },
-  { icon: PieChart, color: 'bg-indigo-500', title: 'ধাপ ৩: বিশ্লেষণ দেখুন', desc: 'চার্ট ও গ্রাফের মাধ্যমে আপনার আয়-ব্যয়ের ট্রেন্ড পরিষ্কারভাবে বুঝুন।' },
-  { icon: PiggyBank, color: 'bg-amber-500', title: 'ধাপ ৪: সঞ্চয় ট্র্যাক করুন', desc: 'মাসিক সঞ্চয়ের হার দেখুন এবং আর্থিক লক্ষ্য পূরণে এগিয়ে যান।' },
+const gettingStarted = [
+  { icon: UserPlus, color: 'bg-blue-500', title: 'ধাপ ১: অ্যাকাউন্ট তৈরি বা লগইন', desc: 'প্রথমে নিবন্ধন করুন অথবা আপনার বিদ্যমান অ্যাকাউন্ট দিয়ে লগইন করুন।' },
+  { icon: Wallet, color: 'bg-teal-500', title: 'ধাপ ২: ওয়ালেট যোগ করুন', desc: 'নগদ, ব্যাংক, বিকাশ, নগদ ইত্যাদি ওয়ালেট তৈরি করুন।' },
+  { icon: Tag, color: 'bg-violet-500', title: 'ধাপ ৩: ক্যাটাগরি তৈরি করুন', desc: 'আয় ও ব্যয়ের জন্য আলাদা ক্যাটাগরি যোগ করুন।' },
+  { icon: TrendingUp, color: 'bg-emerald-500', title: 'ধাপ ৪: লেনদেন যোগ করুন', desc: 'প্রতিদিনের আয় ও খরচ লিপিবদ্ধ করুন।' },
+  { icon: BarChart3, color: 'bg-indigo-500', title: 'ধাপ ৫: অ্যানালিটিক্স দেখুন', desc: 'চার্ট ও রিপোর্টের মাধ্যমে আপনার আর্থিক অবস্থা বুঝুন।' },
+];
+
+const walletPoints = [
+  { icon: Wallet, title: 'ওয়ালেট কী?', desc: 'ওয়ালেট হলো আপনার টাকা রাখার ভার্চুয়াল জায়গা—যেমন নগদ, ব্যাংক বা মোবাইল ব্যাংকিং অ্যাকাউন্ট।' },
+  { icon: ListPlus, title: 'ওয়ালেট তৈরি করুন', desc: '"ওয়ালেট" পেজ থেকে নাম, ধরন (Cash/Bank/Mobile Banking) ও প্রাথমিক ব্যালেন্স দিয়ে নতুন ওয়ালেট তৈরি করুন।' },
+  { icon: Banknote, title: 'ব্যালেন্স ম্যানেজ', desc: 'প্রতিটি লেনদেনের সাথে ওয়ালেটের ব্যালেন্স স্বয়ংক্রিয়ভাবে আপডেট হয়।' },
+  { icon: ArrowRight, title: 'ওয়ালেটের মাঝে স্থানান্তর', desc: 'এক ওয়ালেট থেকে অন্য ওয়ালেটে সহজেই টাকা ট্রান্সফার করুন।' },
+];
+
+const categoryPoints = [
+  { icon: Tag, title: 'ক্যাটাগরি কী?', desc: 'ক্যাটাগরি হলো আয়-ব্যয়ের ধরন—যেমন বেতন, খাবার, যাতায়াত ইত্যাদি।' },
+  { icon: TrendingUp, title: 'আয়ের ক্যাটাগরি', desc: 'বেতন, ব্যবসা, ফ্রিল্যান্স, উপহার—এমন ক্যাটাগরি তৈরি করুন।' },
+  { icon: TrendingDown, title: 'খরচের ক্যাটাগরি', desc: 'বাজার, ভাড়া, যাতায়াত, বিল, বিনোদন ইত্যাদি যোগ করুন।' },
+  { icon: Edit3, title: 'এডিট ও মুছে ফেলা', desc: 'যেকোনো সময় ক্যাটাগরি এডিট বা মুছে ফেলতে পারবেন।' },
+];
+
+const transactionPoints = [
+  { icon: TrendingUp, title: 'আয় যোগ করুন', desc: 'টাকার পরিমাণ, ক্যাটাগরি ও ওয়ালেট নির্বাচন করে আয় এন্ট্রি দিন।' },
+  { icon: TrendingDown, title: 'খরচ যোগ করুন', desc: 'একইভাবে দৈনিক খরচ লিপিবদ্ধ করুন।' },
+  { icon: Wallet, title: 'ওয়ালেট নির্বাচন', desc: 'কোন ওয়ালেট থেকে লেনদেনটি হয়েছে তা চিহ্নিত করুন।' },
+  { icon: Tag, title: 'ক্যাটাগরি নির্বাচন', desc: 'সঠিক ক্যাটাগরি বাছাই করুন রিপোর্টিং সঠিক রাখতে।' },
+  { icon: Edit3, title: 'নোট যোগ করুন (ঐচ্ছিক)', desc: 'লেনদেনের বিস্তারিত মনে রাখতে নোট লিখুন।' },
+  { icon: Trash2, title: 'এডিট / ডিলিট', desc: 'ভুল হলে যেকোনো লেনদেন এডিট বা মুছে ফেলুন।' },
+];
+
+const analyticsPoints = [
+  { icon: Eye, title: 'ওভারভিউ', desc: 'মোট আয়, মোট ব্যয় ও বর্তমান ব্যালেন্স এক নজরে দেখুন।' },
+  { icon: BarChart3, title: 'বার ও পাই চার্ট', desc: 'মাসিক ট্রেন্ড ও ক্যাটাগরি-ভিত্তিক খরচ ভিজ্যুয়ালি বুঝুন।' },
+  { icon: TrendingUp, title: 'ট্রেন্ড বিশ্লেষণ', desc: 'কোন মাসে কোথায় বেশি খরচ হচ্ছে তা বুঝে পরিকল্পনা করুন।' },
 ];
 
 const features = [
-  { icon: Wallet, title: 'আয় ও ব্যয় ট্র্যাকিং', desc: 'সব লেনদেন এক জায়গায়।' },
-  { icon: PieChart, title: 'অ্যানালিটিক্স ড্যাশবোর্ড', desc: 'ভিজ্যুয়াল রিপোর্ট ও KPI।' },
-  { icon: Tag, title: 'ক্যাটাগরি ম্যানেজমেন্ট', desc: 'নিজের মতো ক্যাটাগরি তৈরি করুন।' },
+  { icon: Wallet, title: 'মাল্টি-ওয়ালেট সাপোর্ট', desc: 'একাধিক ওয়ালেট একসাথে।' },
+  { icon: Tag, title: 'ক্যাটাগরি ট্র্যাকিং', desc: 'ক্যাটাগরি অনুযায়ী রিপোর্ট।' },
+  { icon: PieChart, title: 'অ্যানালিটিক্স ড্যাশবোর্ড', desc: 'ভিজ্যুয়াল চার্ট ও KPI।' },
+  { icon: Smartphone, title: 'বাংলা-বান্ধব UI', desc: 'সহজ ও পরিষ্কার ডিজাইন।' },
   { icon: Brain, title: 'স্মার্ট ইনসাইটস', desc: 'খরচের প্যাটার্ন বুঝুন।' },
+  { icon: ShieldCheck, title: 'নিরাপদ ডেটা', desc: 'আপনার তথ্য সুরক্ষিত।' },
+];
+
+const tips = [
+  { icon: Calendar, title: 'প্রতিদিন এন্ট্রি দিন', desc: 'রাতে মাত্র ২ মিনিট সময় নিয়ে দিনের লেনদেন লিখুন।' },
+  { icon: Tag, title: 'সঠিক ক্যাটাগরি ব্যবহার করুন', desc: 'রিপোর্ট সঠিক রাখতে সঠিক ক্যাটাগরি বাছুন।' },
+  { icon: Eye, title: 'সাপ্তাহিক রিভিউ', desc: 'প্রতি সপ্তাহে অ্যানালিটিক্স দেখে পরিকল্পনা করুন।' },
+  { icon: Target, title: 'অপ্রয়োজনীয় খরচ কমান', desc: 'ট্রেন্ড দেখে অপ্রয়োজনীয় ব্যয় চিহ্নিত করুন।' },
 ];
 
 const benefits = [
-  { icon: ShieldCheck, title: 'খরচ নিয়ন্ত্রণে সাহায্য করে', desc: 'কোথায় কত খরচ হচ্ছে স্পষ্ট জানুন।' },
-  { icon: PiggyBank, title: 'সঞ্চয়ের অভ্যাস উন্নত করে', desc: 'লক্ষ্য নির্ধারণ করে সঞ্চয় বাড়ান।' },
-  { icon: Smartphone, title: 'সহজ ও বাংলা-বান্ধব UI', desc: 'যে কেউ মুহূর্তেই ব্যবহার করতে পারবেন।' },
+  { icon: ShieldCheck, title: 'টাকা ব্যবস্থাপনা সহজ করে', desc: 'কোথায় কত খরচ স্পষ্ট জানুন।' },
+  { icon: PiggyBank, title: 'সঞ্চয়ের অভ্যাস বাড়ায়', desc: 'লক্ষ্য নির্ধারণ করে সঞ্চয় বাড়ান।' },
+  { icon: Zap, title: 'নতুনদের জন্য সহজ', desc: 'যে কেউ মুহূর্তেই ব্যবহার করতে পারবেন।' },
 ];
+
+function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      <Icon className="h-5 w-5 text-primary" />
+      <h2 className="font-display text-xl font-bold">{title}</h2>
+    </div>
+  );
+}
+
+function InfoCard({ icon: Icon, title, desc, color }: { icon: any; title: string; desc: string; color?: string }) {
+  return (
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="flex gap-3 p-4">
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${color ?? 'bg-primary/10 text-primary'}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <h3 className="font-semibold">{title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function UserGuide() {
   const guideRef = useRef<HTMLDivElement>(null);
@@ -98,7 +164,7 @@ export default function UserGuide() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">ব্যবহার নির্দেশিকা</h1>
-          <p className="text-sm text-muted-foreground">JomaKhoros কীভাবে ব্যবহার করবেন তার সম্পূর্ণ গাইড</p>
+          <p className="text-sm text-muted-foreground">JomaKhoros-এর সম্পূর্ণ ব্যবহার গাইড</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => handleExport('pdf')} disabled={exporting} size="sm">
@@ -126,21 +192,18 @@ export default function UserGuide() {
                 <p className="text-xs font-semibold uppercase tracking-wider opacity-80">স্বাগতম</p>
                 <h2 className="mt-1 font-display text-2xl font-bold sm:text-3xl">JomaKhoros-এ আপনাকে স্বাগতম</h2>
                 <p className="mt-3 text-sm opacity-95 sm:text-base">
-                  আপনার আয় ও ব্যয় সহজেই ট্র্যাক করুন। বাংলায় তৈরি, আপনার জন্য।
+                  দৈনন্দিন জীবনের জন্য একটি সহজ আয়-ব্যয় ট্র্যাকিং সিস্টেম। বাংলায় তৈরি, আপনার আর্থিক জীবনকে সহজ করার জন্য।
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* How to use */}
+        {/* Getting Started */}
         <section>
-          <div className="mb-3 flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-xl font-bold">কীভাবে ব্যবহার করবেন</h2>
-          </div>
+          <SectionHeader icon={BookOpen} title="শুরু করার ধাপসমূহ" />
           <div className="grid gap-3 sm:grid-cols-2">
-            {steps.map((s, i) => (
+            {gettingStarted.map((s, i) => (
               <Card key={i} className="transition-shadow hover:shadow-md">
                 <CardContent className="flex gap-3 p-4">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${s.color} text-white`}>
@@ -152,6 +215,46 @@ export default function UserGuide() {
                   </div>
                 </CardContent>
               </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Wallet Management */}
+        <section>
+          <SectionHeader icon={Wallet} title="ওয়ালেট ব্যবস্থাপনা" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {walletPoints.map((p, i) => (
+              <InfoCard key={i} {...p} color="bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300" />
+            ))}
+          </div>
+        </section>
+
+        {/* Category Management */}
+        <section>
+          <SectionHeader icon={Tag} title="ক্যাটাগরি ব্যবস্থাপনা" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {categoryPoints.map((p, i) => (
+              <InfoCard key={i} {...p} color="bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300" />
+            ))}
+          </div>
+        </section>
+
+        {/* Transactions */}
+        <section>
+          <SectionHeader icon={Banknote} title="লেনদেন (Transactions)" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {transactionPoints.map((p, i) => (
+              <InfoCard key={i} {...p} color="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" />
+            ))}
+          </div>
+        </section>
+
+        {/* Analytics */}
+        <section>
+          <SectionHeader icon={BarChart3} title="অ্যানালিটিক্স ড্যাশবোর্ড" />
+          <div className="grid gap-3">
+            {analyticsPoints.map((p, i) => (
+              <InfoCard key={i} {...p} color="bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300" />
             ))}
           </div>
         </section>
@@ -171,33 +274,27 @@ export default function UserGuide() {
 
         {/* Features */}
         <section>
-          <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-xl font-bold">ফিচার সমূহ</h2>
-          </div>
+          <SectionHeader icon={Sparkles} title="মূল ফিচারসমূহ" />
           <div className="grid gap-3 sm:grid-cols-2">
             {features.map((f, i) => (
-              <Card key={i} className="transition-shadow hover:shadow-md">
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <f.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{f.title}</h3>
-                    <p className="text-sm text-muted-foreground">{f.desc}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <InfoCard key={i} {...f} />
+            ))}
+          </div>
+        </section>
+
+        {/* Tips for Better Use */}
+        <section>
+          <SectionHeader icon={Lightbulb} title="ভালো ব্যবহারের টিপস" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {tips.map((t, i) => (
+              <InfoCard key={i} {...t} color="bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300" />
             ))}
           </div>
         </section>
 
         {/* Why use */}
         <section>
-          <div className="mb-3 flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-xl font-bold">কেন ব্যবহার করবেন</h2>
-          </div>
+          <SectionHeader icon={CheckCircle2} title="কেন JomaKhoros ব্যবহার করবেন" />
           <div className="grid gap-3">
             {benefits.map((b, i) => (
               <Card key={i}>
