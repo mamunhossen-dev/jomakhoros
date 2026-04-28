@@ -91,8 +91,51 @@ export function exportTransactionsPdf(
     ];
   });
 
+  // Wallet balances section
+  let tableStartY = summaryY + 24;
+  if (wallets && wallets.length > 0) {
+    const walletsTop = summaryY + 22;
+    doc.setFontSize(9);
+    doc.setTextColor(30, 41, 59);
+    doc.text('Wallet Balances', 14, walletsTop + 4);
+
+    const walletRows = wallets.map(w => [
+      w.name,
+      (w.wallet_type || '').toUpperCase(),
+      `TK ${Number(w.balance).toFixed(2)}`,
+    ]);
+    const totalWallet = wallets.reduce((s, w) => s + Number(w.balance), 0);
+    walletRows.push(['Total', '', `TK ${totalWallet.toFixed(2)}`]);
+
+    autoTable(doc, {
+      startY: walletsTop + 7,
+      head: [['Wallet', 'Type', 'Balance']],
+      body: walletRows,
+      headStyles: { fillColor: [30, 41, 59], fontSize: 8, halign: 'left' },
+      bodyStyles: { fontSize: 8 },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        2: { halign: 'right', cellWidth: 40 },
+      },
+      didParseCell(data) {
+        if (data.section === 'body' && data.row.index === walletRows.length - 1) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [240, 253, 244];
+          data.cell.styles.textColor = [22, 101, 52];
+        }
+        if (data.section === 'body' && data.column.index === 2 && data.row.index < walletRows.length - 1) {
+          const val = Number(wallets[data.row.index].balance);
+          data.cell.styles.textColor = val >= 0 ? [22, 163, 74] : [220, 38, 38];
+        }
+      },
+      margin: { left: 14, right: 14 },
+    });
+    // @ts-expect-error lastAutoTable provided by plugin
+    tableStartY = (doc as any).lastAutoTable.finalY + 8;
+  }
+
   autoTable(doc, {
-    startY: summaryY + 24,
+    startY: tableStartY,
     head: [['Date', 'Description', 'Category / Wallets', 'Type', 'Amount']],
     body: tableData,
     headStyles: { fillColor: [30, 41, 59], fontSize: 8, halign: 'left' },
