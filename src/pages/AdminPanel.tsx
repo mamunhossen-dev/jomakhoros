@@ -130,15 +130,16 @@ export default function AdminPanel() {
     markUsersSeen,
   } = useAdminBadges();
 
-  // Fetch payment requests
+  // Fetch payment requests — payments tab is the default tab so eager-load
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['admin_payments'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('payment_requests').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('payment_requests').select('*').order('created_at', { ascending: false }).limit(500);
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || isModerator,
+    enabled: (isAdmin || isModerator) && activeTab === 'payments',
+    staleTime: 30_000,
   });
 
   // Approve payment mutation
