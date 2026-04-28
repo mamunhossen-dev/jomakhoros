@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
+import { SiteMeta } from "./components/SiteMeta";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Lazy-load every route — including auth + landing — so the initial bundle
@@ -109,6 +110,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <SiteMeta />
         <AuthProvider>
           <Routes>
             <Route path="/login" element={lazyPage(<Login />)} />
