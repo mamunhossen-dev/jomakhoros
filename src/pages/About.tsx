@@ -1,6 +1,18 @@
-import { Sparkles, Heart, Lightbulb } from 'lucide-react';
+import { Sparkles, DollarSign, CheckCircle2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { useAppSetting } from '@/hooks/useAppSetting';
+import { DEFAULT_ABOUT, type AboutContent } from '@/components/admin/AboutPageEditor';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function About() {
+  const { data, isLoading } = useAppSetting<AboutContent>('about_page', DEFAULT_ABOUT);
+  const content: AboutContent = {
+    ...DEFAULT_ABOUT,
+    ...(data ?? {}),
+    features: data?.features ?? DEFAULT_ABOUT.features,
+  };
+
   return (
     <div className="mx-auto max-w-3xl">
       {/* Hero */}
@@ -12,69 +24,66 @@ export default function About() {
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             About
           </div>
-          <h1 className="font-display mt-4 text-3xl sm:text-5xl font-bold tracking-tight leading-tight">
-            A dream that almost
-            <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              didn't make it.
-            </span>
-          </h1>
-          <p className="mt-4 text-base sm:text-lg text-muted-foreground">
-            The story behind this site — and the person who almost gave up.
-          </p>
+          <div className="mt-5 flex items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/30">
+              <DollarSign className="h-7 w-7 text-primary-foreground" />
+            </div>
+            {isLoading ? (
+              <Skeleton className="h-10 w-64" />
+            ) : (
+              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+                {content.title}
+              </h1>
+            )}
+          </div>
+          {!isLoading && content.subtitle && (
+            <p className="mt-3 text-base sm:text-lg text-muted-foreground">{content.subtitle}</p>
+          )}
         </div>
       </div>
 
-      {/* Story */}
+      {/* Intro */}
       <article className="rounded-2xl border bg-card p-6 sm:p-10 shadow-sm">
-        <div className="space-y-6 text-base sm:text-lg leading-relaxed text-foreground/90">
-          <p className="text-xl font-medium text-foreground">
-            Hey, welcome.
-          </p>
-
-          <p>
-            I'm the person behind this site. And honestly? The fact that this even exists still gets to me a little.
-          </p>
-
-          <p>
-            Once upon a time, I had a dream of becoming a web developer. I learned a little, dreamed a lot — got so excited about the big ideas living inside my head. But somewhere along the way, I let it go. I didn't have the deep knowledge, the time, or honestly... the belief that I could actually do it.
-          </p>
-
-          <p className="font-medium text-foreground">
-            So I buried that dream. Or at least, I tried to.
-          </p>
-
-          <div className="my-8 flex items-center gap-4">
-            <div className="h-px flex-1 bg-border" />
-            <Lightbulb className="h-5 w-5 text-primary" />
-            <div className="h-px flex-1 bg-border" />
+        {isLoading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-4/6" />
           </div>
-
-          <p className="text-xl font-semibold text-foreground">
-            Then AI came along and changed everything.
-          </p>
-
-          <p>
-            For the first time in a long time, I felt that old spark again. That quiet little voice saying — hey, maybe you still can. And this time, I listened.
-          </p>
-
-          <blockquote className="border-l-4 border-primary bg-primary/5 px-6 py-4 rounded-r-lg italic text-foreground">
-            Everything you see here was built with AI. But every idea, every thought, every feeling behind it — that's all me. This site came from a part of myself I thought I'd lost a long time ago.
-          </blockquote>
-
-          <p className="font-medium text-foreground">
-            I'm not just the owner of this site. I'm someone who almost gave up on a dream — and then didn't.
-          </p>
-
-          <div className="mt-10 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 p-6 text-center">
-            <Heart className="mx-auto h-6 w-6 text-primary mb-3" />
-            <p className="text-base sm:text-lg font-medium text-foreground">
-              So if you're here, thank you. Really.
-            </p>
-            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-              This one's for every dreamer who almost gave up.
-            </p>
+        ) : (
+          <div className="prose prose-base dark:prose-invert max-w-none text-foreground/90 prose-headings:font-display prose-a:text-primary">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content.intro_md}</ReactMarkdown>
           </div>
-        </div>
+        )}
+
+        {/* Features */}
+        {content.features.length > 0 && (
+          <div className="mt-8">
+            <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight">
+              {content.features_heading}
+            </h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {content.features.map((f, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border bg-background p-4 transition hover:border-primary/40 hover:shadow-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{f.title}</p>
+                      {f.description && (
+                        <p className="mt-1 text-sm text-muted-foreground">{f.description}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </article>
     </div>
   );
