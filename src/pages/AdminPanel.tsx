@@ -97,20 +97,21 @@ export default function AdminPanel() {
     staleTime: 30_000,
   });
 
-  // Fetch all feedback
+  // Fetch all feedback — only when Feedback tab is open
   const { data: feedbacks, isLoading: feedbackLoading } = useQuery({
     queryKey: ['admin_feedback'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(500);
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || isModerator,
+    enabled: (isAdmin || isModerator) && activeTab === 'feedback',
+    staleTime: 30_000,
   });
 
-  // Realtime: refresh feedback list on any change
+  // Realtime refresh only while feedback tab is open
   useEffect(() => {
-    if (!isAdmin && !isModerator) return;
+    if ((!isAdmin && !isModerator) || activeTab !== 'feedback') return;
     const ch = supabase
       .channel('admin-feedback')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' }, () => {
@@ -118,7 +119,7 @@ export default function AdminPanel() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [isAdmin, isModerator, qc]);
+  }, [isAdmin, isModerator, qc, activeTab]);
 
   // Shared admin badge counts (also used by sidebar dot)
   const {
