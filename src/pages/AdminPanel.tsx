@@ -1227,6 +1227,9 @@ export default function AdminPanel() {
             </Card>
 
             <div className="mt-6">
+              <SiteSettingsEditor />
+            </div>
+            <div className="mt-6">
               <LandingPageEditor />
             </div>
             <div className="mt-6">
