@@ -402,6 +402,23 @@ export default function AdminPanel() {
     setSupportText('');
   };
 
+  // Open a ticket by its TKT-… number (used by search bar and clickable links in messages)
+  const openTicketByNumber = (raw: string): boolean => {
+    const norm = raw.trim().toUpperCase();
+    if (!norm) return false;
+    const tid = ticketNumberToId[norm];
+    if (!tid) {
+      toast.error(`টিকেট নাম্বার "${raw}" পাওয়া যায়নি`);
+      return false;
+    }
+    setSelectedTicketId(tid);
+    setAdminViewingOldTicketId(null);
+    setAdminArchiveOpen(false);
+    setStatusFilter('all'); // make sure it shows in left list
+    toast.success(`টিকেট ${norm} ওপেন করা হয়েছে`);
+    return true;
+  };
+
   useEffect(() => {
     if (supportEndRef.current) supportEndRef.current.scrollTop = supportEndRef.current.scrollHeight;
   }, [selectedTicketId, allMessages]);
