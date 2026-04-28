@@ -292,6 +292,11 @@ export default function AdminPanel() {
   const getThreadStatusByTicket = (ticketId: string): SupportStatus =>
     (threadByTicket[ticketId]?.status as SupportStatus) || 'new';
 
+  // Count of tickets needing admin attention (new + open + pending)
+  const attentionCount = (threads || []).filter(t =>
+    t.status === 'new' || t.status === 'open' || t.status === 'pending'
+  ).length;
+
   const updateThreadStatus = useMutation({
     mutationFn: async ({ ticketId, status }: { ticketId: string; status: SupportStatus }) => {
       const { error } = await supabase
