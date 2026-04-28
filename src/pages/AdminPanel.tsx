@@ -1228,6 +1228,9 @@ export default function AdminPanel() {
             </Card>
 
             <div className="mt-6">
+              <BrandingEditor />
+            </div>
+            <div className="mt-6">
               <SiteSettingsEditor />
             </div>
             <div className="mt-6">
