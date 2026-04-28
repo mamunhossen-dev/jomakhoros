@@ -676,10 +676,10 @@ export default function AdminPanel() {
             <CardContent>
               {/* Status filter bar */}
               {(() => {
-                const counts: Record<string, number> = { all: conversationUserIds.length };
+                const counts: Record<string, number> = { all: ticketIds.length };
                 STATUS_LIST.forEach(s => { counts[s.value] = 0; });
-                conversationUserIds.forEach(uid => {
-                  const st = getThreadStatus(uid);
+                ticketIds.forEach(tid => {
+                  const st = getThreadStatusByTicket(tid);
                   counts[st] = (counts[st] || 0) + 1;
                 });
                 const COUNT_STYLES: Record<string, { active: string; idle: string }> = {
@@ -729,33 +729,35 @@ export default function AdminPanel() {
                 <div className="border rounded-lg overflow-hidden">
                   <ScrollArea className="h-[420px]">
                     {(() => {
-                      const visible = conversationUserIds.filter(uid =>
-                        statusFilter === 'all' ? true : getThreadStatus(uid) === statusFilter
+                      const visible = ticketIds.filter(tid =>
+                        statusFilter === 'all' ? true : getThreadStatusByTicket(tid) === statusFilter
                       );
                       if (!visible.length) {
                         return <p className="p-4 text-center text-xs text-muted-foreground">কোনো কথোপকথন নেই</p>;
                       }
                       return (
                         <div className="divide-y">
-                          {visible.map(uid => {
+                          {visible.map(tid => {
+                            const uid = getTicketUserId(tid) || '';
                             const u = users?.find(x => x.user_id === uid);
-                            const msgs = conversations[uid];
+                            const msgs = conversationsByTicket[tid] || [];
                             const last = msgs[msgs.length - 1];
                             const unread = msgs.filter(m => !m.is_from_admin && !m.is_read).length;
-                            const meta = getStatusMeta(getThreadStatus(uid));
+                            const meta = getStatusMeta(getThreadStatusByTicket(tid));
                             const StatusIcon = meta.icon;
                             return (
                               <button
-                                key={uid}
-                                onClick={() => setSelectedConvUser(uid)}
-                                className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${selectedConvUser === uid ? 'bg-muted' : ''}`}
+                                key={tid}
+                                onClick={() => setSelectedTicketId(tid)}
+                                className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${selectedTicketId === tid ? 'bg-muted' : ''}`}
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <p className="text-sm font-medium truncate">{u?.display_name || uid.substring(0, 8)}</p>
+                                  <p className="text-sm font-medium truncate">{u?.display_name || (uid ? uid.substring(0, 8) : '—')}</p>
                                   {unread > 0 && <Badge className="text-[10px] h-4 px-1.5">{unread}</Badge>}
                                 </div>
+                                <p className="text-[10px] text-muted-foreground/70 mt-0.5">টিকেট #{tid.substring(0, 8)}</p>
                                 <div className="mt-1 flex items-center justify-between gap-2">
-                                  <p className="text-[11px] text-muted-foreground truncate flex-1">{last?.message}</p>
+                                  <p className="text-[11px] text-muted-foreground truncate flex-1">{last?.message || 'নতুন টিকেট'}</p>
                                   <span className={cn(
                                     'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-all duration-300',
                                     meta.badgeClass
@@ -775,7 +777,7 @@ export default function AdminPanel() {
 
                 {/* Active conversation */}
                 <div className="border rounded-lg flex flex-col h-[420px]">
-                  {!selectedConvUser ? (
+                  {!selectedTicketId ? (
                     <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                       বামে একটি কথোপকথন বেছে নিন
                     </div>
@@ -783,10 +785,14 @@ export default function AdminPanel() {
                     <>
                       <div className="border-b p-2 flex items-center justify-between gap-2">
                         <div className="text-sm font-medium truncate">
-                          {users?.find(u => u.user_id === selectedConvUser)?.display_name || selectedConvUser.substring(0, 12)}
+                          {(() => {
+                            const uid = getTicketUserId(selectedTicketId) || '';
+                            return users?.find(u => u.user_id === uid)?.display_name || (uid ? uid.substring(0, 12) : '—');
+                          })()}
+                          <span className="ml-2 text-[10px] text-muted-foreground font-normal">#{selectedTicketId.substring(0, 8)}</span>
                         </div>
                         {(() => {
-                          const current = getStatusMeta(getThreadStatus(selectedConvUser));
+                          const current = getStatusMeta(getThreadStatusByTicket(selectedTicketId));
                           const CurIcon = current.icon;
                           return (
                             <DropdownMenu>
@@ -808,7 +814,7 @@ export default function AdminPanel() {
                                   return (
                                     <DropdownMenuItem
                                       key={s.value}
-                                      onClick={() => updateThreadStatus.mutate({ uid: selectedConvUser, status: s.value })}
+                                      onClick={() => updateThreadStatus.mutate({ ticketId: selectedTicketId, status: s.value })}
                                       className="gap-2 text-sm"
                                     >
                                       <span className={cn('h-2 w-2 rounded-full', s.dotClass)} />
@@ -823,7 +829,7 @@ export default function AdminPanel() {
                         })()}
                       </div>
                       <div ref={supportEndRef} className="flex-1 overflow-y-auto p-3 space-y-2">
-                        {conversations[selectedConvUser]?.map(m => (
+                        {(conversationsByTicket[selectedTicketId] || []).map(m => (
                           <div key={m.id} className={`flex ${m.is_from_admin ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[80%] rounded-lg px-3 py-2 ${m.is_from_admin ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                               <p className="text-sm whitespace-pre-wrap">{m.message}</p>
@@ -838,19 +844,20 @@ export default function AdminPanel() {
                         <Textarea
                           value={supportText}
                           onChange={e => setSupportText(e.target.value)}
-                          placeholder={selectedConvUser && getThreadStatus(selectedConvUser) === 'closed' ? 'টিকেটটি বন্ধ। স্ট্যাটাস "ওপেন" করুন।' : 'উত্তর লিখুন...'}
+                          placeholder={getThreadStatusByTicket(selectedTicketId) === 'closed' ? 'টিকেটটি বন্ধ। স্ট্যাটাস "ওপেন" করুন।' : 'উত্তর লিখুন...'}
                           rows={1}
-                          disabled={!!selectedConvUser && getThreadStatus(selectedConvUser) === 'closed'}
+                          disabled={getThreadStatusByTicket(selectedTicketId) === 'closed'}
                           className="min-h-9 resize-none text-sm"
                           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
                         />
-                        <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim() || (!!selectedConvUser && getThreadStatus(selectedConvUser) === 'closed')}>
+                        <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim() || getThreadStatusByTicket(selectedTicketId) === 'closed'}>
                           <Send className="h-4 w-4" />
                         </Button>
                       </div>
                     </>
                   )}
                 </div>
+              </div>
               </div>
             </CardContent>
           </Card>
