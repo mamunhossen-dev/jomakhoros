@@ -8,14 +8,17 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Landing from "./pages/Landing";
-import NotFound from "./pages/NotFound";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Lazy-load every route — including auth + landing — so the initial bundle
+// only contains the shell, providers, and routing logic.
+const Index = lazy(() => import("./pages/Index"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Landing = lazy(() => import("./pages/Landing"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const Transactions = lazy(() => import("./pages/Transactions"));
 const Categories = lazy(() => import("./pages/Categories"));
 const Reports = lazy(() => import("./pages/Reports"));
@@ -38,16 +41,24 @@ function PageFallback() {
   );
 }
 
+function FullScreenSpinner() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
+}
+
 function HomeRoute() {
   const { user, loading } = useAuth();
-  if (loading) {
+  if (loading) return <FullScreenSpinner />;
+  if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
+      <Suspense fallback={<FullScreenSpinner />}>
+        <Landing />
+      </Suspense>
     );
   }
-  if (!user) return <Landing />;
   return (
     <ProtectedRoute>
       <SubscriptionProvider>
@@ -59,13 +70,7 @@ function HomeRoute() {
 
 function AuthAwareLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
+  if (loading) return <FullScreenSpinner />;
   if (user) {
     return (
       <SubscriptionProvider>
@@ -76,7 +81,25 @@ function AuthAwareLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const queryClient = new QueryClient();
+// Sensible cache defaults: avoid refetching the same data on every navigation
+// or window focus, retry once on transient errors, and keep cached query data
+// around long enough for back/forward navigation to feel instant.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+const lazyPage = (node: React.ReactNode) => (
+  <ErrorBoundary fallback={<PageFallback />}>
+    <Suspense fallback={<PageFallback />}>{node}</Suspense>
+  </ErrorBoundary>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -87,15 +110,22 @@ const App = () => (
         <ScrollToTop />
         <AuthProvider>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/onboarding" element={<ProtectedRoute><Suspense fallback={<PageFallback />}><Onboarding /></Suspense></ProtectedRoute>} />
+            <Route path="/login" element={lazyPage(<Login />)} />
+            <Route path="/register" element={lazyPage(<Register />)} />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  {lazyPage(<Onboarding />)}
+                </ProtectedRoute>
+              }
+            />
             <Route element={<AuthAwareLayout><Outlet /></AuthAwareLayout>}>
-              <Route path="/terms" element={<Suspense fallback={<PageFallback />}><Terms /></Suspense>} />
-              <Route path="/user-guide" element={<Suspense fallback={<PageFallback />}><UserGuide /></Suspense>} />
+              <Route path="/terms" element={lazyPage(<Terms />)} />
+              <Route path="/user-guide" element={lazyPage(<UserGuide />)} />
             </Route>
             <Route path="/" element={<HomeRoute />}>
-              <Route index element={<Index />} />
+              <Route index element={lazyPage(<Index />)} />
             </Route>
             <Route
               element={
@@ -106,18 +136,18 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route path="/transactions" element={<Suspense fallback={<PageFallback />}><Transactions /></Suspense>} />
-              <Route path="/categories" element={<Suspense fallback={<PageFallback />}><Categories /></Suspense>} />
-              <Route path="/budgets" element={<Suspense fallback={<PageFallback />}><Budgets /></Suspense>} />
-              <Route path="/wallets" element={<Suspense fallback={<PageFallback />}><Wallets /></Suspense>} />
-              <Route path="/loans" element={<Suspense fallback={<PageFallback />}><Loans /></Suspense>} />
-              <Route path="/analytics" element={<Suspense fallback={<PageFallback />}><Reports /></Suspense>} />
-              <Route path="/feedback" element={<Suspense fallback={<PageFallback />}><Feedback /></Suspense>} />
-              <Route path="/subscription" element={<Suspense fallback={<PageFallback />}><Subscription /></Suspense>} />
-              <Route path="/admin" element={<Suspense fallback={<PageFallback />}><AdminPanel /></Suspense>} />
-              <Route path="/settings" element={<Suspense fallback={<PageFallback />}><Settings /></Suspense>} />
+              <Route path="/transactions" element={lazyPage(<Transactions />)} />
+              <Route path="/categories" element={lazyPage(<Categories />)} />
+              <Route path="/budgets" element={lazyPage(<Budgets />)} />
+              <Route path="/wallets" element={lazyPage(<Wallets />)} />
+              <Route path="/loans" element={lazyPage(<Loans />)} />
+              <Route path="/analytics" element={lazyPage(<Reports />)} />
+              <Route path="/feedback" element={lazyPage(<Feedback />)} />
+              <Route path="/subscription" element={lazyPage(<Subscription />)} />
+              <Route path="/admin" element={lazyPage(<AdminPanel />)} />
+              <Route path="/settings" element={lazyPage(<Settings />)} />
             </Route>
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={lazyPage(<NotFound />)} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
