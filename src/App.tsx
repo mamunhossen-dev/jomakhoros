@@ -11,6 +11,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import { SiteMeta } from "./components/SiteMeta";
+import { BrandTheme } from "./components/BrandTheme";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Lazy-load every route — including auth + landing — so the initial bundle
@@ -111,6 +112,7 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <SiteMeta />
+        <BrandTheme />
         <AuthProvider>
           <Routes>
             <Route path="/login" element={lazyPage(<Login />)} />
