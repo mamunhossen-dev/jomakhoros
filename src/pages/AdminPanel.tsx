@@ -21,6 +21,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CopyTicketButton } from '@/components/support/CopyTicketButton';
+import { useAdminBadges } from '@/hooks/useAdminBadges';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -116,22 +117,14 @@ export default function AdminPanel() {
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin, isModerator, qc]);
 
-  // Track last-viewed feedback timestamp via localStorage to compute unread count
-  const FEEDBACK_SEEN_KEY = 'admin_feedback_last_seen';
-  const [feedbackLastSeen, setFeedbackLastSeen] = useState<number>(() => {
-    const v = typeof window !== 'undefined' ? localStorage.getItem(FEEDBACK_SEEN_KEY) : null;
-    return v ? Number(v) : 0;
-  });
-
-  const feedbackUnreadCount = (feedbacks || []).filter(
-    f => new Date(f.created_at).getTime() > feedbackLastSeen
-  ).length;
-
-  const markFeedbackSeen = () => {
-    const now = Date.now();
-    localStorage.setItem(FEEDBACK_SEEN_KEY, String(now));
-    setFeedbackLastSeen(now);
-  };
+  // Shared admin badge counts (also used by sidebar dot)
+  const {
+    pendingPaymentsCount,
+    feedbackUnreadCount,
+    newUsersCount,
+    markFeedbackSeen,
+    markUsersSeen,
+  } = useAdminBadges();
 
   // Fetch payment requests
   const { data: payments, isLoading: paymentsLoading } = useQuery({
@@ -462,9 +455,19 @@ export default function AdminPanel() {
         <p className="text-muted-foreground">সাইট ও ব্যবহারকারী পরিচালনা করুন।</p>
       </div>
 
-      <Tabs defaultValue="payments" onValueChange={(v) => { if (v === 'feedback') markFeedbackSeen(); }}>
+      <Tabs defaultValue="payments" onValueChange={(v) => {
+        if (v === 'feedback') markFeedbackSeen();
+        if (v === 'users') markUsersSeen();
+      }}>
         <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="payments"><CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট</TabsTrigger>
+          <TabsTrigger value="payments" className="relative">
+            <CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট
+            {pendingPaymentsCount > 0 && (
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-in fade-in zoom-in">
+                {pendingPaymentsCount > 99 ? '99+' : pendingPaymentsCount}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="feedback" className="relative">
             <MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক
             {feedbackUnreadCount > 0 && (
@@ -482,7 +485,16 @@ export default function AdminPanel() {
             )}
           </TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
+          {isAdmin && (
+            <TabsTrigger value="users" className="relative">
+              <Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী
+              {newUsersCount > 0 && (
+                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-in fade-in zoom-in">
+                  {newUsersCount > 99 ? '99+' : newUsersCount}
+                </span>
+              )}
+            </TabsTrigger>
+          )}
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
 
