@@ -33,7 +33,7 @@ export default function AdminPanel() {
   const [editingNotif, setEditingNotif] = useState<string | null>(null);
 
   // Support state
-  const [selectedConvUser, setSelectedConvUser] = useState<string | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [supportText, setSupportText] = useState('');
   const [statusFilter, setStatusFilter] = useState<SupportStatus | 'all'>('all');
   const supportEndRef = useRef<HTMLDivElement>(null);
