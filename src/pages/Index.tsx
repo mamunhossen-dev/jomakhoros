@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTransactions } from '@/hooks/useTransactions';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { formatTaka } from '@/lib/currency';
-import { format, subMonths } from 'date-fns';
+import { addMonths, format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,12 +33,8 @@ export default function Index() {
     const recentTxs = transactions.filter((tx) => tx.type !== 'transfer').slice(0, 5);
 
     const months: { key: string; label: string; income: number; expense: number }[] = [];
-    for (let i = 3; i >= 0; i--) {
-      const d = subMonths(new Date(), i);
-      months.push({ key: format(d, 'yyyy-MM'), label: format(d, 'MMM'), income: 0, expense: 0 });
-    }
-    for (let i = 1; i <= 2; i++) {
-      const d = subMonths(new Date(), -i);
+    for (let i = -3; i <= 3; i++) {
+      const d = addMonths(new Date(), i);
       months.push({ key: format(d, 'yyyy-MM'), label: format(d, 'MMM'), income: 0, expense: 0 });
     }
     const monthMap = new Map(months.map((m) => [m.key, m]));
