@@ -654,6 +654,14 @@ export default function AdminPanel() {
                   const st = getThreadStatus(uid);
                   counts[st] = (counts[st] || 0) + 1;
                 });
+                const COUNT_STYLES: Record<string, { active: string; idle: string }> = {
+                  all:     { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-primary/15 text-primary' },
+                  new:     { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-blue-500 text-white shadow-sm' },
+                  open:    { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-orange-500 text-white shadow-sm' },
+                  pending: { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-yellow-400 text-yellow-950 shadow-sm' },
+                  solved:  { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' },
+                  closed:  { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-gray-200 text-gray-600 dark:bg-gray-500/15 dark:text-gray-400' },
+                };
                 const tabs: Array<{ key: SupportStatus | 'all'; label: string; dotClass?: string }> = [
                   { key: 'all', label: 'সব' },
                   ...STATUS_LIST.map(s => ({ key: s.value, label: s.label, dotClass: s.dotClass })),
@@ -676,8 +684,8 @@ export default function AdminPanel() {
                           {t.dotClass && <span className={cn('h-2 w-2 rounded-full', t.dotClass)} />}
                           <span>{t.label}</span>
                           <span className={cn(
-                            'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold',
-                            active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
+                            'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold transition-colors',
+                            active ? COUNT_STYLES[t.key]?.active : COUNT_STYLES[t.key]?.idle
                           )}>
                             {counts[t.key] ?? 0}
                           </span>
