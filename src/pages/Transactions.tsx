@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { useTransactions, useDeleteTransaction, Transaction } from '@/hooks/useTransactions';
+import { useWallets } from '@/hooks/useWallets';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
@@ -41,6 +42,7 @@ export default function Transactions() {
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const { data: wallets } = useWallets();
   const { isFree } = useSubscription();
   const deleteMutation = useDeleteTransaction();
 
@@ -61,7 +63,7 @@ export default function Transactions() {
     exportTransactionsPdf(transactions, profile?.display_name || '', user?.email || '', {
       dateFrom: filters.dateFrom || undefined,
       dateTo: filters.dateTo || undefined,
-    });
+    }, wallets);
   };
 
   const openAdd = (type: 'income' | 'expense') => {
