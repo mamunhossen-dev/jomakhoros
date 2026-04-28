@@ -250,14 +250,19 @@ export function MessagesPopover() {
             <h3 className="font-display text-sm font-semibold">
               {isReadOnly ? 'পুরানো কথোপকথন' : 'সাপোর্ট মেসেজ'}
             </h3>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
               {(() => {
                 const displayedThread = isReadOnly
                   ? (closedThreads || []).find(t => t.ticket_id === viewingOldTicketId)
                   : activeThread;
                 const tn = displayedThread?.ticket_number;
-                if (tn) return `টিকেট: ${tn}`;
-                return isReadOnly ? 'শুধুমাত্র পড়ার জন্য' : 'আমাদের টিমের সাথে যোগাযোগ করুন';
+                if (tn) return (
+                  <>
+                    <span className="truncate">টিকেট: <span className="font-mono font-semibold text-foreground/80">{tn}</span></span>
+                    <CopyTicketButton value={tn} />
+                  </>
+                );
+                return <span>{isReadOnly ? 'শুধুমাত্র পড়ার জন্য' : 'আমাদের টিমের সাথে যোগাযোগ করুন'}</span>;
               })()}
             </p>
           </div>
