@@ -132,6 +132,7 @@ export default function Reports() {
   }, [dateFrom, dateTo]);
 
   const timeSeriesData = useMemo(() => {
+    let base: { month: string; income: number; expense: number }[] = [];
     if (useMonthlyGrouping) {
       const map = new Map<string, { key: string; income: number; expense: number }>();
       filteredTxs.forEach((tx) => {
@@ -143,7 +144,7 @@ export default function Reports() {
         else if (tx.type === 'expense') cur.expense += Number(tx.amount);
         map.set(key, cur);
       });
-      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => ({ month: v.key, income: v.income, expense: v.expense }));
+      base = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => ({ month: v.key, income: v.income, expense: v.expense }));
     } else {
       const map = new Map<string, { income: number; expense: number }>();
       filteredTxs.forEach((tx) => {
@@ -152,10 +153,27 @@ export default function Reports() {
         else if (tx.type === 'expense') cur.expense += Number(tx.amount);
         map.set(tx.date, cur);
       });
-      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => ({
+      base = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => ({
         month: format(new Date(k), 'dd MMM'), income: v.income, expense: v.expense,
       }));
     }
+    // Add savings + 3-point moving-average trend lines
+    const window = 3;
+    const ma = (arr: number[], i: number) => {
+      const start = Math.max(0, i - window + 1);
+      const slice = arr.slice(start, i + 1);
+      return slice.reduce((s, x) => s + x, 0) / slice.length;
+    };
+    const incomes = base.map((d) => d.income);
+    const expenses = base.map((d) => d.expense);
+    const savings = base.map((d) => d.income - d.expense);
+    return base.map((d, i) => ({
+      ...d,
+      savings: savings[i],
+      incomeTrend: ma(incomes, i),
+      expenseTrend: ma(expenses, i),
+      savingsTrend: ma(savings, i),
+    }));
   }, [filteredTxs, useMonthlyGrouping]);
 
   const categoryData = useMemo(() => {
