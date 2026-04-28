@@ -281,11 +281,12 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || isModerator,
+    enabled: (isAdmin || isModerator) && activeTab === 'support',
+    staleTime: 30_000,
   });
 
   useEffect(() => {
-    if (!isAdmin && !isModerator) return;
+    if ((!isAdmin && !isModerator) || activeTab !== 'support') return;
     const ch = supabase
       .channel('admin-support-all')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => {
@@ -293,7 +294,7 @@ export default function AdminPanel() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [isAdmin, isModerator, qc]);
+  }, [isAdmin, isModerator, qc, activeTab]);
 
   // Support thread statuses
   const { data: threads } = useQuery({
@@ -303,7 +304,8 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || isModerator,
+    enabled: (isAdmin || isModerator) && activeTab === 'support',
+    staleTime: 30_000,
   });
 
   useEffect(() => {
