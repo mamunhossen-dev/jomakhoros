@@ -1,9 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
-import { BENGALI_WEB_FONT, registerBengaliFont } from './pdfFont';
 
-const FONT = 'NotoBengali';
+const FONT = 'helvetica';
 
 export type AnalyticsKpi = {
   income: number;
@@ -21,68 +20,28 @@ export type AnalyticsExportData = {
   insights: string[];
 };
 
-const containsBengali = (value: unknown) => typeof value === 'string' && /[\u0980-\u09FF]/.test(value);
+const BN_MONTHS: Record<string, string> = {
+  'জানু': 'Jan', 'ফেব': 'Feb', 'মার্চ': 'Mar', 'এপ্রি': 'Apr', 'মে': 'May', 'জুন': 'Jun',
+  'জুলা': 'Jul', 'আগ': 'Aug', 'সেপ': 'Sep', 'অক্টো': 'Oct', 'নভে': 'Nov', 'ডিসে': 'Dec',
+};
 
-function drawBengaliTextAsImage(
-  doc: jsPDF,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  options: { fontSize?: number; color?: string; lineHeight?: number } = {}
-) {
-  if (!text.trim()) return 0;
-
-  const fontSize = options.fontSize ?? 9;
-  const lineHeight = options.lineHeight ?? 1.55;
-  const pxPerMm = 3.78;
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return 0;
-
-  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
-  const words = text.split(' ');
-  const maxPxWidth = maxWidth * pxPerMm;
-  const lines: string[] = [];
-  let line = '';
-
-  words.forEach((word) => {
-    const test = line ? `${line} ${word}` : word;
-    if (ctx.measureText(test).width > maxPxWidth && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = test;
-    }
-  });
-  if (line) lines.push(line);
-
-  const linePxHeight = fontSize * pxPerMm * lineHeight;
-  canvas.width = Math.ceil(maxPxWidth + 8);
-  canvas.height = Math.ceil(lines.length * linePxHeight + 8);
-  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
-  ctx.fillStyle = options.color ?? '#475569';
-  ctx.textBaseline = 'top';
-  lines.forEach((row, index) => ctx.fillText(row, 0, 4 + index * linePxHeight));
-
-  const imageHeight = canvas.height / pxPerMm;
-  doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, maxWidth, imageHeight);
-  return imageHeight;
+function toEnglishPeriod(label: string) {
+  return Object.entries(BN_MONTHS).reduce((text, [bn, en]) => text.replace(bn, en), label);
 }
 
-function hideBengaliAutoTableText(cellData: any) {
-  if (cellData.section === 'body' && containsBengali(cellData.cell.raw)) {
-    cellData.cell.text = [''];
-  }
-}
-
-function drawBengaliAutoTableText(doc: jsPDF, cellData: any) {
-  if (cellData.section !== 'body' || !containsBengali(cellData.cell.raw)) return;
-  drawBengaliTextAsImage(doc, String(cellData.cell.raw), cellData.cell.x + 2, cellData.cell.y + 3, cellData.cell.width - 4, {
-    fontSize: 8,
-    color: '#334155',
-    lineHeight: 1.25,
-  });
+function toEnglishCategory(name: string) {
+  if (!/[\u0980-\u09FF]/.test(name)) return name || 'Uncategorized';
+  const normalized = name.toLowerCase();
+  if (/বাসা|বাড়ি|বাড়ি|হাউজিং|ভাড়া|ভাড়া/.test(normalized)) return 'Housing';
+  if (/খাবার|ফুড|রেস্টুরেন্ট/.test(normalized)) return 'Food';
+  if (/যাতায়াত|যাতায়াত|পরিবহন|ট্রান্সপোর্ট/.test(normalized)) return 'Transport';
+  if (/স্বাস্থ্য|মেডিকেল|ঔষধ/.test(normalized)) return 'Health';
+  if (/শিক্ষা|স্কুল|কলেজ/.test(normalized)) return 'Education';
+  if (/বিনোদন/.test(normalized)) return 'Entertainment';
+  if (/শপিং|কেনাকাটা/.test(normalized)) return 'Shopping';
+  if (/বিল|ইউটিলিটি|বিদ্যুৎ|গ্যাস/.test(normalized)) return 'Bills';
+  if (/অশ্রেণী|অশ্রেনী/.test(normalized)) return 'Uncategorized';
+  return 'Category';
 }
 
 export async function exportAnalyticsPdf(
@@ -92,7 +51,6 @@ export async function exportAnalyticsPdf(
   filters?: { dateFrom?: string; dateTo?: string }
 ) {
   const doc = new jsPDF();
-  await registerBengaliFont(doc);
   doc.setFont(FONT, 'normal');
   const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -141,7 +99,7 @@ export async function exportAnalyticsPdf(
     startY: y + 30,
     head: [['Period', 'Income', 'Expense', 'Net']],
     body: data.timeSeries.map(r => [
-      r.month,
+      toEnglishPeriod(r.month),
       `TK ${r.income.toFixed(2)}`,
       `TK ${r.expense.toFixed(2)}`,
       `TK ${(r.income - r.expense).toFixed(2)}`,
@@ -151,8 +109,6 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
-    didParseCell: hideBengaliAutoTableText,
-    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
     didDrawPage: () => {
       doc.setFontSize(11);
       doc.setTextColor(30, 41, 59);
@@ -171,7 +127,7 @@ export async function exportAnalyticsPdf(
     startY: cursorY + 2,
     head: [['Category', 'Amount', '% of Total']],
     body: data.categories.map(c => [
-      c.name,
+      toEnglishCategory(c.name),
       `TK ${c.value.toFixed(2)}`,
       `${((c.value / totalExp) * 100).toFixed(1)}%`,
     ]),
@@ -180,8 +136,6 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
-    didParseCell: hideBengaliAutoTableText,
-    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
   });
 
   cursorY = (doc as any).lastAutoTable.finalY + 10;
@@ -192,13 +146,25 @@ export async function exportAnalyticsPdf(
     doc.setTextColor(30, 41, 59);
     doc.text('Smart Insights', 14, cursorY);
     cursorY += 6;
-    for (const ins of data.insights) {
-      const renderedHeight = drawBengaliTextAsImage(doc, `- ${ins}`, 14, cursorY, pageWidth - 28, {
-        fontSize: 9,
-        color: '#475569',
-      });
-      cursorY += renderedHeight + 2;
-    }
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105);
+    const topCategory = data.categories[0];
+    const totalExpense = data.kpi.expense || 1;
+    const englishInsights = [
+      topCategory
+        ? `- Highest spending category: ${toEnglishCategory(topCategory.name)} — TK ${topCategory.value.toFixed(2)} (${((topCategory.value / totalExpense) * 100).toFixed(1)}% of total expense)`
+        : '',
+      data.kpi.savingsRate >= 20
+        ? `- Great job! You saved ${data.kpi.savingsRate.toFixed(1)}% of your income.`
+        : data.kpi.savingsRate < 0
+          ? '- Warning: expenses are higher than income in this period.'
+          : `- Savings rate is ${data.kpi.savingsRate.toFixed(1)}%. Try to improve it over time.`,
+    ].filter(Boolean);
+    englishInsights.forEach((insight) => {
+      const lines = doc.splitTextToSize(insight, pageWidth - 28);
+      doc.text(lines, 14, cursorY);
+      cursorY += lines.length * 5 + 1;
+    });
   }
 
   // Footer
