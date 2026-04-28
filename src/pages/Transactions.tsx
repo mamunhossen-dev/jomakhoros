@@ -42,6 +42,7 @@ export default function Transactions() {
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const { data: wallets } = useWallets();
   const { isFree } = useSubscription();
   const deleteMutation = useDeleteTransaction();
 
