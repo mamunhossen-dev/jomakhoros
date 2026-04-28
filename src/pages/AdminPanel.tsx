@@ -802,12 +802,13 @@ export default function AdminPanel() {
                         <Textarea
                           value={supportText}
                           onChange={e => setSupportText(e.target.value)}
-                          placeholder="উত্তর লিখুন..."
+                          placeholder={selectedConvUser && getThreadStatus(selectedConvUser) === 'closed' ? 'টিকেটটি বন্ধ। স্ট্যাটাস "ওপেন" করুন।' : 'উত্তর লিখুন...'}
                           rows={1}
+                          disabled={!!selectedConvUser && getThreadStatus(selectedConvUser) === 'closed'}
                           className="min-h-9 resize-none text-sm"
                           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
                         />
-                        <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim()}>
+                        <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim() || (!!selectedConvUser && getThreadStatus(selectedConvUser) === 'closed')}>
                           <Send className="h-4 w-4" />
                         </Button>
                       </div>
