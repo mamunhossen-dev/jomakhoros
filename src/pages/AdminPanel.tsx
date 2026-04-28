@@ -298,6 +298,7 @@ export default function AdminPanel() {
           <TabsTrigger value="support"><Send className="mr-1 h-3.5 w-3.5" /> সাপোর্ট</TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
 
         {/* Payments Tab */}
