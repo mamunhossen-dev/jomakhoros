@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,25 +9,34 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import Index from "./pages/Index";
-import Transactions from "./pages/Transactions";
-import Categories from "./pages/Categories";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
-import Budgets from "./pages/Budgets";
-import Wallets from "./pages/Wallets";
-import Loans from "./pages/Loans";
-import Feedback from "./pages/Feedback";
-import Subscription from "./pages/Subscription";
-import AdminPanel from "./pages/AdminPanel";
-import Terms from "./pages/Terms";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Onboarding from "./pages/Onboarding";
-import UserGuide from "./pages/UserGuide";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { useAuth } from "@/contexts/AuthContext";
+
+const Transactions = lazy(() => import("./pages/Transactions"));
+const Categories = lazy(() => import("./pages/Categories"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Budgets = lazy(() => import("./pages/Budgets"));
+const Wallets = lazy(() => import("./pages/Wallets"));
+const Loans = lazy(() => import("./pages/Loans"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const Subscription = lazy(() => import("./pages/Subscription"));
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const UserGuide = lazy(() => import("./pages/UserGuide"));
+
+function PageFallback() {
+  return (
+    <div className="flex min-h-[240px] items-center justify-center bg-background">
+      <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
+}
 
 function HomeRoute() {
   const { user, loading } = useAuth();
