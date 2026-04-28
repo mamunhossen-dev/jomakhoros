@@ -296,7 +296,8 @@ export default function AdminPanel() {
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin, isModerator, qc, activeTab]);
 
-  // Support thread statuses
+  // Support thread statuses — kept always-on to power the support tab badge,
+  // but small payload + staleTime keeps it cheap.
   const { data: threads } = useQuery({
     queryKey: ['admin_support_threads'],
     queryFn: async () => {
@@ -304,7 +305,7 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: (isAdmin || isModerator) && activeTab === 'support',
+    enabled: isAdmin || isModerator,
     staleTime: 30_000,
   });
 
