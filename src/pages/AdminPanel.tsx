@@ -34,6 +34,35 @@ export default function AdminPanel() {
   const [supportText, setSupportText] = useState('');
   const supportEndRef = useRef<HTMLDivElement>(null);
 
+  // App settings: terms checkbox toggle
+  const { data: termsSetting } = useQuery({
+    queryKey: ['app_setting', 'terms_checkbox_enabled'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('setting_value')
+        .eq('setting_key', 'terms_checkbox_enabled')
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.setting_value as boolean) ?? true;
+    },
+    enabled: isAdmin,
+  });
+
+  const updateTermsSetting = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ setting_key: 'terms_checkbox_enabled', setting_value: enabled as any }, { onConflict: 'setting_key' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['app_setting', 'terms_checkbox_enabled'] });
+      toast.success('সেটিংস আপডেট হয়েছে');
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   // Fetch all users (profiles)
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['admin_users'],
