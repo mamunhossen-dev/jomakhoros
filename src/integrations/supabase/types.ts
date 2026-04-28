@@ -360,6 +360,7 @@ export type Database = {
           id: string
           status: string
           ticket_id: string
+          ticket_number: string
           updated_at: string
           user_id: string
         }
@@ -368,6 +369,7 @@ export type Database = {
           id?: string
           status?: string
           ticket_id?: string
+          ticket_number: string
           updated_at?: string
           user_id: string
         }
@@ -376,6 +378,7 @@ export type Database = {
           id?: string
           status?: string
           ticket_id?: string
+          ticket_number?: string
           updated_at?: string
           user_id?: string
         }
@@ -501,6 +504,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_support_ticket_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
