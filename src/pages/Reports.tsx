@@ -249,20 +249,25 @@ export default function Reports() {
     return list.slice(0, 3);
   }, [filteredTxs, categoryData, timeSeriesData, stats]);
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     if (isFree) { setUpgradeOpen(true); return; }
     if (!filteredTxs.length) { toast.error('এই সময়সীমায় কোনো ডেটা নেই'); return; }
-    exportAnalyticsPdf(
-      {
-        kpi: stats,
-        timeSeries: timeSeriesData,
-        categories: categoryData,
-        insights,
-      },
-      profile?.display_name || '',
-      user?.email || '',
-      { dateFrom: dateFrom || undefined, dateTo: dateTo || undefined },
-    );
+    try {
+      await exportAnalyticsPdf(
+        {
+          kpi: stats,
+          timeSeries: timeSeriesData,
+          categories: categoryData,
+          insights,
+        },
+        profile?.display_name || '',
+        user?.email || '',
+        { dateFrom: dateFrom || undefined, dateTo: dateTo || undefined },
+      );
+    } catch (e) {
+      console.error('PDF export failed', e);
+      toast.error('PDF তৈরি করা যায়নি');
+    }
   };
 
   const tooltipStyle = {
