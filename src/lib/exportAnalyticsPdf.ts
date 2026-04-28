@@ -44,7 +44,7 @@ function toEnglishCategory(name: string) {
   return 'Category';
 }
 
-export async function exportAnalyticsPdf(
+export async function buildAnalyticsPdf(
   data: AnalyticsExportData,
   userName: string,
   userEmail: string,
