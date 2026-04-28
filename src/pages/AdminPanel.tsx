@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye } from 'lucide-react';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { STATUS_LIST, getStatusMeta, type SupportStatus } from '@/lib/supportStatus';
 import { cn } from '@/lib/utils';
@@ -38,6 +38,7 @@ export default function AdminPanel() {
   const [statusFilter, setStatusFilter] = useState<SupportStatus | 'all'>('all');
   const [adminArchiveOpen, setAdminArchiveOpen] = useState(false);
   const [adminViewingOldTicketId, setAdminViewingOldTicketId] = useState<string | null>(null);
+  const [ticketSearch, setTicketSearch] = useState('');
   const supportEndRef = useRef<HTMLDivElement>(null);
 
   // App settings: terms checkbox toggle
@@ -320,6 +321,14 @@ export default function AdminPanel() {
   const threadByTicket: Record<string, any> = {};
   (threads || []).forEach(t => { if (t.ticket_id) threadByTicket[t.ticket_id] = t; });
 
+  // Map ticket_number -> ticket_id for quick lookup (case-insensitive)
+  const ticketNumberToId: Record<string, string> = {};
+  (threads || []).forEach(t => {
+    if (t.ticket_number && t.ticket_id) ticketNumberToId[t.ticket_number.toUpperCase()] = t.ticket_id;
+  });
+  const getTicketNumber = (ticketId: string): string | null =>
+    threadByTicket[ticketId]?.ticket_number || null;
+
   const getThreadStatusByTicket = (ticketId: string): SupportStatus =>
     (threadByTicket[ticketId]?.status as SupportStatus) || 'new';
 
@@ -391,6 +400,23 @@ export default function AdminPanel() {
     });
     if (error) { toast.error(error.message); return; }
     setSupportText('');
+  };
+
+  // Open a ticket by its TKT-… number (used by search bar and clickable links in messages)
+  const openTicketByNumber = (raw: string): boolean => {
+    const norm = raw.trim().toUpperCase();
+    if (!norm) return false;
+    const tid = ticketNumberToId[norm];
+    if (!tid) {
+      toast.error(`টিকেট নাম্বার "${raw}" পাওয়া যায়নি`);
+      return false;
+    }
+    setSelectedTicketId(tid);
+    setAdminViewingOldTicketId(null);
+    setAdminArchiveOpen(false);
+    setStatusFilter('all'); // make sure it shows in left list
+    toast.success(`টিকেট ${norm} ওপেন করা হয়েছে`);
+    return true;
   };
 
   useEffect(() => {
@@ -724,6 +750,36 @@ export default function AdminPanel() {
               <CardTitle className="font-display text-lg">সাপোর্ট কথোপকথন</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Ticket-number search bar */}
+              <div className="mb-3 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={ticketSearch}
+                    onChange={e => setTicketSearch(e.target.value)}
+                    placeholder="টিকেট নাম্বার দিয়ে খুঁজুন (যেমন: TKT-260428-001)"
+                    className="h-9 pl-8 pr-8 text-sm font-mono"
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (openTicketByNumber(ticketSearch)) setTicketSearch(''); } }}
+                  />
+                  {ticketSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setTicketSearch('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => { if (openTicketByNumber(ticketSearch)) setTicketSearch(''); }}
+                  disabled={!ticketSearch.trim()}
+                >
+                  খুঁজুন
+                </Button>
+              </div>
+
               {/* Status filter bar */}
               {(() => {
                 const counts: Record<string, number> = { all: ticketIds.length };
@@ -805,7 +861,7 @@ export default function AdminPanel() {
                                   <p className="text-sm font-medium truncate">{u?.display_name || (uid ? uid.substring(0, 8) : '—')}</p>
                                   {unread > 0 && <Badge className="text-[10px] h-4 px-1.5">{unread}</Badge>}
                                 </div>
-                                <p className="text-[10px] text-muted-foreground/70 mt-0.5">টিকেট #{tid.substring(0, 8)}</p>
+                                <p className="text-[10px] font-mono font-semibold text-primary mt-0.5">{getTicketNumber(tid) || `#${tid.substring(0, 8)}`}</p>
                                 <div className="mt-1 flex items-center justify-between gap-2">
                                   <p className="text-[11px] text-muted-foreground truncate flex-1">{last?.message || 'নতুন টিকেট'}</p>
                                   <span className={cn(
@@ -861,7 +917,7 @@ export default function AdminPanel() {
                           <span className="truncate">
                             {users?.find(u => u.user_id === primaryUid)?.display_name || (primaryUid ? primaryUid.substring(0, 12) : '—')}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-normal shrink-0">#{displayedTicketId.substring(0, 8)}</span>
+                          <span className="text-[10px] font-mono font-semibold text-primary shrink-0">{getTicketNumber(displayedTicketId) || `#${displayedTicketId.substring(0, 8)}`}</span>
                         </div>
                         {isAdminReadOnly ? (
                           <span className={cn(
@@ -920,7 +976,40 @@ export default function AdminPanel() {
                         {(conversationsByTicket[displayedTicketId] || []).map(m => (
                           <div key={m.id} className={`flex ${m.is_from_admin ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[80%] rounded-lg px-3 py-2 ${m.is_from_admin ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                              <p className="text-sm whitespace-pre-wrap">{m.message}</p>
+                              <p className="text-sm whitespace-pre-wrap">
+                                {(() => {
+                                  const text = m.message || '';
+                                  const re = /TKT-\d{6}-\d{3}/gi;
+                                  const parts: Array<string | { tn: string }> = [];
+                                  let last = 0;
+                                  for (const match of text.matchAll(re)) {
+                                    const idx = match.index ?? 0;
+                                    if (idx > last) parts.push(text.slice(last, idx));
+                                    parts.push({ tn: match[0] });
+                                    last = idx + match[0].length;
+                                  }
+                                  if (last < text.length) parts.push(text.slice(last));
+                                  return parts.map((p, i) =>
+                                    typeof p === 'string' ? (
+                                      <span key={i}>{p}</span>
+                                    ) : (
+                                      <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => openTicketByNumber(p.tn)}
+                                        className={cn(
+                                          'inline rounded px-1 font-mono font-semibold underline-offset-2 hover:underline transition-colors',
+                                          m.is_from_admin
+                                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                                            : 'bg-primary/15 text-primary'
+                                        )}
+                                      >
+                                        {p.tn.toUpperCase()}
+                                      </button>
+                                    )
+                                  );
+                                })()}
+                              </p>
                               <p className={`mt-1 text-[10px] ${m.is_from_admin ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                                 {format(new Date(m.created_at), 'dd MMM, hh:mm a')}
                               </p>
@@ -959,7 +1048,7 @@ export default function AdminPanel() {
                                       <div className="flex items-center justify-between gap-2">
                                         <span className="text-[10px] text-muted-foreground">
                                           {dateRef ? format(new Date(dateRef), 'dd MMM yyyy') : '—'}
-                                          <span className="ml-2">#{tid.substring(0, 8)}</span>
+                                          <span className="ml-2 font-mono font-semibold text-primary">{getTicketNumber(tid) || `#${tid.substring(0, 8)}`}</span>
                                         </span>
                                         <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-semibold text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
                                           বন্ধ
