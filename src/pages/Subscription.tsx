@@ -128,10 +128,19 @@ export default function Subscription() {
         </CardHeader>
         <CardContent>
           <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 mb-4">
-            <p className="text-sm font-medium text-destructive">⚠️ পেমেন্ট নম্বর: 01770025816</p>
+            <p className="text-sm font-medium text-destructive">⚠️ মোবাইল পেমেন্ট নম্বর: 01770025816</p>
             <p className="text-xs text-destructive/80 mt-1">
               এটি একটি ব্যক্তিগত নম্বর, মার্চেন্ট অ্যাকাউন্ট নয়। শুধুমাত্র <strong>সেন্ড মানি</strong> করুন। পেমেন্ট প্রসেসর হিসেবে ব্যবহার করবেন না।
             </p>
+          </div>
+
+          <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 mb-4">
+            <p className="text-sm font-medium text-primary">🏦 ব্যাংক একাউন্টের তথ্য</p>
+            <div className="text-xs text-foreground/80 mt-1.5 space-y-0.5">
+              <p><strong>ব্যাংক:</strong> Dutch Bangla Bank Limited</p>
+              <p><strong>একাউন্ট নম্বর:</strong> 1151580002115</p>
+              <p><strong>শাখা:</strong> Mirpur</p>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -143,12 +152,13 @@ export default function Subscription() {
                   <SelectItem value="bkash">বিকাশ</SelectItem>
                   <SelectItem value="nagad">নগদ</SelectItem>
                   <SelectItem value="rocket">রকেট</SelectItem>
+                  <SelectItem value="bank">ব্যাংক ট্রান্সফার (DBBL)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>ট্রানজেকশন আইডি</Label>
-              <Input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder="যেমন: TXN123456789" required />
+              <Label>{paymentMethod === 'bank' ? 'ট্রানজেকশন / রেফারেন্স আইডি' : 'ট্রানজেকশন আইডি'}</Label>
+              <Input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder={paymentMethod === 'bank' ? 'যেমন: REF123456789' : 'যেমন: TXN123456789'} required />
             </div>
             <Button type="submit" className="w-full" disabled={loading || !selectedPlan || !paymentMethod}>
               {loading ? 'পাঠানো হচ্ছে...' : 'পেমেন্ট জমা দিন'}
