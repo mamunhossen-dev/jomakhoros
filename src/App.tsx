@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,25 +9,34 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import Index from "./pages/Index";
-import Transactions from "./pages/Transactions";
-import Categories from "./pages/Categories";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
-import Budgets from "./pages/Budgets";
-import Wallets from "./pages/Wallets";
-import Loans from "./pages/Loans";
-import Feedback from "./pages/Feedback";
-import Subscription from "./pages/Subscription";
-import AdminPanel from "./pages/AdminPanel";
-import Terms from "./pages/Terms";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Onboarding from "./pages/Onboarding";
-import UserGuide from "./pages/UserGuide";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { useAuth } from "@/contexts/AuthContext";
+
+const Transactions = lazy(() => import("./pages/Transactions"));
+const Categories = lazy(() => import("./pages/Categories"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Budgets = lazy(() => import("./pages/Budgets"));
+const Wallets = lazy(() => import("./pages/Wallets"));
+const Loans = lazy(() => import("./pages/Loans"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const Subscription = lazy(() => import("./pages/Subscription"));
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const UserGuide = lazy(() => import("./pages/UserGuide"));
+
+function PageFallback() {
+  return (
+    <div className="flex min-h-[240px] items-center justify-center bg-background">
+      <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
+}
 
 function HomeRoute() {
   const { user, loading } = useAuth();
@@ -79,10 +89,10 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><Suspense fallback={<PageFallback />}><Onboarding /></Suspense></ProtectedRoute>} />
             <Route element={<AuthAwareLayout><Outlet /></AuthAwareLayout>}>
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/user-guide" element={<UserGuide />} />
+              <Route path="/terms" element={<Suspense fallback={<PageFallback />}><Terms /></Suspense>} />
+              <Route path="/user-guide" element={<Suspense fallback={<PageFallback />}><UserGuide /></Suspense>} />
             </Route>
             <Route path="/" element={<HomeRoute />}>
               <Route index element={<Index />} />
@@ -96,16 +106,16 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/budgets" element={<Budgets />} />
-              <Route path="/wallets" element={<Wallets />} />
-              <Route path="/loans" element={<Loans />} />
-              <Route path="/analytics" element={<Reports />} />
-              <Route path="/feedback" element={<Feedback />} />
-              <Route path="/subscription" element={<Subscription />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/transactions" element={<Suspense fallback={<PageFallback />}><Transactions /></Suspense>} />
+              <Route path="/categories" element={<Suspense fallback={<PageFallback />}><Categories /></Suspense>} />
+              <Route path="/budgets" element={<Suspense fallback={<PageFallback />}><Budgets /></Suspense>} />
+              <Route path="/wallets" element={<Suspense fallback={<PageFallback />}><Wallets /></Suspense>} />
+              <Route path="/loans" element={<Suspense fallback={<PageFallback />}><Loans /></Suspense>} />
+              <Route path="/analytics" element={<Suspense fallback={<PageFallback />}><Reports /></Suspense>} />
+              <Route path="/feedback" element={<Suspense fallback={<PageFallback />}><Feedback /></Suspense>} />
+              <Route path="/subscription" element={<Suspense fallback={<PageFallback />}><Subscription /></Suspense>} />
+              <Route path="/admin" element={<Suspense fallback={<PageFallback />}><AdminPanel /></Suspense>} />
+              <Route path="/settings" element={<Suspense fallback={<PageFallback />}><Settings /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

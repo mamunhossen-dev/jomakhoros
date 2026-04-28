@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, Wallet, ArrowUpDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,11 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { formatTaka } from '@/lib/currency';
 import { addMonths, format } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+
+const IncomeExpenseChart = lazy(() =>
+  import('@/components/dashboard/IncomeExpenseChart').then((module) => ({ default: module.IncomeExpenseChart }))
+);
 
 export default function Index() {
   const { data: transactions, isLoading } = useTransactions();
@@ -97,27 +100,15 @@ export default function Index() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="font-display text-lg">আয় বনাম ব্যয়</CardTitle>
+            <CardTitle className="font-display text-lg">আয়, ব্যয় ও সেভিং</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <Skeleton className="h-[250px] w-full" />
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="label" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={(v) => `৳${v}`} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
-                    formatter={(value: number) => [`৳${value.toFixed(2)}`]}
-                  />
-                  <Legend />
-                  <Line type="monotone" dataKey="income" name="আয়" stroke="hsl(var(--success))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="expense" name="ব্যয়" stroke="hsl(var(--destructive))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="savings" name="সেভিং" stroke="hsl(var(--savings))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<Skeleton className="h-[270px] w-full" />}>
+                <IncomeExpenseChart data={chartData} />
+              </Suspense>
             )}
           </CardContent>
         </Card>
