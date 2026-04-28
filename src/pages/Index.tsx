@@ -33,8 +33,12 @@ export default function Index() {
     const recentTxs = transactions.filter((tx) => tx.type !== 'transfer').slice(0, 5);
 
     const months: { key: string; label: string; income: number; expense: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
+    for (let i = 3; i >= 0; i--) {
       const d = subMonths(new Date(), i);
+      months.push({ key: format(d, 'yyyy-MM'), label: format(d, 'MMM'), income: 0, expense: 0 });
+    }
+    for (let i = 1; i <= 2; i++) {
+      const d = subMonths(new Date(), -i);
       months.push({ key: format(d, 'yyyy-MM'), label: format(d, 'MMM'), income: 0, expense: 0 });
     }
     const monthMap = new Map(months.map((m) => [m.key, m]));
