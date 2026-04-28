@@ -321,6 +321,14 @@ export default function AdminPanel() {
   const threadByTicket: Record<string, any> = {};
   (threads || []).forEach(t => { if (t.ticket_id) threadByTicket[t.ticket_id] = t; });
 
+  // Map ticket_number -> ticket_id for quick lookup (case-insensitive)
+  const ticketNumberToId: Record<string, string> = {};
+  (threads || []).forEach(t => {
+    if (t.ticket_number && t.ticket_id) ticketNumberToId[t.ticket_number.toUpperCase()] = t.ticket_id;
+  });
+  const getTicketNumber = (ticketId: string): string | null =>
+    threadByTicket[ticketId]?.ticket_number || null;
+
   const getThreadStatusByTicket = (ticketId: string): SupportStatus =>
     (threadByTicket[ticketId]?.status as SupportStatus) || 'new';
 
