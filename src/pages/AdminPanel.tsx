@@ -315,6 +315,10 @@ export default function AdminPanel() {
 
   const sendSupportReply = async () => {
     if (!supportText.trim() || !selectedConvUser || !user) return;
+    if (getThreadStatus(selectedConvUser) === 'closed') {
+      toast.error('এই টিকেটটি বন্ধ। উত্তর দিতে স্ট্যাটাস "ওপেন" করুন।');
+      return;
+    }
     const { error } = await supabase.from('support_messages').insert({
       user_id: selectedConvUser,
       sender_id: user.id,
