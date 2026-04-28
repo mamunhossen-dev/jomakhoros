@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,6 +47,25 @@ function HomeRoute() {
   );
 }
 
+function AuthAwareLayout({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+  if (user) {
+    return (
+      <SubscriptionProvider>
+        <DashboardLayout />
+      </SubscriptionProvider>
+    );
+  }
+  return <>{children}</>;
+}
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -60,9 +79,11 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/user-guide" element={<UserGuide />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route element={<AuthAwareLayout><Outlet /></AuthAwareLayout>}>
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/user-guide" element={<UserGuide />} />
+            </Route>
             <Route path="/" element={<HomeRoute />}>
               <Route index element={<Index />} />
             </Route>
