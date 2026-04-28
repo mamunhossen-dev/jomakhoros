@@ -10,6 +10,7 @@ import {
   MessageSquare,
   CreditCard,
   Shield,
+  Info,
   X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
@@ -31,6 +32,7 @@ const mainItems = [
   { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart },
   { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare },
   { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard },
+  { title: 'About', url: '/about', icon: Info },
 ];
 
 export function AppSidebar() {
