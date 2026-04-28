@@ -7,7 +7,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { formatTaka } from '@/lib/currency';
 import { format, subMonths } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 export default function Index() {
