@@ -92,7 +92,7 @@ export default function Subscription() {
               )}
               {accountType === 'pro' && profile?.subscription_end && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  সাবস্ক্রিপশন শেষ: {format(new Date(profile.subscription_end), 'dd MMM, yyyy')}
+                  সাবস্ক্রিপশন শেষ: {new Date(profile.subscription_end).getFullYear() >= 2099 ? 'লাইফটাইম ♾' : format(new Date(profile.subscription_end), 'dd MMM, yyyy')}
                 </p>
               )}
             </div>
