@@ -9,73 +9,35 @@ import {
   CheckCircle2, BookOpen, LogIn, UserPlus, Star, Bell, Globe, Clock,
   FileText, Target, HeartHandshake, UserPlus2, Banknote, LineChart, Quote,
 } from 'lucide-react';
+import { useAppSetting } from '@/hooks/useAppSetting';
+import { DEFAULT_LANDING, type LandingContent } from '@/components/admin/LandingPageEditor';
 
-const features = [
-  { icon: Wallet, title: 'মাল্টি-ওয়ালেট', desc: 'নগদ, ব্যাংক, বিকাশ, রকেট — সব এক জায়গায়।', color: 'from-teal-500 to-emerald-600' },
-  { icon: Tag, title: 'স্মার্ট ক্যাটাগরি', desc: 'আয়-ব্যয় সাজান আপনার মতো করে।', color: 'from-violet-500 to-purple-600' },
-  { icon: BarChart3, title: 'লাইভ অ্যানালিটিক্স', desc: 'চার্ট ও রিপোর্টে স্পষ্ট চিত্র।', color: 'from-indigo-500 to-blue-600' },
-  { icon: PiggyBank, title: 'বাজেট ও সঞ্চয়', desc: 'লক্ষ্য সেট করে সঞ্চয় বাড়ান।', color: 'from-pink-500 to-rose-600' },
-  { icon: Bell, title: 'স্মার্ট রিমাইন্ডার', desc: 'প্রতিদিনের খরচ লিখতে ভুলবেন না।', color: 'from-emerald-500 to-teal-600' },
-  { icon: Smartphone, title: 'মোবাইল ফ্রেন্ডলি', desc: 'যেকোনো ডিভাইসে নিখুঁত।', color: 'from-amber-500 to-orange-600' },
-  { icon: FileText, title: 'PDF রিপোর্ট', desc: 'মাসিক রিপোর্ট ডাউনলোড করুন এক ক্লিকে।', color: 'from-sky-500 to-blue-600' },
-  { icon: Target, title: 'লোন ট্র্যাকিং', desc: 'ধার দেওয়া-নেওয়ার হিসাব রাখুন।', color: 'from-fuchsia-500 to-pink-600' },
-  { icon: Globe, title: 'সম্পূর্ণ বাংলায়', desc: 'বাংলাভাষীদের জন্য তৈরি।', color: 'from-lime-500 to-green-600' },
+const featureIcons = [Wallet, Tag, BarChart3, PiggyBank, Bell, Smartphone, FileText, Target, Globe];
+const featureColors = [
+  'from-teal-500 to-emerald-600', 'from-violet-500 to-purple-600', 'from-indigo-500 to-blue-600',
+  'from-pink-500 to-rose-600', 'from-emerald-500 to-teal-600', 'from-amber-500 to-orange-600',
+  'from-sky-500 to-blue-600', 'from-fuchsia-500 to-pink-600', 'from-lime-500 to-green-600',
 ];
-
-const stats = [
-  { value: '১০,০০০+', label: 'সক্রিয় ব্যবহারকারী' },
-  { value: '৫০ লক্ষ+', label: 'লেনদেন ট্র্যাক' },
-  { value: '৪.৯★', label: 'গড় রেটিং' },
-];
-
-const steps = [
-  { icon: UserPlus2, title: 'অ্যাকাউন্ট খুলুন', desc: 'মাত্র ১ মিনিটে ফ্রি রেজিস্ট্রেশন করুন।' },
-  { icon: Banknote, title: 'লেনদেন যোগ করুন', desc: 'প্রতিদিনের আয়-ব্যয় সহজে এন্ট্রি দিন।' },
-  { icon: LineChart, title: 'অগ্রগতি দেখুন', desc: 'রিপোর্ট ও চার্টে আপনার আর্থিক চিত্র জানুন।' },
-];
-
-const testimonials = [
-  {
-    name: 'রাকিবুল হাসান',
-    role: 'শিক্ষার্থী, ঢাকা',
-    text: 'আগে মাস শেষে টাকা কোথায় খরচ হলো বুঝতাম না। JomaKhoros ব্যবহার শুরুর পর প্রতিটি টাকার হিসাব এখন আমার হাতে।',
-  },
-  {
-    name: 'সুমাইয়া আক্তার',
-    role: 'গৃহিণী, চট্টগ্রাম',
-    text: 'বাজার, বিল, বাচ্চার খরচ — সব আলাদা ক্যাটাগরিতে রাখতে পারি। বাংলায় হওয়ায় ব্যবহার করা খুবই সহজ।',
-  },
-  {
-    name: 'তানভীর আহমেদ',
-    role: 'ফ্রিল্যান্সার, সিলেট',
-    text: 'বিকাশ, ব্যাংক, নগদ — সব ওয়ালেট এক অ্যাপে। মাসিক PDF রিপোর্ট দেখে এখন বাজেট প্ল্যান করতে পারি।',
-  },
-];
-
-const faqs = [
-  {
-    q: 'JomaKhoros কি ফ্রি?',
-    a: 'হ্যাঁ, রেজিস্ট্রেশন সম্পূর্ণ বিনামূল্যে। প্রথম এক মাস সব Pro ফিচার ফ্রি ট্রায়াল হিসেবে পাবেন। এরপর আপনি ফ্রি প্ল্যানে চালিয়ে যেতে পারবেন বা মাত্র ১০ টাকা থেকে শুরু হওয়া Pro প্ল্যান নিতে পারবেন।',
-  },
-  {
-    q: 'আমার ডেটা কি নিরাপদ?',
-    a: 'অবশ্যই। আপনার সব ডেটা এনক্রিপ্টেড সার্ভারে সুরক্ষিত থাকে এবং শুধুমাত্র আপনি নিজেই অ্যাক্সেস করতে পারেন। আমরা কখনও আপনার তথ্য তৃতীয় পক্ষের সাথে শেয়ার করি না।',
-  },
-  {
-    q: 'আমি কি একাধিক ওয়ালেট ব্যবহার করতে পারব?',
-    a: 'হ্যাঁ। নগদ, ব্যাংক, বিকাশ, নগদ, রকেট — যত ইচ্ছা ওয়ালেট তৈরি করতে পারবেন এবং একটি থেকে অন্যটিতে সহজেই টাকা ট্রান্সফারের হিসাব রাখতে পারবেন।',
-  },
-  {
-    q: 'মোবাইলে কি ব্যবহার করা যাবে?',
-    a: 'হ্যাঁ। JomaKhoros সম্পূর্ণ মোবাইল-ফ্রেন্ডলি। যেকোনো স্মার্টফোন, ট্যাবলেট বা কম্পিউটারের ব্রাউজার থেকে সরাসরি ব্যবহার করতে পারবেন — কোনো অ্যাপ ইনস্টলের ঝামেলা নেই।',
-  },
-  {
-    q: 'পেমেন্ট কীভাবে করব?',
-    a: 'বিকাশ, নগদ বা রকেটের মাধ্যমে সরাসরি Send Money করে পেমেন্ট করতে পারবেন। পেমেন্টের পর ট্রানজেকশন আইডি দিলেই আপনার Pro সাবস্ক্রিপশন অ্যাক্টিভ হয়ে যাবে।',
-  },
-];
+const stepIcons = [UserPlus2, Banknote, LineChart];
 
 export default function Landing() {
+  const { data } = useAppSetting<LandingContent>('landing_page', DEFAULT_LANDING);
+
+  // Deep merge with defaults
+  const c: LandingContent = {
+    ...DEFAULT_LANDING,
+    ...(data ?? {}),
+    hero: { ...DEFAULT_LANDING.hero, ...(data?.hero ?? {}) },
+    stats: data?.stats ?? DEFAULT_LANDING.stats,
+    how: { ...DEFAULT_LANDING.how, ...(data?.how ?? {}), steps: data?.how?.steps ?? DEFAULT_LANDING.how.steps },
+    features: { ...DEFAULT_LANDING.features, ...(data?.features ?? {}), items: data?.features?.items ?? DEFAULT_LANDING.features.items },
+    why: { ...DEFAULT_LANDING.why, ...(data?.why ?? {}), bullets: data?.why?.bullets ?? DEFAULT_LANDING.why.bullets },
+    testimonials: { ...DEFAULT_LANDING.testimonials, ...(data?.testimonials ?? {}), items: data?.testimonials?.items ?? DEFAULT_LANDING.testimonials.items },
+    faq: { ...DEFAULT_LANDING.faq, ...(data?.faq ?? {}), items: data?.faq?.items ?? DEFAULT_LANDING.faq.items },
+    final_cta: { ...DEFAULT_LANDING.final_cta, ...(data?.final_cta ?? {}) },
+    footer: { ...DEFAULT_LANDING.footer, ...(data?.footer ?? {}) },
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -112,26 +74,26 @@ export default function Landing() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              বাংলাদেশের #১ পার্সোনাল ফাইন্যান্স অ্যাপ
+              {c.hero.badge}
             </div>
             <h1 className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Spend smart.{' '}
+              {c.hero.title_part1}{' '}
               <span className="bg-gradient-to-r from-primary via-emerald-500 to-teal-600 bg-clip-text text-transparent">
-                Live better.
+                {c.hero.title_highlight}
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              JomaKhoros দিয়ে দৈনন্দিন আয়-ব্যয় ট্র্যাক করুন, বাজেট তৈরি করুন এবং সহজেই সঞ্চয়ের অভ্যাস গড়ে তুলুন। সম্পূর্ণ বাংলায়, সম্পূর্ণ বিনামূল্যে শুরু।
+              {c.hero.subtitle}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button asChild size="lg" className="bg-gradient-to-r from-primary to-emerald-600 text-base shadow-lg hover:opacity-90">
                 <Link to="/register">
-                  <UserPlus className="h-5 w-5" /> ফ্রি অ্যাকাউন্ট খুলুন
+                  <UserPlus className="h-5 w-5" /> {c.hero.cta_primary}
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-base">
                 <a href="#features">
-                  <Sparkles className="h-5 w-5" /> ফিচারগুলো দেখুন
+                  <Sparkles className="h-5 w-5" /> {c.hero.cta_secondary}
                 </a>
               </Button>
             </div>
@@ -141,18 +103,20 @@ export default function Landing() {
                   <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                 ))}
               </div>
-              <span className="ml-2">৪.৯ • হাজারো ব্যবহারকারীর পছন্দ</span>
+              <span className="ml-2">{c.hero.rating_text}</span>
             </div>
 
             {/* Stats */}
-            <div className="mt-12 grid grid-cols-3 gap-4 border-t border-border/50 pt-8">
-              {stats.map((s) => (
-                <div key={s.label}>
-                  <div className="font-display text-2xl font-bold text-primary sm:text-3xl">{s.value}</div>
-                  <div className="mt-1 text-xs text-muted-foreground sm:text-sm">{s.label}</div>
-                </div>
-              ))}
-            </div>
+            {c.stats.length > 0 && (
+              <div className="mt-12 grid grid-cols-3 gap-4 border-t border-border/50 pt-8">
+                {c.stats.map((s) => (
+                  <div key={s.label}>
+                    <div className="font-display text-2xl font-bold text-primary sm:text-3xl">{s.value}</div>
+                    <div className="mt-1 text-xs text-muted-foreground sm:text-sm">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -162,29 +126,30 @@ export default function Landing() {
         <div className="mx-auto max-w-5xl">
           <div className="mx-auto max-w-2xl text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Clock className="h-3.5 w-3.5" /> মাত্র ৩ ধাপে শুরু
+              <Clock className="h-3.5 w-3.5" /> {c.how.badge}
             </div>
-            <h2 className="font-display text-3xl font-bold sm:text-4xl">কীভাবে কাজ করে</h2>
-            <p className="mt-4 text-muted-foreground">
-              জটিলতা নেই। মাত্র ১ মিনিটেই শুরু করতে পারবেন আপনার আর্থিক যাত্রা।
-            </p>
+            <h2 className="font-display text-3xl font-bold sm:text-4xl">{c.how.title}</h2>
+            <p className="mt-4 text-muted-foreground">{c.how.subtitle}</p>
           </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {steps.map((s, i) => (
-              <div key={s.title} className="relative">
-                <Card className="h-full border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl">
-                  <CardContent className="p-6 text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-600 text-primary-foreground shadow-lg">
-                      <s.icon className="h-7 w-7" />
-                    </div>
-                    <div className="mb-2 text-xs font-semibold text-primary">ধাপ {['১', '২', '৩'][i]}</div>
-                    <h3 className="font-display text-lg font-bold">{s.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
+            {c.how.steps.map((s, i) => {
+              const Icon = stepIcons[i] ?? stepIcons[0];
+              return (
+                <div key={i} className="relative">
+                  <Card className="h-full border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl">
+                    <CardContent className="p-6 text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-600 text-primary-foreground shadow-lg">
+                        <Icon className="h-7 w-7" />
+                      </div>
+                      <div className="mb-2 text-xs font-semibold text-primary">ধাপ {['১', '২', '৩', '৪', '৫'][i] ?? i + 1}</div>
+                      <h3 className="font-display text-lg font-bold">{s.title}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -194,28 +159,28 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Zap className="h-3.5 w-3.5" /> শক্তিশালী ফিচার
+              <Zap className="h-3.5 w-3.5" /> {c.features.badge}
             </div>
-            <h2 className="font-display text-3xl font-bold sm:text-4xl">
-              আপনার জন্য যা যা দরকার, সব এক অ্যাপে
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              সহজ, দ্রুত এবং কার্যকর — যাতে আপনি সময় নষ্ট না করে আর্থিক সিদ্ধান্ত নিতে পারেন।
-            </p>
+            <h2 className="font-display text-3xl font-bold sm:text-4xl">{c.features.title}</h2>
+            <p className="mt-4 text-muted-foreground">{c.features.subtitle}</p>
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <Card key={f.title} className="group relative overflow-hidden border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl">
-                <CardContent className="p-6">
-                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${f.color} text-white shadow-md`}>
-                    <f.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="font-display text-lg font-bold">{f.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {c.features.items.map((f, i) => {
+              const Icon = featureIcons[i % featureIcons.length];
+              const color = featureColors[i % featureColors.length];
+              return (
+                <Card key={i} className="group relative overflow-hidden border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl">
+                  <CardContent className="p-6">
+                    <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-white shadow-md`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="font-display text-lg font-bold">{f.title}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -225,21 +190,11 @@ export default function Landing() {
         <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-br from-primary via-emerald-600 to-teal-700 p-8 text-primary-foreground shadow-2xl sm:p-12">
           <div className="grid gap-8 md:grid-cols-2 md:items-center">
             <div>
-              <h2 className="font-display text-3xl font-bold sm:text-4xl">
-                কেন JomaKhoros?
-              </h2>
-              <p className="mt-4 opacity-90">
-                বাংলাভাষীদের জন্য, বাংলাদেশের প্রেক্ষাপটে তৈরি — যাতে হিসাব রাখা হয়ে ওঠে সহজ ও আনন্দদায়ক।
-              </p>
+              <h2 className="font-display text-3xl font-bold sm:text-4xl">{c.why.title}</h2>
+              <p className="mt-4 opacity-90">{c.why.subtitle}</p>
             </div>
             <ul className="space-y-3">
-              {[
-                'সম্পূর্ণ বাংলায় ইন্টারফেস',
-                'টাকার মাধ্যমে হিসাব (৳)',
-                'বিকাশ, নগদ, রকেট সাপোর্ট',
-                'PDF রিপোর্ট ডাউনলোড',
-                'কোনো বিজ্ঞাপন নেই',
-              ].map((item) => (
+              {c.why.bullets.map((item) => (
                 <li key={item} className="flex items-center gap-3">
                   <CheckCircle2 className="h-5 w-5 shrink-0" />
                   <span className="font-medium">{item}</span>
@@ -251,69 +206,63 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="px-4 py-16 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="mx-auto max-w-2xl text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <HeartHandshake className="h-3.5 w-3.5" /> ব্যবহারকারীদের কথা
+      {c.testimonials.items.length > 0 && (
+        <section className="px-4 py-16 sm:py-24">
+          <div className="mx-auto max-w-6xl">
+            <div className="mx-auto max-w-2xl text-center">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <HeartHandshake className="h-3.5 w-3.5" /> {c.testimonials.badge}
+              </div>
+              <h2 className="font-display text-3xl font-bold sm:text-4xl">{c.testimonials.title}</h2>
+              <p className="mt-4 text-muted-foreground">{c.testimonials.subtitle}</p>
             </div>
-            <h2 className="font-display text-3xl font-bold sm:text-4xl">
-              যারা JomaKhoros-কে ভালোবাসেন
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              হাজারো মানুষ ইতোমধ্যে তাদের আর্থিক জীবন বদলেছেন। আপনিও যোগ দিন।
-            </p>
-          </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {testimonials.map((t) => (
-              <Card key={t.name} className="border-border/50 transition-all hover:shadow-xl">
-                <CardContent className="p-6">
-                  <Quote className="h-7 w-7 text-primary/40" />
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/90">"{t.text}"</p>
-                  <div className="mt-5 flex items-center gap-3 border-t border-border/50 pt-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-emerald-600 font-display text-sm font-bold text-primary-foreground">
-                      {t.name.charAt(0)}
+            <div className="mt-12 grid gap-5 md:grid-cols-3">
+              {c.testimonials.items.map((t, i) => (
+                <Card key={i} className="border-border/50 transition-all hover:shadow-xl">
+                  <CardContent className="p-6">
+                    <Quote className="h-7 w-7 text-primary/40" />
+                    <p className="mt-3 text-sm leading-relaxed text-foreground/90">"{t.text}"</p>
+                    <div className="mt-5 flex items-center gap-3 border-t border-border/50 pt-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-emerald-600 font-display text-sm font-bold text-primary-foreground">
+                        {t.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold">{t.name}</p>
-                      <p className="text-xs text-muted-foreground">{t.role}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* FAQ */}
-      <section id="faq" className="px-4 py-16 sm:py-20">
-        <div className="mx-auto max-w-3xl">
-          <div className="text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Bell className="h-3.5 w-3.5" /> সাধারণ প্রশ্ন
+      {c.faq.items.length > 0 && (
+        <section id="faq" className="px-4 py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl">
+            <div className="text-center">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <Bell className="h-3.5 w-3.5" /> {c.faq.badge}
+              </div>
+              <h2 className="font-display text-3xl font-bold sm:text-4xl">{c.faq.title}</h2>
+              <p className="mt-4 text-muted-foreground">{c.faq.subtitle}</p>
             </div>
-            <h2 className="font-display text-3xl font-bold sm:text-4xl">আপনার প্রশ্ন, আমাদের উত্তর</h2>
-            <p className="mt-4 text-muted-foreground">
-              যদি আরও কিছু জানতে চান, আমাদের সাথে যোগাযোগ করুন।
-            </p>
-          </div>
 
-          <Accordion type="single" collapsible className="mt-10 w-full">
-            {faqs.map((f, i) => (
-              <AccordionItem key={i} value={`item-${i}`} className="border-border/50">
-                <AccordionTrigger className="text-left text-base font-semibold">
-                  {f.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {f.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
+            <Accordion type="single" collapsible className="mt-10 w-full">
+              {c.faq.items.map((f, i) => (
+                <AccordionItem key={i} value={`item-${i}`} className="border-border/50">
+                  <AccordionTrigger className="text-left text-base font-semibold">{f.q}</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+      )}
 
       {/* Final CTA */}
       <section className="px-4 py-16 sm:py-24">
@@ -321,21 +270,17 @@ export default function Landing() {
           <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-600 text-primary-foreground shadow-lg">
             <Sparkles className="h-8 w-8" />
           </div>
-          <h2 className="font-display text-3xl font-bold sm:text-4xl">
-            আজই শুরু করুন আপনার আর্থিক যাত্রা
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            মাত্র ১ মিনিটে অ্যাকাউন্ট খুলুন। কোনো ক্রেডিট কার্ড লাগবে না।
-          </p>
+          <h2 className="font-display text-3xl font-bold sm:text-4xl">{c.final_cta.title}</h2>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">{c.final_cta.subtitle}</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="bg-gradient-to-r from-primary to-emerald-600 text-base shadow-lg hover:opacity-90">
               <Link to="/register">
-                <UserPlus className="h-5 w-5" /> ফ্রি রেজিস্ট্রেশন
+                <UserPlus className="h-5 w-5" /> {c.final_cta.cta_primary}
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="text-base">
               <Link to="/login">
-                <LogIn className="h-5 w-5" /> লগইন করুন
+                <LogIn className="h-5 w-5" /> {c.final_cta.cta_secondary}
               </Link>
             </Button>
           </div>
@@ -351,7 +296,7 @@ export default function Landing() {
                 <Wallet className="h-4 w-4" />
               </div>
               <span className="font-display font-bold">JomaKhoros</span>
-              <span className="text-xs text-muted-foreground">• Track. Save. Grow.</span>
+              <span className="text-xs text-muted-foreground">• {c.footer.tagline}</span>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <Link to="/user-guide" className="hover:text-foreground">গাইড</Link>
@@ -359,7 +304,7 @@ export default function Landing() {
               <Link to="/login" className="hover:text-foreground">লগইন</Link>
             </div>
           </div>
-          <p className="mt-6 text-center text-xs text-muted-foreground">© 2026 JomaKhoros • সর্বস্বত্ব সংরক্ষিত</p>
+          <p className="mt-6 text-center text-xs text-muted-foreground">{c.footer.copyright}</p>
         </div>
       </footer>
     </div>
