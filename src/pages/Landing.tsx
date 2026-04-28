@@ -12,6 +12,7 @@ import {
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_LANDING, type LandingContent } from '@/components/admin/LandingPageEditor';
 import { DEFAULT_SITE, type SiteSettings } from '@/components/admin/SiteSettingsEditor';
+import { useBrand } from '@/hooks/useBrand';
 
 const featureIcons = [Wallet, Tag, BarChart3, PiggyBank, Bell, Smartphone, FileText, Target, Globe];
 const featureColors = [
