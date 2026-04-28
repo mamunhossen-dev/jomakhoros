@@ -395,16 +395,37 @@ export default function Reports() {
             {isLoading ? <Skeleton className="h-[280px]" /> : !timeSeriesData.length ? (
               <div className="flex items-center justify-center h-[280px] text-sm text-muted-foreground">কোনো ডেটা নেই</div>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={timeSeriesData} barGap={2}>
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={timeSeriesData} barGap={2} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={(v) => `৳${v}`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`৳${v.toFixed(2)}`, n === 'income' ? 'আয়' : 'ব্যয়']} />
-                  <Legend formatter={(v) => v === 'income' ? 'আয়' : 'ব্যয়'} />
-                  <Bar dataKey="income" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} animationDuration={800} />
-                  <Bar dataKey="expense" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} animationDuration={800} />
-                </BarChart>
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(v: number, n: string) => {
+                      const labels: Record<string, string> = {
+                        income: 'আয়', expense: 'ব্যয়', savings: 'সঞ্চয়',
+                        incomeTrend: 'আয় ট্রেন্ড', expenseTrend: 'ব্যয় ট্রেন্ড', savingsTrend: 'সঞ্চয় ট্রেন্ড',
+                      };
+                      return [`৳${Number(v).toFixed(2)}`, labels[n] || n];
+                    }}
+                  />
+                  <Legend
+                    formatter={(v) => {
+                      const labels: Record<string, string> = {
+                        income: 'আয়', expense: 'ব্যয়', savings: 'সঞ্চয়',
+                        incomeTrend: 'আয় ট্রেন্ড', expenseTrend: 'ব্যয় ট্রেন্ড', savingsTrend: 'সঞ্চয় ট্রেন্ড',
+                      };
+                      return labels[v] || v;
+                    }}
+                    wrapperStyle={{ fontSize: 11 }}
+                  />
+                  <Bar dataKey="income" fill="hsl(140, 65%, 45%)" radius={[3, 3, 0, 0]} animationDuration={800} />
+                  <Bar dataKey="expense" fill="hsl(0, 75%, 55%)" radius={[3, 3, 0, 0]} animationDuration={800} />
+                  <Line type="monotone" dataKey="incomeTrend" stroke="hsl(140, 80%, 28%)" strokeWidth={3} dot={false} animationDuration={1000} />
+                  <Line type="monotone" dataKey="expenseTrend" stroke="hsl(0, 85%, 38%)" strokeWidth={3} dot={false} animationDuration={1000} />
+                  <Line type="monotone" dataKey="savingsTrend" stroke="hsl(215, 90%, 50%)" strokeWidth={3} strokeDasharray="5 4" dot={false} animationDuration={1000} />
+                </ComposedChart>
               </ResponsiveContainer>
             )}
           </CardContent>
