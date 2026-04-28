@@ -886,7 +886,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Active conversation — hidden on mobile when no ticket selected */}
-                <div className={cn("border rounded-lg flex flex-col h-[420px] md:h-[420px]", !selectedTicketId && "hidden md:flex")}>
+                <div className={cn("border rounded-lg flex flex-col h-[70vh] md:h-[420px]", !selectedTicketId && "hidden md:flex")}>
                   {!selectedTicketId ? (
                     <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                       বামে একটি কথোপকথন বেছে নিন
