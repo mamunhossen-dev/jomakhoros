@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   BookOpen, Sparkles, TrendingUp, TrendingDown, PieChart, PiggyBank,
   Tag, Brain, Wallet, ShieldCheck, Smartphone, Share2,
   FileImage, FileText, Lightbulb, CheckCircle2, ArrowRight,
   UserPlus, Banknote, ListPlus, BarChart3, Edit3, Trash2,
-  Calendar, Target, Eye, Zap,
+  Calendar, Target, Eye, Zap, LogIn,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
