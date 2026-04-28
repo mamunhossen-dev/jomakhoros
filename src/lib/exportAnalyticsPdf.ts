@@ -21,9 +21,9 @@ export type AnalyticsExportData = {
   insights: string[];
 };
 
-const taka = (amount: number) => `৳ ${amount.toFixed(2)}`;
+const containsBengali = (value: unknown) => typeof value === 'string' && /[\u0980-\u09FF]/.test(value);
 
-async function drawBengaliTextAsImage(
+function drawBengaliTextAsImage(
   doc: jsPDF,
   text: string,
   x: number,
@@ -66,8 +66,23 @@ async function drawBengaliTextAsImage(
   lines.forEach((row, index) => ctx.fillText(row, 0, 4 + index * linePxHeight));
 
   const imageHeight = canvas.height / pxPerMm;
-  doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y - fontSize * 0.32, maxWidth, imageHeight);
+  doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, maxWidth, imageHeight);
   return imageHeight;
+}
+
+function hideBengaliAutoTableText(cellData: any) {
+  if (cellData.section === 'body' && containsBengali(cellData.cell.raw)) {
+    cellData.cell.text = [''];
+  }
+}
+
+function drawBengaliAutoTableText(doc: jsPDF, cellData: any) {
+  if (cellData.section !== 'body' || !containsBengali(cellData.cell.raw)) return;
+  drawBengaliTextAsImage(doc, String(cellData.cell.raw), cellData.cell.x + 2, cellData.cell.y + 3, cellData.cell.width - 4, {
+    fontSize: 8,
+    color: '#334155',
+    lineHeight: 1.25,
+  });
 }
 
 export async function exportAnalyticsPdf(
