@@ -23,7 +23,28 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
 import UserGuide from "./pages/UserGuide";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
+import { useAuth } from "@/contexts/AuthContext";
+
+function HomeRoute() {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+  if (!user) return <Landing />;
+  return (
+    <ProtectedRoute>
+      <SubscriptionProvider>
+        <DashboardLayout />
+      </SubscriptionProvider>
+    </ProtectedRoute>
+  );
+}
 
 const queryClient = new QueryClient();
 
@@ -40,6 +61,9 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/user-guide" element={<UserGuide />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/" element={<HomeRoute />}>
+              <Route index element={<Index />} />
+            </Route>
             <Route
               element={
                 <ProtectedRoute>
@@ -49,7 +73,6 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<Index />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/budgets" element={<Budgets />} />
