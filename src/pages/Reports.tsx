@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  PieChart, Pie, Cell,
+  PieChart, Pie, Cell, ComposedChart, Line,
 } from 'recharts';
 
 // Maximally distinct colors — spread evenly across the hue wheel
