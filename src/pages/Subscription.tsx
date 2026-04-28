@@ -43,7 +43,18 @@ export default function Subscription() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPlan || !paymentMethod || !transactionId.trim()) return;
+    if (!selectedPlan) {
+      toast.error('অনুগ্রহ করে একটি প্ল্যান নির্বাচন করুন।');
+      return;
+    }
+    if (!paymentMethod) {
+      toast.error('অনুগ্রহ করে পেমেন্ট পদ্ধতি নির্বাচন করুন।');
+      return;
+    }
+    if (!transactionId.trim()) {
+      toast.error('অনুগ্রহ করে ট্রানজেকশন আইডি লিখুন।');
+      return;
+    }
     const plan = PLANS.find(p => p.id === selectedPlan);
     if (!plan) return;
     setLoading(true);
@@ -160,7 +171,7 @@ export default function Subscription() {
               <Label>{paymentMethod === 'bank' ? 'ট্রানজেকশন / রেফারেন্স আইডি' : 'ট্রানজেকশন আইডি'}</Label>
               <Input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder={paymentMethod === 'bank' ? 'যেমন: REF123456789' : 'যেমন: TXN123456789'} required />
             </div>
-            <Button type="submit" className="w-full" disabled={loading || !selectedPlan || !paymentMethod}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'পাঠানো হচ্ছে...' : 'পেমেন্ট জমা দিন'}
             </Button>
           </form>
