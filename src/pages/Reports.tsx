@@ -270,6 +270,27 @@ export default function Reports() {
     }
   };
 
+  const handleExportImage = async () => {
+    if (isFree) { setUpgradeOpen(true); return; }
+    if (!filteredTxs.length) { toast.error('এই সময়সীমায় কোনো ডেটা নেই'); return; }
+    try {
+      await exportAnalyticsImage(
+        {
+          kpi: stats,
+          timeSeries: timeSeriesData,
+          categories: categoryData,
+          insights,
+        },
+        profile?.display_name || '',
+        user?.email || '',
+        { dateFrom: dateFrom || undefined, dateTo: dateTo || undefined },
+      );
+    } catch (e) {
+      console.error('Image export failed', e);
+      toast.error('ইমেজ তৈরি করা যায়নি');
+    }
+  };
+
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
     border: '1px solid hsl(var(--border))',
