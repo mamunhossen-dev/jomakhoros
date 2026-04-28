@@ -1015,7 +1015,7 @@ export default function AdminPanel() {
                                       <div className="flex items-center justify-between gap-2">
                                         <span className="text-[10px] text-muted-foreground">
                                           {dateRef ? format(new Date(dateRef), 'dd MMM yyyy') : '—'}
-                                          <span className="ml-2">#{tid.substring(0, 8)}</span>
+                                          <span className="ml-2 font-mono font-semibold text-primary">{getTicketNumber(tid) || `#${tid.substring(0, 8)}`}</span>
                                         </span>
                                         <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-semibold text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
                                           বন্ধ
