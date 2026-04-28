@@ -38,6 +38,7 @@ export function AppSidebar() {
   const { state, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const { isAdmin, isModerator } = useSubscription();
+  const { hasAny: hasAdminAlerts } = useAdminBadges();
   const isMobile = useIsMobile();
 
   const closeMobileSidebar = () => {
