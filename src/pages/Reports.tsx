@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  PieChart, Pie, Cell,
+  PieChart, Pie, Cell, ComposedChart, Line,
 } from 'recharts';
 
 // Maximally distinct colors — spread evenly across the hue wheel
@@ -132,6 +132,7 @@ export default function Reports() {
   }, [dateFrom, dateTo]);
 
   const timeSeriesData = useMemo(() => {
+    let base: { month: string; income: number; expense: number }[] = [];
     if (useMonthlyGrouping) {
       const map = new Map<string, { key: string; income: number; expense: number }>();
       filteredTxs.forEach((tx) => {
@@ -143,7 +144,7 @@ export default function Reports() {
         else if (tx.type === 'expense') cur.expense += Number(tx.amount);
         map.set(key, cur);
       });
-      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => ({ month: v.key, income: v.income, expense: v.expense }));
+      base = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => ({ month: v.key, income: v.income, expense: v.expense }));
     } else {
       const map = new Map<string, { income: number; expense: number }>();
       filteredTxs.forEach((tx) => {
@@ -152,10 +153,27 @@ export default function Reports() {
         else if (tx.type === 'expense') cur.expense += Number(tx.amount);
         map.set(tx.date, cur);
       });
-      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => ({
+      base = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => ({
         month: format(new Date(k), 'dd MMM'), income: v.income, expense: v.expense,
       }));
     }
+    // Add savings + 3-point moving-average trend lines
+    const window = 3;
+    const ma = (arr: number[], i: number) => {
+      const start = Math.max(0, i - window + 1);
+      const slice = arr.slice(start, i + 1);
+      return slice.reduce((s, x) => s + x, 0) / slice.length;
+    };
+    const incomes = base.map((d) => d.income);
+    const expenses = base.map((d) => d.expense);
+    const savings = base.map((d) => d.income - d.expense);
+    return base.map((d, i) => ({
+      ...d,
+      savings: savings[i],
+      incomeTrend: ma(incomes, i),
+      expenseTrend: ma(expenses, i),
+      savingsTrend: ma(savings, i),
+    }));
   }, [filteredTxs, useMonthlyGrouping]);
 
   const categoryData = useMemo(() => {
@@ -377,16 +395,37 @@ export default function Reports() {
             {isLoading ? <Skeleton className="h-[280px]" /> : !timeSeriesData.length ? (
               <div className="flex items-center justify-center h-[280px] text-sm text-muted-foreground">কোনো ডেটা নেই</div>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={timeSeriesData} barGap={2}>
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={timeSeriesData} barGap={2} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={(v) => `৳${v}`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`৳${v.toFixed(2)}`, n === 'income' ? 'আয়' : 'ব্যয়']} />
-                  <Legend formatter={(v) => v === 'income' ? 'আয়' : 'ব্যয়'} />
-                  <Bar dataKey="income" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} animationDuration={800} />
-                  <Bar dataKey="expense" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} animationDuration={800} />
-                </BarChart>
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(v: number, n: string) => {
+                      const labels: Record<string, string> = {
+                        income: 'আয়', expense: 'ব্যয়', savings: 'সঞ্চয়',
+                        incomeTrend: 'আয় ট্রেন্ড', expenseTrend: 'ব্যয় ট্রেন্ড', savingsTrend: 'সঞ্চয় ট্রেন্ড',
+                      };
+                      return [`৳${Number(v).toFixed(2)}`, labels[n] || n];
+                    }}
+                  />
+                  <Legend
+                    formatter={(v) => {
+                      const labels: Record<string, string> = {
+                        income: 'আয়', expense: 'ব্যয়', savings: 'সঞ্চয়',
+                        incomeTrend: 'আয় ট্রেন্ড', expenseTrend: 'ব্যয় ট্রেন্ড', savingsTrend: 'সঞ্চয় ট্রেন্ড',
+                      };
+                      return labels[v] || v;
+                    }}
+                    wrapperStyle={{ fontSize: 11 }}
+                  />
+                  <Bar dataKey="income" fill="hsl(140, 65%, 45%)" radius={[3, 3, 0, 0]} animationDuration={800} />
+                  <Bar dataKey="expense" fill="hsl(0, 75%, 55%)" radius={[3, 3, 0, 0]} animationDuration={800} />
+                  <Line type="monotone" dataKey="incomeTrend" stroke="hsl(140, 80%, 28%)" strokeWidth={3} dot={false} animationDuration={1000} />
+                  <Line type="monotone" dataKey="expenseTrend" stroke="hsl(0, 85%, 38%)" strokeWidth={3} dot={false} animationDuration={1000} />
+                  <Line type="monotone" dataKey="savingsTrend" stroke="hsl(215, 90%, 50%)" strokeWidth={3} strokeDasharray="5 4" dot={false} animationDuration={1000} />
+                </ComposedChart>
               </ResponsiveContainer>
             )}
           </CardContent>
