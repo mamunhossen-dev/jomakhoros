@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { useTransactions, useDeleteTransaction, Transaction } from '@/hooks/useTransactions';
+import { useWallets } from '@/hooks/useWallets';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
