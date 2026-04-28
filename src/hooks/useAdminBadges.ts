@@ -13,11 +13,9 @@ function readSeen(key: string): number {
 }
 
 /**
- * Shared admin badge counts used by the Admin Panel tabs and the sidebar dot.
- * - pendingPaymentsCount: payment_requests with status = 'pending'
- * - feedbackUnreadCount: feedback rows newer than last-seen timestamp
- * - newUsersCount: profiles created within the last 24h AND newer than last-seen
- * - hasAny: true if any of the above > 0 (drives the sidebar red dot)
+ * Lightweight badge counts for admin tabs + sidebar dot.
+ * Uses HEAD count queries (no row payloads) and long staleTime so it
+ * doesn't compete with the heavier AdminPanel queries on mount.
  */
 export function useAdminBadges() {
   const { isAdmin, isModerator } = useSubscription();
@@ -27,7 +25,6 @@ export function useAdminBadges() {
   const [feedbackLastSeen, setFeedbackLastSeen] = useState<number>(() => readSeen(FEEDBACK_SEEN_KEY));
   const [usersLastSeen, setUsersLastSeen] = useState<number>(() => readSeen(USERS_SEEN_KEY));
 
-  // Sync across tabs / when other components update the seen timestamps
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === FEEDBACK_SEEN_KEY) setFeedbackLastSeen(readSeen(FEEDBACK_SEEN_KEY));
@@ -48,41 +45,64 @@ export function useAdminBadges() {
       return count ?? 0;
     },
     enabled,
-    refetchInterval: 30000,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
-  const { data: feedbackList = [] } = useQuery({
-    queryKey: ['admin_badge_feedback'],
+  // Newest feedback timestamp only — used to compute unread badge.
+  const { data: newestFeedbackAt = 0 } = useQuery({
+    queryKey: ['admin_badge_newest_feedback'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('feedback')
-        .select('id, created_at')
+        .select('created_at')
         .order('created_at', { ascending: false })
-        .limit(200);
+        .limit(1)
+        .maybeSingle();
       if (error) throw error;
-      return data || [];
+      return data ? new Date(data.created_at).getTime() : 0;
     },
     enabled,
-    refetchInterval: 30000,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
-  const { data: usersList = [] } = useQuery({
-    queryKey: ['admin_badge_users'],
+  // Count of feedback rows newer than last-seen (server-side count)
+  const { data: feedbackUnreadCount = 0 } = useQuery({
+    queryKey: ['admin_badge_feedback_unread', feedbackLastSeen],
     queryFn: async () => {
-      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, created_at')
-        .gte('created_at', since)
-        .order('created_at', { ascending: false });
+      const since = new Date(feedbackLastSeen || 0).toISOString();
+      const { count, error } = await supabase
+        .from('feedback')
+        .select('id', { count: 'exact', head: true })
+        .gt('created_at', since);
       if (error) throw error;
-      return data || [];
+      return count ?? 0;
+    },
+    enabled: enabled && newestFeedbackAt > feedbackLastSeen,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: newUsersCount = 0 } = useQuery({
+    queryKey: ['admin_badge_new_users', usersLastSeen],
+    queryFn: async () => {
+      const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const sinceSeen = new Date(usersLastSeen || 0).toISOString();
+      const cutoff = sinceSeen > since24h ? sinceSeen : since24h;
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .gt('created_at', cutoff);
+      if (error) throw error;
+      return count ?? 0;
     },
     enabled: isAdmin,
-    refetchInterval: 30000,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
-  // Realtime: keep counts fresh
+  // Realtime: invalidate only the small badge queries
   useEffect(() => {
     if (!enabled) return;
     const ch = supabase
@@ -90,23 +110,16 @@ export function useAdminBadges() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_requests' }, () => {
         qc.invalidateQueries({ queryKey: ['admin_badge_pending_payments'] });
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' }, () => {
-        qc.invalidateQueries({ queryKey: ['admin_badge_feedback'] });
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feedback' }, () => {
+        qc.invalidateQueries({ queryKey: ['admin_badge_newest_feedback'] });
+        qc.invalidateQueries({ queryKey: ['admin_badge_feedback_unread'] });
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        qc.invalidateQueries({ queryKey: ['admin_badge_users'] });
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => {
+        qc.invalidateQueries({ queryKey: ['admin_badge_new_users'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [enabled, qc]);
-
-  const feedbackUnreadCount = (feedbackList || []).filter(
-    f => new Date(f.created_at).getTime() > feedbackLastSeen
-  ).length;
-
-  const newUsersCount = (usersList || []).filter(
-    u => new Date(u.created_at).getTime() > usersLastSeen
-  ).length;
 
   const markFeedbackSeen = () => {
     const now = Date.now();
@@ -122,13 +135,13 @@ export function useAdminBadges() {
 
   const hasAny =
     (pendingPaymentsCount || 0) > 0 ||
-    feedbackUnreadCount > 0 ||
-    newUsersCount > 0;
+    (feedbackUnreadCount || 0) > 0 ||
+    (newUsersCount || 0) > 0;
 
   return {
     pendingPaymentsCount: pendingPaymentsCount || 0,
-    feedbackUnreadCount,
-    newUsersCount,
+    feedbackUnreadCount: feedbackUnreadCount || 0,
+    newUsersCount: newUsersCount || 0,
     hasAny,
     markFeedbackSeen,
     markUsersSeen,
