@@ -285,18 +285,19 @@ export default function AdminPanel() {
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin, isModerator, qc]);
 
-  const threadByUser: Record<string, any> = {};
-  (threads || []).forEach(t => { threadByUser[t.user_id] = t; });
+  // Each thread = one ticket. Group by ticket_id.
+  const threadByTicket: Record<string, any> = {};
+  (threads || []).forEach(t => { if (t.ticket_id) threadByTicket[t.ticket_id] = t; });
 
-  const getThreadStatus = (uid: string): SupportStatus =>
-    (threadByUser[uid]?.status as SupportStatus) || 'new';
+  const getThreadStatusByTicket = (ticketId: string): SupportStatus =>
+    (threadByTicket[ticketId]?.status as SupportStatus) || 'new';
 
   const updateThreadStatus = useMutation({
-    mutationFn: async ({ uid, status }: { uid: string; status: SupportStatus }) => {
-      // upsert by user_id (unique)
+    mutationFn: async ({ ticketId, status }: { ticketId: string; status: SupportStatus }) => {
       const { error } = await supabase
         .from('support_threads')
-        .upsert({ user_id: uid, status }, { onConflict: 'user_id' });
+        .update({ status })
+        .eq('ticket_id', ticketId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -306,24 +307,51 @@ export default function AdminPanel() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const conversations: Record<string, any[]> = {};
+  // Group messages by ticket_id (each ticket is a separate conversation)
+  const conversationsByTicket: Record<string, any[]> = {};
   (allMessages || []).forEach(m => {
-    if (!conversations[m.user_id]) conversations[m.user_id] = [];
-    conversations[m.user_id].push(m);
+    const tid = (m as any).ticket_id;
+    if (!tid) return;
+    if (!conversationsByTicket[tid]) conversationsByTicket[tid] = [];
+    conversationsByTicket[tid].push(m);
   });
-  const conversationUserIds = Object.keys(conversations);
+
+  // Build the list of ticket ids we want to show: all threads (so empty new tickets show too)
+  // plus any ticket ids that have messages. Sort by latest activity desc.
+  const ticketIds = Array.from(new Set([
+    ...((threads || []).map(t => t.ticket_id).filter(Boolean) as string[]),
+    ...Object.keys(conversationsByTicket),
+  ]));
+
+  const ticketActivityAt = (tid: string): number => {
+    const msgs = conversationsByTicket[tid];
+    if (msgs && msgs.length) return new Date(msgs[msgs.length - 1].created_at).getTime();
+    const t = threadByTicket[tid];
+    return t ? new Date(t.updated_at || t.created_at).getTime() : 0;
+  };
+  ticketIds.sort((a, b) => ticketActivityAt(b) - ticketActivityAt(a));
+
+  const getTicketUserId = (tid: string): string | null => {
+    const t = threadByTicket[tid];
+    if (t) return t.user_id;
+    const msgs = conversationsByTicket[tid];
+    return msgs?.[0]?.user_id ?? null;
+  };
 
   const sendSupportReply = async () => {
-    if (!supportText.trim() || !selectedConvUser || !user) return;
-    if (getThreadStatus(selectedConvUser) === 'closed') {
+    if (!supportText.trim() || !selectedTicketId || !user) return;
+    if (getThreadStatusByTicket(selectedTicketId) === 'closed') {
       toast.error('এই টিকেটটি বন্ধ। উত্তর দিতে স্ট্যাটাস "ওপেন" করুন।');
       return;
     }
+    const targetUserId = getTicketUserId(selectedTicketId);
+    if (!targetUserId) { toast.error('ইউজার পাওয়া যায়নি'); return; }
     const { error } = await supabase.from('support_messages').insert({
-      user_id: selectedConvUser,
+      user_id: targetUserId,
       sender_id: user.id,
       is_from_admin: true,
       message: supportText.trim(),
+      ticket_id: selectedTicketId,
     });
     if (error) { toast.error(error.message); return; }
     setSupportText('');
@@ -331,7 +359,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (supportEndRef.current) supportEndRef.current.scrollTop = supportEndRef.current.scrollHeight;
-  }, [selectedConvUser, allMessages]);
+  }, [selectedTicketId, allMessages]);
 
   const copyUid = (uid: string) => {
     navigator.clipboard.writeText(uid);
