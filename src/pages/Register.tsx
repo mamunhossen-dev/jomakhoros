@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { lovable } from '@/integrations/lovable';
 
 export default function Register() {
   const [email, setEmail] = useState('');
