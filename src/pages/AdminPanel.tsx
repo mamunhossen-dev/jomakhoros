@@ -642,48 +642,145 @@ export default function AdminPanel() {
               <CardTitle className="font-display text-lg">সাপোর্ট কথোপকথন</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 md:grid-cols-[260px_1fr]">
+              {/* Status filter bar */}
+              {(() => {
+                const counts: Record<string, number> = { all: conversationUserIds.length };
+                STATUS_LIST.forEach(s => { counts[s.value] = 0; });
+                conversationUserIds.forEach(uid => {
+                  const st = getThreadStatus(uid);
+                  counts[st] = (counts[st] || 0) + 1;
+                });
+                const tabs: Array<{ key: SupportStatus | 'all'; label: string; dotClass?: string }> = [
+                  { key: 'all', label: 'সব' },
+                  ...STATUS_LIST.map(s => ({ key: s.value, label: s.label, dotClass: s.dotClass })),
+                ];
+                return (
+                  <div className="mb-3 flex flex-wrap gap-1.5">
+                    {tabs.map(t => {
+                      const active = statusFilter === t.key;
+                      return (
+                        <button
+                          key={t.key}
+                          onClick={() => setStatusFilter(t.key)}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-all',
+                            active
+                              ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                              : 'bg-background hover:bg-muted border-border'
+                          )}
+                        >
+                          {t.dotClass && <span className={cn('h-2 w-2 rounded-full', t.dotClass)} />}
+                          <span>{t.label}</span>
+                          <span className={cn(
+                            'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold',
+                            active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
+                          )}>
+                            {counts[t.key] ?? 0}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              <div className="grid gap-3 md:grid-cols-[280px_1fr]">
                 {/* Conversations list */}
                 <div className="border rounded-lg overflow-hidden">
-                  <ScrollArea className="h-[400px]">
-                    {!conversationUserIds.length ? (
-                      <p className="p-4 text-center text-xs text-muted-foreground">কোনো কথোপকথন নেই</p>
-                    ) : (
-                      <div className="divide-y">
-                        {conversationUserIds.map(uid => {
-                          const u = users?.find(x => x.user_id === uid);
-                          const msgs = conversations[uid];
-                          const last = msgs[msgs.length - 1];
-                          const unread = msgs.filter(m => !m.is_from_admin && !m.is_read).length;
-                          return (
-                            <button
-                              key={uid}
-                              onClick={() => setSelectedConvUser(uid)}
-                              className={`w-full text-left p-3 hover:bg-muted/50 ${selectedConvUser === uid ? 'bg-muted' : ''}`}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <p className="text-sm font-medium truncate">{u?.display_name || uid.substring(0, 8)}</p>
-                                {unread > 0 && <Badge className="text-[10px] h-4 px-1.5">{unread}</Badge>}
-                              </div>
-                              <p className="text-[11px] text-muted-foreground truncate">{last?.message}</p>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                  <ScrollArea className="h-[420px]">
+                    {(() => {
+                      const visible = conversationUserIds.filter(uid =>
+                        statusFilter === 'all' ? true : getThreadStatus(uid) === statusFilter
+                      );
+                      if (!visible.length) {
+                        return <p className="p-4 text-center text-xs text-muted-foreground">কোনো কথোপকথন নেই</p>;
+                      }
+                      return (
+                        <div className="divide-y">
+                          {visible.map(uid => {
+                            const u = users?.find(x => x.user_id === uid);
+                            const msgs = conversations[uid];
+                            const last = msgs[msgs.length - 1];
+                            const unread = msgs.filter(m => !m.is_from_admin && !m.is_read).length;
+                            const meta = getStatusMeta(getThreadStatus(uid));
+                            const StatusIcon = meta.icon;
+                            return (
+                              <button
+                                key={uid}
+                                onClick={() => setSelectedConvUser(uid)}
+                                className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${selectedConvUser === uid ? 'bg-muted' : ''}`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-sm font-medium truncate">{u?.display_name || uid.substring(0, 8)}</p>
+                                  {unread > 0 && <Badge className="text-[10px] h-4 px-1.5">{unread}</Badge>}
+                                </div>
+                                <div className="mt-1 flex items-center justify-between gap-2">
+                                  <p className="text-[11px] text-muted-foreground truncate flex-1">{last?.message}</p>
+                                  <span className={cn(
+                                    'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-all duration-300',
+                                    meta.badgeClass
+                                  )}>
+                                    <StatusIcon className="h-2.5 w-2.5" />
+                                    {meta.label}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </ScrollArea>
                 </div>
 
                 {/* Active conversation */}
-                <div className="border rounded-lg flex flex-col h-[400px]">
+                <div className="border rounded-lg flex flex-col h-[420px]">
                   {!selectedConvUser ? (
                     <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                       বামে একটি কথোপকথন বেছে নিন
                     </div>
                   ) : (
                     <>
-                      <div className="border-b p-2 text-xs font-medium">
-                        {users?.find(u => u.user_id === selectedConvUser)?.display_name || selectedConvUser.substring(0, 12)}
+                      <div className="border-b p-2 flex items-center justify-between gap-2">
+                        <div className="text-sm font-medium truncate">
+                          {users?.find(u => u.user_id === selectedConvUser)?.display_name || selectedConvUser.substring(0, 12)}
+                        </div>
+                        {(() => {
+                          const current = getStatusMeta(getThreadStatus(selectedConvUser));
+                          const CurIcon = current.icon;
+                          return (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild disabled={!isAdmin && !isModerator}>
+                                <button
+                                  className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all duration-300 hover:opacity-80',
+                                    current.badgeClass
+                                  )}
+                                >
+                                  <CurIcon className="h-3 w-3" />
+                                  <span>{current.label}</span>
+                                  <ChevronDown className="h-3 w-3 opacity-70" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-40">
+                                {STATUS_LIST.map(s => {
+                                  const Icon = s.icon;
+                                  return (
+                                    <DropdownMenuItem
+                                      key={s.value}
+                                      onClick={() => updateThreadStatus.mutate({ uid: selectedConvUser, status: s.value })}
+                                      className="gap-2 text-sm"
+                                    >
+                                      <span className={cn('h-2 w-2 rounded-full', s.dotClass)} />
+                                      <Icon className="h-3.5 w-3.5" />
+                                      <span>{s.label}</span>
+                                    </DropdownMenuItem>
+                                  );
+                                })}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          );
+                        })()}
                       </div>
                       <div ref={supportEndRef} className="flex-1 overflow-y-auto p-3 space-y-2">
                         {conversations[selectedConvUser]?.map(m => (
