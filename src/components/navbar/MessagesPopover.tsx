@@ -199,7 +199,7 @@ export function MessagesPopover() {
           <h3 className="font-display text-sm font-semibold">সাপোর্ট মেসেজ</h3>
           <p className="text-xs text-muted-foreground">আমাদের টিমের সাথে যোগাযোগ করুন</p>
         </div>
-        {activeThread ? (
+        {activeThread && (messages?.length ?? 0) > 0 ? (
           <div className={`mx-3 mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs transition-colors ${banner.cls}`}>
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span className="leading-relaxed">{banner.text}</span>
