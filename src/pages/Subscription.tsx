@@ -11,18 +11,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { useProfile } from '@/hooks/useProfile';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useAppSetting } from '@/hooks/useAppSetting';
+import { DEFAULT_SUBSCRIPTION, type SubscriptionContent } from '@/components/admin/SubscriptionEditor';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-
-const PLANS = [
-  { id: '1month', label: '১ মাস', price: 10, duration: '1 month' },
-  { id: '6months', label: '৬ মাস', price: 50, duration: '6 months' },
-  { id: '1year', label: '১ বছর', price: 100, duration: '1 year' },
-];
 
 export default function Subscription() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const { data: settings } = useAppSetting<SubscriptionContent>('subscription_page', DEFAULT_SUBSCRIPTION);
+  const content: SubscriptionContent = {
+    ...DEFAULT_SUBSCRIPTION,
+    ...(settings ?? {}),
+    plans: settings?.plans ?? DEFAULT_SUBSCRIPTION.plans,
+    payment_methods: settings?.payment_methods ?? DEFAULT_SUBSCRIPTION.payment_methods,
+  };
+
   const [selectedPlan, setSelectedPlan] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [transactionId, setTransactionId] = useState('');
@@ -43,19 +47,10 @@ export default function Subscription() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPlan) {
-      toast.error('অনুগ্রহ করে একটি প্ল্যান নির্বাচন করুন।');
-      return;
-    }
-    if (!paymentMethod) {
-      toast.error('অনুগ্রহ করে পেমেন্ট পদ্ধতি নির্বাচন করুন।');
-      return;
-    }
-    if (!transactionId.trim()) {
-      toast.error('অনুগ্রহ করে ট্রানজেকশন আইডি লিখুন।');
-      return;
-    }
-    const plan = PLANS.find(p => p.id === selectedPlan);
+    if (!selectedPlan) return toast.error('অনুগ্রহ করে একটি প্ল্যান নির্বাচন করুন।');
+    if (!paymentMethod) return toast.error('অনুগ্রহ করে পেমেন্ট পদ্ধতি নির্বাচন করুন।');
+    if (!transactionId.trim()) return toast.error('অনুগ্রহ করে ট্রানজেকশন আইডি লিখুন।');
+    const plan = content.plans.find(p => p.id === selectedPlan);
     if (!plan) return;
     setLoading(true);
     const { error } = await supabase.from('payment_requests').insert({
@@ -76,12 +71,14 @@ export default function Subscription() {
 
   const { accountType } = useSubscription();
   const isActive = accountType === 'pro' || accountType === 'trial';
+  const pmLabel = (val: string) => content.payment_methods.find(m => m.value === val)?.label ?? val;
+  const isBank = paymentMethod === 'bank';
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-bold">সাবস্ক্রিপশন</h1>
-        <p className="text-muted-foreground">আপনার প্ল্যান এবং পেমেন্ট পরিচালনা করুন।</p>
+        <h1 className="font-display text-2xl font-bold">{content.page_title}</h1>
+        <p className="text-muted-foreground">{content.page_subtitle}</p>
       </div>
 
       {/* Current status */}
@@ -112,23 +109,25 @@ export default function Subscription() {
       </Card>
 
       {/* Plans */}
-      <div>
-        <h2 className="font-display text-lg font-semibold mb-3">প্ল্যান নির্বাচন করুন</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {PLANS.map(plan => (
-            <Card
-              key={plan.id}
-              className={`border cursor-pointer transition-colors ${selectedPlan === plan.id ? 'border-primary bg-primary/5' : 'border-border/50'} shadow-sm`}
-              onClick={() => setSelectedPlan(plan.id)}
-            >
-              <CardContent className="pt-5 text-center">
-                <p className="text-sm font-medium">{plan.label}</p>
-                <p className="text-2xl font-bold font-display text-primary mt-1">৳{plan.price}</p>
-              </CardContent>
-            </Card>
-          ))}
+      {content.plans.length > 0 && (
+        <div>
+          <h2 className="font-display text-lg font-semibold mb-3">প্ল্যান নির্বাচন করুন</h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {content.plans.map(plan => (
+              <Card
+                key={plan.id}
+                className={`border cursor-pointer transition-colors ${selectedPlan === plan.id ? 'border-primary bg-primary/5' : 'border-border/50'} shadow-sm`}
+                onClick={() => setSelectedPlan(plan.id)}
+              >
+                <CardContent className="pt-5 text-center">
+                  <p className="text-sm font-medium">{plan.label}</p>
+                  <p className="text-2xl font-bold font-display text-primary mt-1">৳{plan.price}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Payment form */}
       <Card className="border-0 shadow-sm">
@@ -138,22 +137,26 @@ export default function Subscription() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 mb-4">
-            <p className="text-sm font-medium text-destructive">⚠️ মোবাইল পেমেন্ট নম্বর: 01770025816</p>
-            <p className="text-xs text-destructive/80 mt-1">
-              এটি একটি ব্যক্তিগত নম্বর, মার্চেন্ট অ্যাকাউন্ট নয়। শুধুমাত্র <strong>সেন্ড মানি</strong> করুন। পেমেন্ট প্রসেসর হিসেবে ব্যবহার করবেন না।
-            </p>
-          </div>
-
-          <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 mb-4">
-            <p className="text-sm font-medium text-primary">🏦 ব্যাংক একাউন্টের তথ্য</p>
-            <div className="text-xs text-foreground/80 mt-1.5 space-y-0.5">
-              <p><strong>ব্যাংক:</strong> Dutch Bangla Bank Limited</p>
-              <p><strong>নাম:</strong> Md Mamun Hossen</p>
-              <p><strong>একাউন্ট নম্বর:</strong> 1151580002115</p>
-              <p><strong>শাখা:</strong> Mirpur</p>
+          {content.show_mobile_section && content.mobile_number && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 mb-4">
+              <p className="text-sm font-medium text-destructive">⚠️ মোবাইল পেমেন্ট নম্বর: {content.mobile_number}</p>
+              {content.mobile_warning && (
+                <p className="text-xs text-destructive/80 mt-1">{content.mobile_warning}</p>
+              )}
             </div>
-          </div>
+          )}
+
+          {content.show_bank_section && (
+            <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 mb-4">
+              <p className="text-sm font-medium text-primary">🏦 ব্যাংক একাউন্টের তথ্য</p>
+              <div className="text-xs text-foreground/80 mt-1.5 space-y-0.5">
+                {content.bank_name && <p><strong>ব্যাংক:</strong> {content.bank_name}</p>}
+                {content.bank_account_name && <p><strong>নাম:</strong> {content.bank_account_name}</p>}
+                {content.bank_account_number && <p><strong>একাউন্ট নম্বর:</strong> {content.bank_account_number}</p>}
+                {content.bank_branch && <p><strong>শাখা:</strong> {content.bank_branch}</p>}
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -161,16 +164,15 @@ export default function Subscription() {
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger><SelectValue placeholder="পদ্ধতি নির্বাচন করুন" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="bkash">বিকাশ</SelectItem>
-                  <SelectItem value="nagad">নগদ</SelectItem>
-                  <SelectItem value="rocket">রকেট</SelectItem>
-                  <SelectItem value="bank">ব্যাংক ট্রান্সফার (DBBL)</SelectItem>
+                  {content.payment_methods.map(m => (
+                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{paymentMethod === 'bank' ? 'ট্রানজেকশন / রেফারেন্স আইডি' : 'ট্রানজেকশন আইডি'}</Label>
-              <Input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder={paymentMethod === 'bank' ? 'যেমন: REF123456789' : 'যেমন: TXN123456789'} required />
+              <Label>{isBank ? 'ট্রানজেকশন / রেফারেন্স আইডি' : 'ট্রানজেকশন আইডি'}</Label>
+              <Input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder={isBank ? 'যেমন: REF123456789' : 'যেমন: TXN123456789'} required />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'পাঠানো হচ্ছে...' : 'পেমেন্ট জমা দিন'}
@@ -191,7 +193,7 @@ export default function Subscription() {
                 <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5">
                   <div>
                     <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
-                    <p className="text-xs text-muted-foreground">{p.payment_method === 'bkash' ? 'বিকাশ' : p.payment_method === 'nagad' ? 'নগদ' : p.payment_method === 'rocket' ? 'রকেট' : p.payment_method === 'bank' ? 'ব্যাংক (DBBL)' : p.payment_method} • {p.transaction_id}</p>
+                    <p className="text-xs text-muted-foreground">{pmLabel(p.payment_method)} • {p.transaction_id}</p>
                     <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM, yyyy')}</p>
                   </div>
                   <Badge
