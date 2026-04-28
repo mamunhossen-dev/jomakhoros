@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
+import { Link } from 'react-router-dom';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
