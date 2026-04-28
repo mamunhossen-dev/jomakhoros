@@ -485,7 +485,16 @@ export default function AdminPanel() {
             )}
           </TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
+          {isAdmin && (
+            <TabsTrigger value="users" className="relative">
+              <Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী
+              {newUsersCount > 0 && (
+                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-in fade-in zoom-in">
+                  {newUsersCount > 99 ? '99+' : newUsersCount}
+                </span>
+              )}
+            </TabsTrigger>
+          )}
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
 
