@@ -69,6 +69,7 @@ export default function Terms() {
               <p className="text-sm text-primary font-medium">🏦 ব্যাংক একাউন্টের তথ্য</p>
               <div className="text-xs text-foreground/80 mt-1.5 space-y-0.5">
                 <p><strong>ব্যাংক:</strong> Dutch Bangla Bank Limited</p>
+                <p><strong>নাম:</strong> Md Mamun Hossen</p>
                 <p><strong>একাউন্ট নম্বর:</strong> 1151580002115</p>
                 <p><strong>শাখা:</strong> Mirpur</p>
               </div>
