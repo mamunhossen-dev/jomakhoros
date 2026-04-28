@@ -369,7 +369,7 @@ export type Database = {
           id?: string
           status?: string
           ticket_id?: string
-          ticket_number: string
+          ticket_number?: string
           updated_at?: string
           user_id: string
         }
