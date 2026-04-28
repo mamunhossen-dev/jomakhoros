@@ -9,11 +9,11 @@ import { useTransactions, useCategories } from '@/hooks/useTransactions';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { exportAnalyticsPdf } from '@/lib/exportAnalyticsPdf';
+import { exportAnalyticsPdf, exportAnalyticsImage } from '@/lib/exportAnalyticsPdf';
 import { formatTaka } from '@/lib/currency';
 import {
   TrendingUp, TrendingDown, Wallet, PiggyBank, Percent,
-  FileDown, Lock, X, Lightbulb,
+  FileDown, Lock, X, Lightbulb, Image as ImageIcon,
 } from 'lucide-react';
 import {
   format, startOfMonth, endOfMonth, startOfYear, endOfYear,
