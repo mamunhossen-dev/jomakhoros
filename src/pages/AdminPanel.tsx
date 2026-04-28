@@ -861,7 +861,7 @@ export default function AdminPanel() {
                                   <p className="text-sm font-medium truncate">{u?.display_name || (uid ? uid.substring(0, 8) : '—')}</p>
                                   {unread > 0 && <Badge className="text-[10px] h-4 px-1.5">{unread}</Badge>}
                                 </div>
-                                <p className="text-[10px] text-muted-foreground/70 mt-0.5">টিকেট #{tid.substring(0, 8)}</p>
+                                <p className="text-[10px] font-mono font-semibold text-primary mt-0.5">{getTicketNumber(tid) || `#${tid.substring(0, 8)}`}</p>
                                 <div className="mt-1 flex items-center justify-between gap-2">
                                   <p className="text-[11px] text-muted-foreground truncate flex-1">{last?.message || 'নতুন টিকেট'}</p>
                                   <span className={cn(
