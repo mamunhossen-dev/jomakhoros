@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
+import { Link } from 'react-router-dom';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -46,14 +47,14 @@ export function AppSidebar() {
     <Sidebar collapsible="offcanvas" className="border-r-0 md:collapsible-icon">
       <SidebarContent className="bg-sidebar pt-4">
         <div className="flex items-center justify-between px-4 pb-6">
-          <div className="flex items-center gap-2">
+          <Link to="/" onClick={closeMobileSidebar} className="flex items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
               <DollarSign className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
             {!collapsed && (
               <span className="font-display text-lg font-bold text-sidebar-foreground">JomaKhoros</span>
             )}
-          </div>
+          </Link>
           {isMobile && (
             <button onClick={closeMobileSidebar} className="rounded-lg p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground">
               <X className="h-5 w-5" />

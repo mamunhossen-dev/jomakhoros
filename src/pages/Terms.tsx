@@ -5,12 +5,12 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 py-10">
-        <div className="flex items-center gap-2 mb-8">
+        <Link to="/" className="flex items-center gap-2 mb-8">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <DollarSign className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="font-display text-lg font-bold">JomaKhoros</span>
-        </div>
+        </Link>
 
         <h1 className="font-display text-3xl font-bold mb-6">শর্তাবলী (Terms & Conditions)</h1>
 
