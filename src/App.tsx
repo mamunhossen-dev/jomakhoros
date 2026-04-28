@@ -25,6 +25,7 @@ import Onboarding from "./pages/Onboarding";
 import UserGuide from "./pages/UserGuide";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
+import ScrollToTop from "./components/ScrollToTop";
 import { useAuth } from "@/contexts/AuthContext";
 
 function HomeRoute() {
@@ -54,6 +55,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
