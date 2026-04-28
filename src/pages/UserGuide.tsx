@@ -57,7 +57,6 @@ const features = [
   { icon: PieChart, title: 'অ্যানালিটিক্স ড্যাশবোর্ড', desc: 'ভিজ্যুয়াল চার্ট ও KPI।' },
   { icon: Smartphone, title: 'বাংলা-বান্ধব UI', desc: 'সহজ ও পরিষ্কার ডিজাইন।' },
   { icon: Brain, title: 'স্মার্ট ইনসাইটস', desc: 'খরচের প্যাটার্ন বুঝুন।' },
-  { icon: ShieldCheck, title: 'নিরাপদ ডেটা', desc: 'আপনার তথ্য সুরক্ষিত।' },
 ];
 
 const tips = [
