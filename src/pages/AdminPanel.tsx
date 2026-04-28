@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { CopyTicketButton } from '@/components/support/CopyTicketButton';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
