@@ -27,6 +27,7 @@ import { TermsEditor } from '@/components/admin/TermsEditor';
 import { LandingPageEditor } from '@/components/admin/LandingPageEditor';
 import { SiteSettingsEditor } from '@/components/admin/SiteSettingsEditor';
 import { BrandingEditor } from '@/components/admin/BrandingEditor';
+import { UserGuideEditor } from '@/components/admin/UserGuideEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1244,6 +1245,9 @@ export default function AdminPanel() {
             </div>
             <div className="mt-6">
               <TermsEditor />
+            </div>
+            <div className="mt-6">
+              <UserGuideEditor />
             </div>
           </TabsContent>
         )}
