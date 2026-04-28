@@ -59,7 +59,6 @@ const App = () => (
               <Route path="/feedback" element={<Feedback />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/user-guide" element={<UserGuide />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
