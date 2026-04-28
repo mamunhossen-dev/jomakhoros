@@ -58,8 +58,11 @@ export default function Index() {
     return { totalIncome, totalExpense, balance: totalIncome - totalExpense, recentTxs, chartData: months };
   }, [transactions]);
 
+  const walletBalance = wallets?.reduce((s, w) => s + Number(w.balance), 0) || 0;
+
   const stats = [
     { label: 'মোট ব্যালেন্স', value: formatTaka(balance), icon: Wallet, color: 'text-primary' },
+    { label: 'ওয়ালেট ব্যালেন্স', value: formatTaka(walletBalance), icon: Wallet, color: 'text-primary' },
     { label: 'মোট আয়', value: formatTaka(totalIncome), icon: TrendingUp, color: 'text-success' },
     { label: 'মোট ব্যয়', value: formatTaka(totalExpense), icon: TrendingDown, color: 'text-destructive' },
   ];
