@@ -17,6 +17,7 @@ import { useDeleteCategory } from '@/hooks/useCategories';
 import { User, Tag, LayoutDashboard, Camera, Plus, Pencil, Trash2, ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useBrand } from '@/hooks/useBrand';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function Onboarding() {
   const { data: categories, isLoading: catsLoading } = useCategories();
   const deleteCategory = useDeleteCategory();
   const qc = useQueryClient();
+  const brand = useBrand();
 
   const [step, setStep] = useState(1);
   const [displayName, setDisplayName] = useState('');
@@ -113,7 +115,7 @@ export default function Onboarding() {
       {/* Header */}
       <div className="border-b bg-card/50 px-4 py-4">
         <div className="mx-auto max-w-lg">
-          <h1 className="font-display text-lg font-bold text-center">JomaKhoros সেটআপ</h1>
+          <h1 className="font-display text-lg font-bold text-center">{brand.name} সেটআপ</h1>
           {/* Progress Steps */}
           <div className="flex items-center justify-center gap-2 mt-3">
             {steps.map((s, i) => (

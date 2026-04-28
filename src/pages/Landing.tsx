@@ -12,6 +12,7 @@ import {
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_LANDING, type LandingContent } from '@/components/admin/LandingPageEditor';
 import { DEFAULT_SITE, type SiteSettings } from '@/components/admin/SiteSettingsEditor';
+import { useBrand } from '@/hooks/useBrand';
 
 const featureIcons = [Wallet, Tag, BarChart3, PiggyBank, Bell, Smartphone, FileText, Target, Globe];
 const featureColors = [
@@ -25,6 +26,7 @@ export default function Landing() {
   const { data } = useAppSetting<LandingContent>('landing_page', DEFAULT_LANDING);
   const { data: siteData } = useAppSetting<SiteSettings>('site_settings', DEFAULT_SITE);
   const site = { ...DEFAULT_SITE, ...(siteData ?? {}), footer_links: siteData?.footer_links ?? DEFAULT_SITE.footer_links };
+  const brand = useBrand();
 
   // Deep merge with defaults
   const c: LandingContent = {
@@ -50,7 +52,7 @@ export default function Landing() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-emerald-600 text-primary-foreground shadow-md">
               <Wallet className="h-5 w-5" />
             </div>
-            <span className="font-display text-lg font-bold">JomaKhoros</span>
+            <span className="font-display text-lg font-bold">{brand.name}</span>
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             <Button asChild variant="ghost" size="sm"><a href="#features">ফিচার</a></Button>
@@ -298,7 +300,7 @@ export default function Landing() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Wallet className="h-4 w-4" />
               </div>
-              <span className="font-display font-bold">JomaKhoros</span>
+              <span className="font-display font-bold">{brand.name}</span>
               <span className="text-xs text-muted-foreground">• {c.footer.tagline}</span>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">

@@ -4,10 +4,12 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_TERMS, type TermsContent } from '@/components/admin/TermsEditor';
+import { useBrand } from '@/hooks/useBrand';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Terms() {
   const { data, isLoading } = useAppSetting<TermsContent>('terms_page', DEFAULT_TERMS);
+  const brand = useBrand();
   const content: TermsContent = {
     ...DEFAULT_TERMS,
     ...(data ?? {}),
@@ -21,7 +23,7 @@ export default function Terms() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <DollarSign className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-lg font-bold">JomaKhoros</span>
+          <span className="font-display text-lg font-bold">{brand.name}</span>
         </Link>
 
         <h1 className="font-display text-3xl font-bold mb-6">{content.page_title}</h1>

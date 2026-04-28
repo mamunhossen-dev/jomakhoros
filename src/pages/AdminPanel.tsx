@@ -26,6 +26,7 @@ import { SubscriptionEditor } from '@/components/admin/SubscriptionEditor';
 import { TermsEditor } from '@/components/admin/TermsEditor';
 import { LandingPageEditor } from '@/components/admin/LandingPageEditor';
 import { SiteSettingsEditor } from '@/components/admin/SiteSettingsEditor';
+import { BrandingEditor } from '@/components/admin/BrandingEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1226,6 +1227,9 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
 
+            <div className="mt-6">
+              <BrandingEditor />
+            </div>
             <div className="mt-6">
               <SiteSettingsEditor />
             </div>
