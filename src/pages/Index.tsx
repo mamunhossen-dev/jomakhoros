@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useWallets } from '@/hooks/useWallets';
 import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
 import { formatTaka } from '@/lib/currency';
 import { addMonths, format } from 'date-fns';
@@ -15,6 +16,7 @@ const IncomeExpenseChart = lazy(() =>
 
 export default function Index() {
   const { data: transactions, isLoading } = useTransactions();
+  const { data: wallets } = useWallets();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
   const [defaultType, setDefaultType] = useState<'income' | 'expense'>('expense');
@@ -56,8 +58,11 @@ export default function Index() {
     return { totalIncome, totalExpense, balance: totalIncome - totalExpense, recentTxs, chartData: months };
   }, [transactions]);
 
+  const walletBalance = wallets?.reduce((s, w) => s + Number(w.balance), 0) || 0;
+
   const stats = [
     { label: 'মোট ব্যালেন্স', value: formatTaka(balance), icon: Wallet, color: 'text-primary' },
+    { label: 'ওয়ালেট ব্যালেন্স', value: formatTaka(walletBalance), icon: Wallet, color: 'text-primary' },
     { label: 'মোট আয়', value: formatTaka(totalIncome), icon: TrendingUp, color: 'text-success' },
     { label: 'মোট ব্যয়', value: formatTaka(totalExpense), icon: TrendingDown, color: 'text-destructive' },
   ];
@@ -79,7 +84,7 @@ export default function Index() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) =>
           isLoading ? (
             <Skeleton key={stat.label} className="h-[104px] rounded-lg" />
