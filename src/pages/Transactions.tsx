@@ -242,12 +242,23 @@ export default function Transactions() {
                     const sign = tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : '↔';
                     const amountColor = tx.type === 'income' ? 'text-success' : tx.type === 'expense' ? 'text-destructive' : 'text-primary';
                     return (
-                      <TableRow key={tx.id}>
+                      <TableRow key={tx.id} className="transition-colors hover:bg-muted/40">
                         <TableCell className="whitespace-nowrap text-sm">
                           {format(new Date(tx.date), 'dd MMM, yyyy')}
                         </TableCell>
-                        <TableCell className="max-w-[200px] truncate text-sm">
-                          {tx.description || '—'}
+                        <TableCell className="max-w-[220px] text-sm">
+                          <div className="flex items-center gap-2">
+                            <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                              tx.type === 'income' ? 'bg-success/10 text-success'
+                              : tx.type === 'expense' ? 'bg-destructive/10 text-destructive'
+                              : 'bg-primary/10 text-primary'
+                            }`}>
+                              {tx.type === 'income' ? <ArrowUpRight className="h-3.5 w-3.5" />
+                                : tx.type === 'expense' ? <ArrowDownRight className="h-3.5 w-3.5" />
+                                : <ArrowLeftRight className="h-3.5 w-3.5" />}
+                            </div>
+                            <span className="truncate">{tx.description || '—'}</span>
+                          </div>
                         </TableCell>
                         <TableCell>
                           {isTransfer ? (
