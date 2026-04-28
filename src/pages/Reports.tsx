@@ -5,16 +5,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTransactions } from '@/hooks/useTransactions';
+import { useTransactions, useCategories } from '@/hooks/useTransactions';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { exportTransactionsPdf } from '@/lib/exportPdf';
+import { exportAnalyticsPdf } from '@/lib/exportAnalyticsPdf';
 import { formatTaka } from '@/lib/currency';
-import { TrendingUp, TrendingDown, Wallet, Calendar, FileDown, Lock, X } from 'lucide-react';
 import {
-  format, getYear, getMonth, startOfMonth, endOfMonth, startOfYear, endOfYear,
-  subMonths, subDays, startOfWeek, endOfWeek,
+  TrendingUp, TrendingDown, Wallet, PiggyBank, Percent,
+  FileDown, Lock, X, Lightbulb,
+} from 'lucide-react';
+import {
+  format, startOfMonth, endOfMonth, startOfYear, endOfYear,
+  subMonths, subDays,
 } from 'date-fns';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -24,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  PieChart, Pie, Cell, LineChart, Line,
+  PieChart, Pie, Cell,
 } from 'recharts';
 
 const COLORS = [
@@ -34,8 +37,8 @@ const COLORS = [
   'hsl(280, 50%, 60%)', 'hsl(100, 50%, 45%)', 'hsl(15, 80%, 55%)',
 ];
 
-const MONTH_NAMES_BN = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-  'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+const MONTH_NAMES_BN = ['জানু', 'ফেব', 'মার্চ', 'এপ্রি', 'মে', 'জুন',
+  'জুলা', 'আগ', 'সেপ', 'অক্টো', 'নভে', 'ডিসে'];
 
 type Preset = 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'last_90' | 'this_year' | 'last_year' | 'all' | 'custom';
 
@@ -77,6 +80,7 @@ export default function Reports() {
   const initial = getPresetRange('this_year');
   const [dateFrom, setDateFrom] = useState(initial.from);
   const [dateTo, setDateTo] = useState(initial.to);
+  const [categoryId, setCategoryId] = useState<string>('all');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -84,6 +88,7 @@ export default function Reports() {
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
   });
+  const { data: allCategories } = useCategories();
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -98,63 +103,50 @@ export default function Reports() {
     }
   };
 
-  const handleExportPdf = () => {
-    if (isFree) {
-      setUpgradeOpen(true);
-      return;
-    }
-    if (!transactions?.length) {
-      toast.error('এই সময়সীমায় কোনো লেনদেন নেই');
-      return;
-    }
-    exportTransactionsPdf(transactions, profile?.display_name || '', user?.email || '', {
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-    });
-  };
+  // Apply category filter client-side
+  const filteredTxs = useMemo(() => {
+    const base = transactions || [];
+    if (categoryId === 'all') return base;
+    return base.filter((tx) => tx.category_id === categoryId);
+  }, [transactions, categoryId]);
 
-  const filteredTxs = transactions || [];
   const rangeLabel = useMemo(() => {
     if (!dateFrom && !dateTo) return 'সব সময়';
     return `${dateFrom || '...'} → ${dateTo || '...'}`;
   }, [dateFrom, dateTo]);
 
-  // Determine grouping: if range > 90 days → by month, else by day
   const useMonthlyGrouping = useMemo(() => {
     if (!dateFrom || !dateTo) return true;
     const days = (new Date(dateTo).getTime() - new Date(dateFrom).getTime()) / (1000 * 60 * 60 * 24);
     return days > 90;
   }, [dateFrom, dateTo]);
 
-  // Time series data
   const timeSeriesData = useMemo(() => {
     if (useMonthlyGrouping) {
-      const map = new Map<string, { key: string; আয়: number; ব্যয়: number }>();
+      const map = new Map<string, { key: string; income: number; expense: number }>();
       filteredTxs.forEach((tx) => {
         const d = new Date(tx.date);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        const label = `${MONTH_NAMES_BN[d.getMonth()].substring(0, 3)} ${String(d.getFullYear()).slice(2)}`;
-        const cur = map.get(key) || { key: label, আয়: 0, ব্যয়: 0 };
-        if (tx.type === 'income') cur.আয় += Number(tx.amount);
-        else if (tx.type === 'expense') cur.ব্যয় += Number(tx.amount);
+        const label = `${MONTH_NAMES_BN[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+        const cur = map.get(key) || { key: label, income: 0, expense: 0 };
+        if (tx.type === 'income') cur.income += Number(tx.amount);
+        else if (tx.type === 'expense') cur.expense += Number(tx.amount);
         map.set(key, cur);
       });
-      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => ({ month: v.key, আয়: v.আয়, ব্যয়: v.ব্যয় }));
+      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => ({ month: v.key, income: v.income, expense: v.expense }));
     } else {
-      const map = new Map<string, { আয়: number; ব্যয়: number }>();
+      const map = new Map<string, { income: number; expense: number }>();
       filteredTxs.forEach((tx) => {
-        const cur = map.get(tx.date) || { আয়: 0, ব্যয়: 0 };
-        if (tx.type === 'income') cur.আয় += Number(tx.amount);
-        else if (tx.type === 'expense') cur.ব্যয় += Number(tx.amount);
+        const cur = map.get(tx.date) || { income: 0, expense: 0 };
+        if (tx.type === 'income') cur.income += Number(tx.amount);
+        else if (tx.type === 'expense') cur.expense += Number(tx.amount);
         map.set(tx.date, cur);
       });
       return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => ({
-        month: format(new Date(k), 'dd MMM'), আয়: v.আয়, ব্যয়: v.ব্যয়,
+        month: format(new Date(k), 'dd MMM'), income: v.income, expense: v.expense,
       }));
     }
   }, [filteredTxs, useMonthlyGrouping]);
-
-  const trendData = useMemo(() => timeSeriesData.map(m => ({ ...m, ব্যালেন্স: m.আয় - m.ব্যয় })), [timeSeriesData]);
 
   const categoryData = useMemo(() => {
     const map = new Map<string, number>();
@@ -166,14 +158,84 @@ export default function Reports() {
   }, [filteredTxs]);
 
   const stats = useMemo(() => {
-    let income = 0, expense = 0, transfers = 0;
+    let income = 0, expense = 0;
     filteredTxs.forEach((tx) => {
       if (tx.type === 'income') income += Number(tx.amount);
       else if (tx.type === 'expense') expense += Number(tx.amount);
-      else transfers += 1;
     });
-    return { income, expense, balance: income - expense, count: filteredTxs.length, transfers };
+    const balance = income - expense;
+    const savings = balance; // savings within selected period
+    const savingsRate = income > 0 ? (savings / income) * 100 : 0;
+    return { income, expense, balance, savings, savingsRate, count: filteredTxs.length };
   }, [filteredTxs]);
+
+  // Smart insights
+  const insights = useMemo(() => {
+    const list: string[] = [];
+    if (!filteredTxs.length) return list;
+
+    // Top expense category
+    if (categoryData.length) {
+      const top = categoryData[0];
+      const pct = stats.expense > 0 ? (top.value / stats.expense) * 100 : 0;
+      list.push(`আপনি সবচেয়ে বেশি খরচ করেছেন "${top.name}" ক্যাটাগরিতে — ${formatTaka(top.value)} (মোট ব্যয়ের ${pct.toFixed(1)}%)`);
+    }
+
+    // Compare last two periods (months/days based on grouping)
+    if (timeSeriesData.length >= 2) {
+      const last = timeSeriesData[timeSeriesData.length - 1];
+      const prev = timeSeriesData[timeSeriesData.length - 2];
+      if (prev.expense > 0) {
+        const change = ((last.expense - prev.expense) / prev.expense) * 100;
+        if (Math.abs(change) >= 1) {
+          list.push(
+            change > 0
+              ? `গত পিরিয়ডের তুলনায় আপনার ব্যয় ${change.toFixed(1)}% বেড়েছে`
+              : `গত পিরিয়ডের তুলনায় আপনার ব্যয় ${Math.abs(change).toFixed(1)}% কমেছে — চমৎকার!`
+          );
+        }
+      }
+      if (prev.income > 0) {
+        const change = ((last.income - prev.income) / prev.income) * 100;
+        if (Math.abs(change) >= 1) {
+          list.push(
+            change > 0
+              ? `গত পিরিয়ডের তুলনায় আয় ${change.toFixed(1)}% বেড়েছে`
+              : `গত পিরিয়ডের তুলনায় আয় ${Math.abs(change).toFixed(1)}% কমেছে`
+          );
+        }
+      }
+    }
+
+    // Savings rate insight
+    if (stats.income > 0) {
+      if (stats.savingsRate >= 20) {
+        list.push(`দারুণ! আপনি আয়ের ${stats.savingsRate.toFixed(1)}% সঞ্চয় করছেন`);
+      } else if (stats.savingsRate < 0) {
+        list.push(`সতর্কতা: এই সময়ে আপনি আয়ের চেয়ে বেশি খরচ করেছেন`);
+      } else if (stats.savingsRate < 10) {
+        list.push(`আপনার সঞ্চয়ের হার মাত্র ${stats.savingsRate.toFixed(1)}% — বাড়ানোর চেষ্টা করুন`);
+      }
+    }
+
+    return list.slice(0, 3);
+  }, [filteredTxs, categoryData, timeSeriesData, stats]);
+
+  const handleExportPdf = () => {
+    if (isFree) { setUpgradeOpen(true); return; }
+    if (!filteredTxs.length) { toast.error('এই সময়সীমায় কোনো ডেটা নেই'); return; }
+    exportAnalyticsPdf(
+      {
+        kpi: stats,
+        timeSeries: timeSeriesData,
+        categories: categoryData,
+        insights,
+      },
+      profile?.display_name || '',
+      user?.email || '',
+      { dateFrom: dateFrom || undefined, dateTo: dateTo || undefined },
+    );
+  };
 
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
@@ -182,14 +244,14 @@ export default function Reports() {
     fontSize: '12px',
   };
 
-  const hasFilters = !!(dateFrom || dateTo);
+  const hasFilters = !!(dateFrom || dateTo || categoryId !== 'all');
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold">রিপোর্ট ও বিশ্লেষণ</h1>
-          <p className="text-muted-foreground">{rangeLabel}</p>
+          <p className="text-sm text-muted-foreground">{rangeLabel}</p>
         </div>
         <Button onClick={handleExportPdf} variant="outline" disabled={!filteredTxs.length && !isFree}>
           {isFree ? <Lock className="mr-1 h-4 w-4" /> : <FileDown className="mr-1 h-4 w-4" />}
@@ -197,7 +259,7 @@ export default function Reports() {
         </Button>
       </div>
 
-      {/* Advanced Filters */}
+      {/* Filters */}
       <Card className="border-0 shadow-sm">
         <CardContent className="pt-5">
           <div className="space-y-3">
@@ -219,7 +281,7 @@ export default function Reports() {
                 <Label className="text-xs text-muted-foreground">থেকে</Label>
                 <Input
                   type="date"
-                  className="h-9 w-[160px]"
+                  className="h-9 w-[150px]"
                   value={dateFrom}
                   onChange={(e) => { setDateFrom(e.target.value); setPreset('custom'); }}
                 />
@@ -228,13 +290,29 @@ export default function Reports() {
                 <Label className="text-xs text-muted-foreground">পর্যন্ত</Label>
                 <Input
                   type="date"
-                  className="h-9 w-[160px]"
+                  className="h-9 w-[150px]"
                   value={dateTo}
                   onChange={(e) => { setDateTo(e.target.value); setPreset('custom'); }}
                 />
               </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">ক্যাটাগরি</Label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger className="h-9 w-[180px]">
+                    <SelectValue placeholder="সব ক্যাটাগরি" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">সব ক্যাটাগরি</SelectItem>
+                    {(allCategories || []).map((c: any) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name} ({c.type === 'income' ? 'আয়' : 'ব্যয়'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               {hasFilters && (
-                <Button variant="ghost" size="sm" onClick={() => { setDateFrom(''); setDateTo(''); setPreset('all'); }}>
+                <Button variant="ghost" size="sm" onClick={() => { setDateFrom(''); setDateTo(''); setCategoryId('all'); setPreset('all'); }}>
                   <X className="mr-1 h-3 w-3" /> মুছুন
                 </Button>
               )}
@@ -243,55 +321,43 @@ export default function Reports() {
         </CardContent>
       </Card>
 
-      {/* Summary Stats */}
-      <div className="grid gap-4 sm:grid-cols-4">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
         {isLoading ? (
-          [...Array(4)].map((_, i) => <Skeleton key={i} className="h-[90px] rounded-lg" />)
+          [...Array(5)].map((_, i) => <Skeleton key={i} className="h-[92px] rounded-lg" />)
         ) : (
           <>
-            <Card className="border-0 shadow-sm">
-              <CardContent className="pt-5">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-muted-foreground">মোট আয়</p>
-                  <TrendingUp className="h-3.5 w-3.5 text-success" />
-                </div>
-                <p className="text-xl font-bold font-display text-success">{formatTaka(stats.income)}</p>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-sm">
-              <CardContent className="pt-5">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-muted-foreground">মোট ব্যয়</p>
-                  <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-                </div>
-                <p className="text-xl font-bold font-display text-destructive">{formatTaka(stats.expense)}</p>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-sm">
-              <CardContent className="pt-5">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-muted-foreground">নেট ব্যালেন্স</p>
-                  <Wallet className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <p className={`text-xl font-bold font-display ${stats.balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                  {formatTaka(stats.balance)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-sm">
-              <CardContent className="pt-5">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-muted-foreground">মোট লেনদেন</p>
-                  <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                </div>
-                <p className="text-xl font-bold font-display">{stats.count}টি</p>
-              </CardContent>
-            </Card>
+            <KpiCard label="মোট আয়" value={formatTaka(stats.income)} icon={<TrendingUp className="h-4 w-4" />} accent="text-success" bg="bg-success/10" />
+            <KpiCard label="মোট ব্যয়" value={formatTaka(stats.expense)} icon={<TrendingDown className="h-4 w-4" />} accent="text-destructive" bg="bg-destructive/10" />
+            <KpiCard label="ব্যালেন্স" value={formatTaka(stats.balance)} icon={<Wallet className="h-4 w-4" />} accent={stats.balance >= 0 ? 'text-primary' : 'text-destructive'} bg="bg-primary/10" />
+            <KpiCard label="সঞ্চয়" value={formatTaka(stats.savings)} icon={<PiggyBank className="h-4 w-4" />} accent={stats.savings >= 0 ? 'text-primary' : 'text-destructive'} bg="bg-primary/10" />
+            <KpiCard label="সঞ্চয় হার" value={`${stats.savingsRate.toFixed(1)}%`} icon={<Percent className="h-4 w-4" />} accent={stats.savingsRate >= 0 ? 'text-success' : 'text-destructive'} bg="bg-success/10" />
           </>
         )}
       </div>
 
-      {/* Income vs Expense Chart */}
+      {/* Smart Insights */}
+      {insights.length > 0 && (
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-base flex items-center gap-2">
+              <Lightbulb className="h-4 w-4 text-primary" /> স্মার্ট ইনসাইটস
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {insights.map((ins, i) => (
+                <li key={i} className="flex gap-2 text-sm leading-relaxed">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  <span>{ins}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-0 shadow-sm">
           <CardHeader>
@@ -306,10 +372,10 @@ export default function Reports() {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={(v) => `৳${v}`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`৳${v.toFixed(2)}`]} />
-                  <Legend />
-                  <Bar dataKey="আয়" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="ব্যয়" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`৳${v.toFixed(2)}`, n === 'income' ? 'আয়' : 'ব্যয়']} />
+                  <Legend formatter={(v) => v === 'income' ? 'আয়' : 'ব্যয়'} />
+                  <Bar dataKey="income" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} animationDuration={800} />
+                  <Bar dataKey="expense" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} animationDuration={800} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -327,7 +393,7 @@ export default function Reports() {
               <div className="flex flex-col items-center">
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
-                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={2} dataKey="value">
+                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={2} dataKey="value" animationDuration={800}>
                       {categoryData.map((_, i) => (<Cell key={i} fill={COLORS[i % COLORS.length]} />))}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`৳${v.toFixed(2)}`]} />
@@ -346,31 +412,6 @@ export default function Reports() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Balance Trend */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="font-display text-lg">ব্যালেন্স ট্রেন্ড</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? <Skeleton className="h-[250px]" /> : !trendData.length ? (
-            <div className="flex items-center justify-center h-[250px] text-sm text-muted-foreground">কোনো ডেটা নেই</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
-                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={(v) => `৳${v}`} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`৳${v.toFixed(2)}`]} />
-                <Legend />
-                <Line type="monotone" dataKey="আয়" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="ব্যয়" stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="ব্যালেন্স" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Upgrade Prompt */}
       <AlertDialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
@@ -392,5 +433,19 @@ export default function Reports() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+function KpiCard({ label, value, icon, accent, bg }: { label: string; value: string; icon: React.ReactNode; accent: string; bg: string }) {
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardContent className="pt-4 pb-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <span className={`flex h-6 w-6 items-center justify-center rounded-md ${bg} ${accent}`}>{icon}</span>
+        </div>
+        <p className={`text-base sm:text-lg font-bold font-display truncate ${accent}`}>{value}</p>
+      </CardContent>
+    </Card>
   );
 }
