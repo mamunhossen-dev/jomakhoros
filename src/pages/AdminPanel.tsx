@@ -21,6 +21,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CopyTicketButton } from '@/components/support/CopyTicketButton';
+import { AboutPageEditor } from '@/components/admin/AboutPageEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1220,6 +1221,10 @@ export default function AdminPanel() {
                 </div>
               </CardContent>
             </Card>
+
+            <div className="mt-6">
+              <AboutPageEditor />
+            </div>
           </TabsContent>
         )}
       </Tabs>
