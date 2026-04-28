@@ -32,7 +32,7 @@ export default function Transactions() {
   const [defaultType, setDefaultType] = useState<'income' | 'expense'>('expense');
   const [editTx, setEditTx] = useState<Transaction | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', categoryId: '' });
+  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', categoryId: '', type: '', walletId: '' });
 
   const { data: allTransactions, isLoading } = useTransactions({
     dateFrom: filters.dateFrom || undefined,
