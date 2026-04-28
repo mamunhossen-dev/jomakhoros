@@ -54,16 +54,20 @@ export default function Transactions() {
     return allTransactions.filter(tx => tx.date >= cutoff);
   }, [allTransactions, isFree]);
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     if (isFree) {
       toast.error('PDF এক্সপোর্ট প্রো ফিচার। আপগ্রেড করুন!');
       return;
     }
     if (!transactions?.length) return;
-    exportTransactionsPdf(transactions, profile?.display_name || '', user?.email || '', {
-      dateFrom: filters.dateFrom || undefined,
-      dateTo: filters.dateTo || undefined,
-    }, wallets);
+    try {
+      await exportTransactionsPdf(transactions, profile?.display_name || '', user?.email || '', {
+        dateFrom: filters.dateFrom || undefined,
+        dateTo: filters.dateTo || undefined,
+      }, wallets);
+    } catch (e) {
+      toast.error('PDF তৈরি করা যায়নি');
+    }
   };
 
   const openAdd = (type: 'income' | 'expense') => {
