@@ -117,22 +117,14 @@ export default function AdminPanel() {
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin, isModerator, qc]);
 
-  // Track last-viewed feedback timestamp via localStorage to compute unread count
-  const FEEDBACK_SEEN_KEY = 'admin_feedback_last_seen';
-  const [feedbackLastSeen, setFeedbackLastSeen] = useState<number>(() => {
-    const v = typeof window !== 'undefined' ? localStorage.getItem(FEEDBACK_SEEN_KEY) : null;
-    return v ? Number(v) : 0;
-  });
-
-  const feedbackUnreadCount = (feedbacks || []).filter(
-    f => new Date(f.created_at).getTime() > feedbackLastSeen
-  ).length;
-
-  const markFeedbackSeen = () => {
-    const now = Date.now();
-    localStorage.setItem(FEEDBACK_SEEN_KEY, String(now));
-    setFeedbackLastSeen(now);
-  };
+  // Shared admin badge counts (also used by sidebar dot)
+  const {
+    pendingPaymentsCount,
+    feedbackUnreadCount,
+    newUsersCount,
+    markFeedbackSeen,
+    markUsersSeen,
+  } = useAdminBadges();
 
   // Fetch payment requests
   const { data: payments, isLoading: paymentsLoading } = useQuery({
