@@ -100,6 +100,35 @@ export default function AdminPanel() {
     enabled: isAdmin || isModerator,
   });
 
+  // Realtime: refresh feedback list on any change
+  useEffect(() => {
+    if (!isAdmin && !isModerator) return;
+    const ch = supabase
+      .channel('admin-feedback')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' }, () => {
+        qc.invalidateQueries({ queryKey: ['admin_feedback'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isAdmin, isModerator, qc]);
+
+  // Track last-viewed feedback timestamp via localStorage to compute unread count
+  const FEEDBACK_SEEN_KEY = 'admin_feedback_last_seen';
+  const [feedbackLastSeen, setFeedbackLastSeen] = useState<number>(() => {
+    const v = typeof window !== 'undefined' ? localStorage.getItem(FEEDBACK_SEEN_KEY) : null;
+    return v ? Number(v) : 0;
+  });
+
+  const feedbackUnreadCount = (feedbacks || []).filter(
+    f => new Date(f.created_at).getTime() > feedbackLastSeen
+  ).length;
+
+  const markFeedbackSeen = () => {
+    const now = Date.now();
+    localStorage.setItem(FEEDBACK_SEEN_KEY, String(now));
+    setFeedbackLastSeen(now);
+  };
+
   // Fetch payment requests
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['admin_payments'],
@@ -404,10 +433,17 @@ export default function AdminPanel() {
         <p className="text-muted-foreground">সাইট ও ব্যবহারকারী পরিচালনা করুন।</p>
       </div>
 
-      <Tabs defaultValue="payments">
+      <Tabs defaultValue="payments" onValueChange={(v) => { if (v === 'feedback') markFeedbackSeen(); }}>
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="payments"><CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট</TabsTrigger>
-          <TabsTrigger value="feedback"><MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক</TabsTrigger>
+          <TabsTrigger value="feedback" className="relative">
+            <MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক
+            {feedbackUnreadCount > 0 && (
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm animate-in fade-in zoom-in">
+                {feedbackUnreadCount > 99 ? '99+' : feedbackUnreadCount}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="support" className="relative">
             <Send className="mr-1 h-3.5 w-3.5" /> সাপোর্ট
             {attentionCount > 0 && (
