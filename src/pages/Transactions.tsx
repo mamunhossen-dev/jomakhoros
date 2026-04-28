@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown, Lock } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown, Image as ImageIcon, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,7 +12,7 @@ import { useWallets } from '@/hooks/useWallets';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { exportTransactionsPdf } from '@/lib/exportPdf';
+import { exportTransactionsPdf, exportTransactionsImage } from '@/lib/exportPdf';
 import { toast } from 'sonner';
 import { subDays } from 'date-fns';
 import {
@@ -70,6 +70,22 @@ export default function Transactions() {
     }
   };
 
+  const handleExportImage = async () => {
+    if (isFree) {
+      toast.error('ইমেজ এক্সপোর্ট প্রো ফিচার। আপগ্রেড করুন!');
+      return;
+    }
+    if (!transactions?.length) return;
+    try {
+      await exportTransactionsImage(transactions, profile?.display_name || '', user?.email || '', {
+        dateFrom: filters.dateFrom || undefined,
+        dateTo: filters.dateTo || undefined,
+      }, wallets);
+    } catch (e) {
+      toast.error('ইমেজ তৈরি করা যায়নি');
+    }
+  };
+
   const openAdd = (type: 'income' | 'expense') => {
     setEditTx(null);
     setDefaultType(type);
@@ -97,6 +113,9 @@ export default function Transactions() {
           </Button>
           <Button onClick={handleExportPdf} variant="outline" disabled={!transactions?.length}>
             <FileDown className="mr-1 h-4 w-4" /> PDF
+          </Button>
+          <Button onClick={handleExportImage} variant="outline" disabled={!transactions?.length}>
+            <ImageIcon className="mr-1 h-4 w-4" /> ইমেজ
           </Button>
         </div>
       </div>
