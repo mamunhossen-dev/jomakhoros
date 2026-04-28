@@ -307,10 +307,16 @@ export default function Reports() {
           <h1 className="font-display text-2xl font-bold">রিপোর্ট ও বিশ্লেষণ</h1>
           <p className="text-sm text-muted-foreground">{rangeLabel}</p>
         </div>
-        <Button onClick={handleExportPdf} variant="outline" disabled={!filteredTxs.length && !isFree}>
-          {isFree ? <Lock className="mr-1 h-4 w-4" /> : <FileDown className="mr-1 h-4 w-4" />}
-          PDF এক্সপোর্ট
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleExportPdf} variant="outline" disabled={!filteredTxs.length && !isFree}>
+            {isFree ? <Lock className="mr-1 h-4 w-4" /> : <FileDown className="mr-1 h-4 w-4" />}
+            PDF এক্সপোর্ট
+          </Button>
+          <Button onClick={handleExportImage} variant="outline" disabled={!filteredTxs.length && !isFree}>
+            {isFree ? <Lock className="mr-1 h-4 w-4" /> : <ImageIcon className="mr-1 h-4 w-4" />}
+            ইমেজ এক্সপোর্ট
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
