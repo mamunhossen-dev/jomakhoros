@@ -22,6 +22,8 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CopyTicketButton } from '@/components/support/CopyTicketButton';
 import { AboutPageEditor } from '@/components/admin/AboutPageEditor';
+import { SubscriptionEditor } from '@/components/admin/SubscriptionEditor';
+import { TermsEditor } from '@/components/admin/TermsEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1224,6 +1226,12 @@ export default function AdminPanel() {
 
             <div className="mt-6">
               <AboutPageEditor />
+            </div>
+            <div className="mt-6">
+              <SubscriptionEditor />
+            </div>
+            <div className="mt-6">
+              <TermsEditor />
             </div>
           </TabsContent>
         )}
