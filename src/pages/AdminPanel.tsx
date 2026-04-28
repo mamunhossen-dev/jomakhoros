@@ -405,14 +405,20 @@ export default function AdminPanel() {
                               <p className="text-sm font-medium truncate">{u.display_name || 'নাম নেই'}</p>
                               <p className="text-xs text-muted-foreground">{u.phone || 'ফোন নেই'}</p>
                             </div>
-                            <div className="flex items-center gap-1 flex-shrink-0">
+                            <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
                               {!u.onboarding_completed && (
                                 <Badge variant="outline" className="text-[10px] text-amber-500 border-amber-500/30">অনবোর্ডিং</Badge>
                               )}
                               <Badge variant="outline" className="text-[10px]">
                                 {role === 'admin' ? 'অ্যাডমিন' : role === 'moderator' ? 'মডারেটর' : 'ইউজার'}
                               </Badge>
-                            </div>
+                              {u.account_type === 'pro' && (
+                                <Badge variant="outline" className="text-[10px] text-success border-success/30">
+                                  {u.subscription_end && new Date(u.subscription_end).getFullYear() >= 2099 
+                                    ? 'লাইফটাইম' 
+                                    : 'প্রো'}
+                                </Badge>
+                              )}
                           </div>
 
                           {/* Row 2: UID with copy */}
