@@ -114,6 +114,9 @@ export default function Transactions() {
           <Button onClick={handleExportPdf} variant="outline" disabled={!transactions?.length}>
             <FileDown className="mr-1 h-4 w-4" /> PDF
           </Button>
+          <Button onClick={handleExportImage} variant="outline" disabled={!transactions?.length}>
+            <ImageIcon className="mr-1 h-4 w-4" /> ইমেজ
+          </Button>
         </div>
       </div>
 
