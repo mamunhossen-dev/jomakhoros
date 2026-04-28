@@ -28,6 +28,7 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<string>('payments');
 
   // Notifications state
   const [notifTitle, setNotifTitle] = useState('');
