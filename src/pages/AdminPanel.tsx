@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus } from 'lucide-react';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,6 +33,35 @@ export default function AdminPanel() {
   const [selectedConvUser, setSelectedConvUser] = useState<string | null>(null);
   const [supportText, setSupportText] = useState('');
   const supportEndRef = useRef<HTMLDivElement>(null);
+
+  // App settings: terms checkbox toggle
+  const { data: termsSetting } = useQuery({
+    queryKey: ['app_setting', 'terms_checkbox_enabled'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('setting_value')
+        .eq('setting_key', 'terms_checkbox_enabled')
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.setting_value as boolean) ?? true;
+    },
+    enabled: isAdmin,
+  });
+
+  const updateTermsSetting = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ setting_key: 'terms_checkbox_enabled', setting_value: enabled as any }, { onConflict: 'setting_key' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['app_setting', 'terms_checkbox_enabled'] });
+      toast.success('সেটিংস আপডেট হয়েছে');
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   // Fetch all users (profiles)
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -298,6 +327,7 @@ export default function AdminPanel() {
           <TabsTrigger value="support"><Send className="mr-1 h-3.5 w-3.5" /> সাপোর্ট</TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
 
         {/* Payments Tab */}
@@ -716,6 +746,36 @@ export default function AdminPanel() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+        )}
+
+        {/* Settings Tab */}
+        {isAdmin && (
+          <TabsContent value="settings">
+            <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">অ্যাপ সেটিংস</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="terms-toggle" className="text-base font-medium">
+                      রেজিস্ট্রেশনে শর্তাবলী চেকবক্স
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      চালু থাকলে রেজিস্ট্রেশন পেইজে ব্যবহারকারীকে শর্তাবলীতে সম্মতি দিতে হবে।
+                      বন্ধ করলে চেকবক্সটি দেখানো হবে না।
+                    </p>
+                  </div>
+                  <Switch
+                    id="terms-toggle"
+                    checked={termsSetting ?? true}
+                    onCheckedChange={(checked) => updateTermsSetting.mutate(checked)}
+                    disabled={updateTermsSetting.isPending}
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         )}
       </Tabs>
