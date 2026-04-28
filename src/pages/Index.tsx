@@ -16,6 +16,7 @@ const IncomeExpenseChart = lazy(() =>
 
 export default function Index() {
   const { data: transactions, isLoading } = useTransactions();
+  const { data: wallets } = useWallets();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
   const [defaultType, setDefaultType] = useState<'income' | 'expense'>('expense');
