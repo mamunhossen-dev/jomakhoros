@@ -115,9 +115,9 @@ export default function Landing() {
               বাংলাদেশের #১ পার্সোনাল ফাইন্যান্স অ্যাপ
             </div>
             <h1 className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              আপনার টাকা,{' '}
+              Spend smart.{' '}
               <span className="bg-gradient-to-r from-primary via-emerald-500 to-teal-600 bg-clip-text text-transparent">
-                আপনার নিয়ন্ত্রণে
+                Live better.
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
