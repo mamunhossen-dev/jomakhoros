@@ -464,7 +464,8 @@ export default function AdminPanel() {
         <p className="text-muted-foreground">সাইট ও ব্যবহারকারী পরিচালনা করুন।</p>
       </div>
 
-      <Tabs defaultValue="payments" onValueChange={(v) => {
+      <Tabs value={activeTab} onValueChange={(v) => {
+        setActiveTab(v);
         if (v === 'feedback') markFeedbackSeen();
         if (v === 'users') markUsersSeen();
       }}>
