@@ -116,24 +116,37 @@ export default function Index() {
               <button onClick={() => navigate('/wallets')} className="mt-2 text-xs text-primary hover:underline">ওয়ালেট যোগ করুন</button>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {wallets.map((w) => (
-                <div key={w.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Wallet className="h-4 w-4 text-primary" />
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {wallets.map((w) => (
+                  <div key={w.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <Wallet className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{w.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{w.wallet_type}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{w.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{w.wallet_type}</p>
-                    </div>
+                    <span className={`shrink-0 text-sm font-semibold ${Number(w.balance) >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {formatTaka(Number(w.balance))}
+                    </span>
                   </div>
-                  <span className={`shrink-0 text-sm font-semibold ${Number(w.balance) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {formatTaka(Number(w.balance))}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              {(() => {
+                const total = wallets.reduce((s, w) => s + Number(w.balance), 0);
+                return (
+                  <div className="mt-4 flex items-center justify-between rounded-lg border-2 border-primary/20 bg-primary/5 px-4 py-3">
+                    <span className="text-sm font-semibold">সকল ওয়ালেটের মোট ব্যালেন্স</span>
+                    <span className={`font-display text-lg font-bold ${total >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {formatTaka(total)}
+                    </span>
+                  </div>
+                );
+              })()}
+            </>
           )}
         </CardContent>
       </Card>
