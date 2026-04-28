@@ -748,6 +748,36 @@ export default function AdminPanel() {
             </div>
           </TabsContent>
         )}
+
+        {/* Settings Tab */}
+        {isAdmin && (
+          <TabsContent value="settings">
+            <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">অ্যাপ সেটিংস</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="terms-toggle" className="text-base font-medium">
+                      রেজিস্ট্রেশনে শর্তাবলী চেকবক্স
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      চালু থাকলে রেজিস্ট্রেশন পেইজে ব্যবহারকারীকে শর্তাবলীতে সম্মতি দিতে হবে।
+                      বন্ধ করলে চেকবক্সটি দেখানো হবে না।
+                    </p>
+                  </div>
+                  <Switch
+                    id="terms-toggle"
+                    checked={termsSetting ?? true}
+                    onCheckedChange={(checked) => updateTermsSetting.mutate(checked)}
+                    disabled={updateTermsSetting.isPending}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
