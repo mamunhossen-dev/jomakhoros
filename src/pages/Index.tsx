@@ -97,14 +97,14 @@ export default function Index() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="font-display text-lg">আয় বনাম ব্যয়</CardTitle>
+            <CardTitle className="font-display text-lg">আয়, ব্যয় ও সেভিং</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <Skeleton className="h-[250px] w-full" />
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={chartData}>
+              <ResponsiveContainer width="100%" height={270}>
+                <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 6 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="label" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={(v) => `৳${v}`} />
@@ -113,9 +113,9 @@ export default function Index() {
                     formatter={(value: number) => [`৳${value.toFixed(2)}`]}
                   />
                   <Legend />
-                  <Line type="monotone" dataKey="income" name="আয়" stroke="hsl(var(--success))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="expense" name="ব্যয়" stroke="hsl(var(--destructive))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="savings" name="সেভিং" stroke="hsl(var(--savings))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="income" name="আয়" stroke="hsl(var(--success))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="expense" name="ব্যয়" stroke="hsl(var(--destructive))" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="savings" name="সেভিং" stroke="hsl(var(--savings))" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
             )}
