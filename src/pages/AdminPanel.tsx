@@ -25,6 +25,7 @@ import { AboutPageEditor } from '@/components/admin/AboutPageEditor';
 import { SubscriptionEditor } from '@/components/admin/SubscriptionEditor';
 import { TermsEditor } from '@/components/admin/TermsEditor';
 import { LandingPageEditor } from '@/components/admin/LandingPageEditor';
+import { SiteSettingsEditor } from '@/components/admin/SiteSettingsEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();

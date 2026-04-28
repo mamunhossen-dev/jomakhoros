@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_LANDING, type LandingContent } from '@/components/admin/LandingPageEditor';
+import { DEFAULT_SITE, type SiteSettings } from '@/components/admin/SiteSettingsEditor';
 
 const featureIcons = [Wallet, Tag, BarChart3, PiggyBank, Bell, Smartphone, FileText, Target, Globe];
 const featureColors = [
@@ -22,6 +23,8 @@ const stepIcons = [UserPlus2, Banknote, LineChart];
 
 export default function Landing() {
   const { data } = useAppSetting<LandingContent>('landing_page', DEFAULT_LANDING);
+  const { data: siteData } = useAppSetting<SiteSettings>('site_settings', DEFAULT_SITE);
+  const site = { ...DEFAULT_SITE, ...(siteData ?? {}), footer_links: siteData?.footer_links ?? DEFAULT_SITE.footer_links };
 
   // Deep merge with defaults
   const c: LandingContent = {
@@ -298,10 +301,14 @@ export default function Landing() {
               <span className="font-display font-bold">JomaKhoros</span>
               <span className="text-xs text-muted-foreground">• {c.footer.tagline}</span>
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <Link to="/user-guide" className="hover:text-foreground">গাইড</Link>
-              <Link to="/terms" className="hover:text-foreground">শর্তাবলী</Link>
-              <Link to="/login" className="hover:text-foreground">লগইন</Link>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              {site.footer_links.map((l, i) => (
+                l.url.startsWith('http') ? (
+                  <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{l.label}</a>
+                ) : (
+                  <Link key={i} to={l.url} className="hover:text-foreground">{l.label}</Link>
+                )
+              ))}
             </div>
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">{c.footer.copyright}</p>
