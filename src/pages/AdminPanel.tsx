@@ -35,6 +35,7 @@ export default function AdminPanel() {
   // Support state
   const [selectedConvUser, setSelectedConvUser] = useState<string | null>(null);
   const [supportText, setSupportText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<SupportStatus | 'all'>('all');
   const supportEndRef = useRef<HTMLDivElement>(null);
 
   // App settings: terms checkbox toggle
