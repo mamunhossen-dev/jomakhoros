@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
-import { registerBengaliFont } from './pdfFont';
+import { BENGALI_WEB_FONT, registerBengaliFont } from './pdfFont';
 
 const FONT = 'NotoBengali';
 
@@ -20,6 +20,55 @@ export type AnalyticsExportData = {
   categories: { name: string; value: number }[];
   insights: string[];
 };
+
+const taka = (amount: number) => `৳ ${amount.toFixed(2)}`;
+
+async function drawBengaliTextAsImage(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  options: { fontSize?: number; color?: string; lineHeight?: number } = {}
+) {
+  if (!text.trim()) return 0;
+
+  const fontSize = options.fontSize ?? 9;
+  const lineHeight = options.lineHeight ?? 1.55;
+  const pxPerMm = 3.78;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return 0;
+
+  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
+  const words = text.split(' ');
+  const maxPxWidth = maxWidth * pxPerMm;
+  const lines: string[] = [];
+  let line = '';
+
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxPxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+
+  const linePxHeight = fontSize * pxPerMm * lineHeight;
+  canvas.width = Math.ceil(maxPxWidth + 8);
+  canvas.height = Math.ceil(lines.length * linePxHeight + 8);
+  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
+  ctx.fillStyle = options.color ?? '#475569';
+  ctx.textBaseline = 'top';
+  lines.forEach((row, index) => ctx.fillText(row, 0, 4 + index * linePxHeight));
+
+  const imageHeight = canvas.height / pxPerMm;
+  doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y - fontSize * 0.32, maxWidth, imageHeight);
+  return imageHeight;
+}
 
 export async function exportAnalyticsPdf(
   data: AnalyticsExportData,
