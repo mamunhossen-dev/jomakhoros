@@ -72,8 +72,11 @@ export function exportTransactionsPdf(
   // Table
   const tableData = transactions.map(tx => {
     const typeLabel = tx.type === 'income' ? 'Income' : tx.type === 'expense' ? 'Expense' : 'Transfer';
-    const sign = tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : '↔';
-    const amount = `${sign} TK ${Number(tx.amount).toFixed(2)}`;
+    const amount = tx.type === 'income'
+      ? `+ TK ${Number(tx.amount).toFixed(2)}`
+      : tx.type === 'expense'
+        ? `- TK ${Number(tx.amount).toFixed(2)}`
+        : `TK ${Number(tx.amount).toFixed(2)}`;
     const category = tx.type === 'transfer'
       ? `${tx.wallet?.name || '?'} -> ${tx.to_wallet?.name || '?'}`
       : (tx.category?.name || 'Uncategorized');
@@ -95,14 +98,14 @@ export function exportTransactionsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     columnStyles: {
       0: { cellWidth: 28 },
-      4: { halign: 'right', cellWidth: 35 },
+      4: { halign: 'right', cellWidth: 38, overflow: 'visible' },
     },
     didParseCell(data) {
       if (data.section === 'body' && data.column.index === 4) {
         const text = String(data.cell.raw);
         if (text.startsWith('+')) data.cell.styles.textColor = [22, 163, 74];
         else if (text.startsWith('-')) data.cell.styles.textColor = [220, 38, 38];
-        else data.cell.styles.textColor = [37, 99, 235];
+        else if (Array.isArray(data.row.raw) && data.row.raw[3] === 'Transfer') data.cell.styles.textColor = [37, 99, 235];
       }
     },
     margin: { left: 14, right: 14 },
