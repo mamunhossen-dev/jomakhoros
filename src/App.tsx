@@ -22,6 +22,7 @@ import Terms from "./pages/Terms";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
+import UserGuide from "./pages/UserGuide";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/feedback" element={<Feedback />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/user-guide" element={<UserGuide />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
