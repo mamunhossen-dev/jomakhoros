@@ -12,7 +12,7 @@ import { useWallets } from '@/hooks/useWallets';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { exportTransactionsPdf } from '@/lib/exportPdf';
+import { exportTransactionsPdf, exportTransactionsImage } from '@/lib/exportPdf';
 import { toast } from 'sonner';
 import { subDays } from 'date-fns';
 import {
