@@ -151,6 +151,8 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
+    didParseCell: hideBengaliAutoTableText,
+    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
     didDrawPage: () => {
       doc.setFontSize(11);
       doc.setTextColor(30, 41, 59);
@@ -178,6 +180,8 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
+    didParseCell: hideBengaliAutoTableText,
+    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
   });
 
   cursorY = (doc as any).lastAutoTable.finalY + 10;
@@ -189,7 +193,7 @@ export async function exportAnalyticsPdf(
     doc.text('Smart Insights', 14, cursorY);
     cursorY += 6;
     for (const ins of data.insights) {
-      const renderedHeight = await drawBengaliTextAsImage(doc, `- ${ins}`, 14, cursorY, pageWidth - 28, {
+      const renderedHeight = drawBengaliTextAsImage(doc, `- ${ins}`, 14, cursorY, pageWidth - 28, {
         fontSize: 9,
         color: '#475569',
       });
