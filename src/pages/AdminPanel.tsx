@@ -832,8 +832,8 @@ export default function AdminPanel() {
               })()}
 
               <div className="grid gap-3 md:grid-cols-[280px_1fr]">
-                {/* Conversations list */}
-                <div className="border rounded-lg overflow-hidden">
+                {/* Conversations list — hidden on mobile when a ticket is selected */}
+                <div className={cn("border rounded-lg overflow-hidden", selectedTicketId && "hidden md:block")}>
                   <ScrollArea className="h-[420px]">
                     {(() => {
                       const visible = ticketIds.filter(tid =>
@@ -885,8 +885,8 @@ export default function AdminPanel() {
                   </ScrollArea>
                 </div>
 
-                {/* Active conversation */}
-                <div className="border rounded-lg flex flex-col h-[420px]">
+                {/* Active conversation — hidden on mobile when no ticket selected */}
+                <div className={cn("border rounded-lg flex flex-col h-[70vh] md:h-[420px]", !selectedTicketId && "hidden md:flex")}>
                   {!selectedTicketId ? (
                     <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                       বামে একটি কথোপকথন বেছে নিন
@@ -908,6 +908,14 @@ export default function AdminPanel() {
                     <>
                       <div className="border-b p-2 flex items-center justify-between gap-2">
                         <div className="text-sm font-medium truncate flex items-center gap-2 min-w-0">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs shrink-0 md:hidden"
+                            onClick={() => { setSelectedTicketId(null); setAdminViewingOldTicketId(null); }}
+                          >
+                            <ArrowLeft className="h-3.5 w-3.5" />
+                          </Button>
                           {isAdminReadOnly && (
                             <Button
                               size="sm"
