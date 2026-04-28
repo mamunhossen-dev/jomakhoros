@@ -89,9 +89,15 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink to="/admin" onClick={closeMobileSidebar} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                    <NavLink to="/admin" onClick={closeMobileSidebar} className="relative text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <Shield className="mr-2 h-4 w-4 shrink-0" />
                       <span className="truncate">অ্যাডমিন প্যানেল</span>
+                      {hasAdminAlerts && (
+                        <span
+                          aria-label="নতুন আপডেট"
+                          className="ml-1.5 inline-block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-sidebar shadow-[0_0_0_1px_rgba(0,0,0,0.05)] animate-pulse"
+                        />
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
