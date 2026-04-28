@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
-import { registerBengaliFont } from './pdfFont';
+import { BENGALI_WEB_FONT, registerBengaliFont } from './pdfFont';
 
 const FONT = 'NotoBengali';
 
@@ -20,6 +20,70 @@ export type AnalyticsExportData = {
   categories: { name: string; value: number }[];
   insights: string[];
 };
+
+const containsBengali = (value: unknown) => typeof value === 'string' && /[\u0980-\u09FF]/.test(value);
+
+function drawBengaliTextAsImage(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  options: { fontSize?: number; color?: string; lineHeight?: number } = {}
+) {
+  if (!text.trim()) return 0;
+
+  const fontSize = options.fontSize ?? 9;
+  const lineHeight = options.lineHeight ?? 1.55;
+  const pxPerMm = 3.78;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return 0;
+
+  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
+  const words = text.split(' ');
+  const maxPxWidth = maxWidth * pxPerMm;
+  const lines: string[] = [];
+  let line = '';
+
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxPxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+
+  const linePxHeight = fontSize * pxPerMm * lineHeight;
+  canvas.width = Math.ceil(maxPxWidth + 8);
+  canvas.height = Math.ceil(lines.length * linePxHeight + 8);
+  ctx.font = `${fontSize * pxPerMm}px ${BENGALI_WEB_FONT}, sans-serif`;
+  ctx.fillStyle = options.color ?? '#475569';
+  ctx.textBaseline = 'top';
+  lines.forEach((row, index) => ctx.fillText(row, 0, 4 + index * linePxHeight));
+
+  const imageHeight = canvas.height / pxPerMm;
+  doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, maxWidth, imageHeight);
+  return imageHeight;
+}
+
+function hideBengaliAutoTableText(cellData: any) {
+  if (cellData.section === 'body' && containsBengali(cellData.cell.raw)) {
+    cellData.cell.text = [''];
+  }
+}
+
+function drawBengaliAutoTableText(doc: jsPDF, cellData: any) {
+  if (cellData.section !== 'body' || !containsBengali(cellData.cell.raw)) return;
+  drawBengaliTextAsImage(doc, String(cellData.cell.raw), cellData.cell.x + 2, cellData.cell.y + 3, cellData.cell.width - 4, {
+    fontSize: 8,
+    color: '#334155',
+    lineHeight: 1.25,
+  });
+}
 
 export async function exportAnalyticsPdf(
   data: AnalyticsExportData,
@@ -87,6 +151,8 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
+    didParseCell: hideBengaliAutoTableText,
+    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
     didDrawPage: () => {
       doc.setFontSize(11);
       doc.setTextColor(30, 41, 59);
@@ -114,6 +180,8 @@ export async function exportAnalyticsPdf(
     alternateRowStyles: { fillColor: [248, 250, 252] },
     styles: { font: FONT },
     margin: { left: 14, right: 14 },
+    didParseCell: hideBengaliAutoTableText,
+    didDrawCell: (cellData) => drawBengaliAutoTableText(doc, cellData),
   });
 
   cursorY = (doc as any).lastAutoTable.finalY + 10;
@@ -124,13 +192,13 @@ export async function exportAnalyticsPdf(
     doc.setTextColor(30, 41, 59);
     doc.text('Smart Insights', 14, cursorY);
     cursorY += 6;
-    doc.setFontSize(9);
-    doc.setTextColor(60);
-    data.insights.forEach((ins) => {
-      const lines = doc.splitTextToSize(`- ${ins}`, pageWidth - 28);
-      doc.text(lines, 14, cursorY);
-      cursorY += lines.length * 5 + 1;
-    });
+    for (const ins of data.insights) {
+      const renderedHeight = drawBengaliTextAsImage(doc, `- ${ins}`, 14, cursorY, pageWidth - 28, {
+        fontSize: 9,
+        color: '#475569',
+      });
+      cursorY += renderedHeight + 2;
+    }
   }
 
   // Footer

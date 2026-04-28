@@ -2,6 +2,8 @@ import jsPDF from 'jspdf';
 import bengaliFontUrl from '@/assets/fonts/NotoSansBengali-Regular.ttf?url';
 
 let cachedBase64: string | null = null;
+let webFontPromise: Promise<void> | null = null;
+export const BENGALI_WEB_FONT = 'NotoBengaliPdf';
 
 async function fetchFontBase64(): Promise<string> {
   if (cachedBase64) return cachedBase64;
@@ -23,6 +25,7 @@ async function fetchFontBase64(): Promise<string> {
  * Call once after creating the doc, before any doc.text().
  */
 export async function registerBengaliFont(doc: jsPDF) {
+  await ensureBengaliWebFont();
   const base64 = await fetchFontBase64();
   doc.addFileToVFS('NotoSansBengali-Regular.ttf', base64);
   doc.addFont('NotoSansBengali-Regular.ttf', 'NotoBengali', 'normal');
@@ -30,4 +33,19 @@ export async function registerBengaliFont(doc: jsPDF) {
   // jsPDF will still apply it when 'bold' style is requested.
   doc.addFont('NotoSansBengali-Regular.ttf', 'NotoBengali', 'bold');
   doc.setFont('NotoBengali', 'normal');
+}
+
+export async function ensureBengaliWebFont() {
+  if (typeof window === 'undefined' || !('FontFace' in window) || !document.fonts) return;
+  if (webFontPromise) return webFontPromise;
+
+  webFontPromise = new FontFace(BENGALI_WEB_FONT, `url(${bengaliFontUrl})`)
+    .load()
+    .then((fontFace) => {
+      document.fonts.add(fontFace);
+      return document.fonts.ready.then(() => undefined);
+    })
+    .catch(() => undefined);
+
+  return webFontPromise;
 }
