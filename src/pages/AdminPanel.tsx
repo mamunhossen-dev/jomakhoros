@@ -976,7 +976,40 @@ export default function AdminPanel() {
                         {(conversationsByTicket[displayedTicketId] || []).map(m => (
                           <div key={m.id} className={`flex ${m.is_from_admin ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[80%] rounded-lg px-3 py-2 ${m.is_from_admin ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                              <p className="text-sm whitespace-pre-wrap">{m.message}</p>
+                              <p className="text-sm whitespace-pre-wrap">
+                                {(() => {
+                                  const text = m.message || '';
+                                  const re = /TKT-\d{6}-\d{3}/gi;
+                                  const parts: Array<string | { tn: string }> = [];
+                                  let last = 0;
+                                  for (const match of text.matchAll(re)) {
+                                    const idx = match.index ?? 0;
+                                    if (idx > last) parts.push(text.slice(last, idx));
+                                    parts.push({ tn: match[0] });
+                                    last = idx + match[0].length;
+                                  }
+                                  if (last < text.length) parts.push(text.slice(last));
+                                  return parts.map((p, i) =>
+                                    typeof p === 'string' ? (
+                                      <span key={i}>{p}</span>
+                                    ) : (
+                                      <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => openTicketByNumber(p.tn)}
+                                        className={cn(
+                                          'inline rounded px-1 font-mono font-semibold underline-offset-2 hover:underline transition-colors',
+                                          m.is_from_admin
+                                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                                            : 'bg-primary/15 text-primary'
+                                        )}
+                                      >
+                                        {p.tn.toUpperCase()}
+                                      </button>
+                                    )
+                                  );
+                                })()}
+                              </p>
                               <p className={`mt-1 text-[10px] ${m.is_from_admin ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                                 {format(new Date(m.created_at), 'dd MMM, hh:mm a')}
                               </p>
