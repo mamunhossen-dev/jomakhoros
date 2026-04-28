@@ -26,6 +26,7 @@ export default function Landing() {
   const { data } = useAppSetting<LandingContent>('landing_page', DEFAULT_LANDING);
   const { data: siteData } = useAppSetting<SiteSettings>('site_settings', DEFAULT_SITE);
   const site = { ...DEFAULT_SITE, ...(siteData ?? {}), footer_links: siteData?.footer_links ?? DEFAULT_SITE.footer_links };
+  const brand = useBrand();
 
   // Deep merge with defaults
   const c: LandingContent = {
