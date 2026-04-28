@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown, Image as ImageIcon, Lock } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Pencil, Trash2, FileDown, Image as ImageIcon, Lock, Wallet, ArrowLeftRight, Receipt, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,6 +13,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { exportTransactionsPdf, exportTransactionsImage } from '@/lib/exportPdf';
+import { formatTaka } from '@/lib/currency';
 import { toast } from 'sonner';
 import { subDays } from 'date-fns';
 import {
@@ -100,26 +101,93 @@ export default function Transactions() {
     setFormOpen(true);
   };
 
+  const summary = useMemo(() => {
+    let income = 0, expense = 0, transfer = 0, count = 0;
+    transactions?.forEach((tx) => {
+      count++;
+      if (tx.type === 'income') income += Number(tx.amount);
+      else if (tx.type === 'expense') expense += Number(tx.amount);
+      else transfer += Number(tx.amount);
+    });
+    return { income, expense, transfer, count, net: income - expense };
+  }, [transactions]);
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold">লেনদেন</h1>
-          <p className="text-muted-foreground">আপনার আয় ও ব্যয় পরিচালনা করুন।</p>
+      <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-primary/10 via-background to-success/5 p-5 sm:p-6">
+        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-success/10 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary shadow-sm">
+              <Receipt className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="font-display text-2xl font-bold">লেনদেন</h1>
+              <p className="text-sm text-muted-foreground">আপনার আয় ও ব্যয় পরিচালনা করুন।</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => openAdd('income')} className="bg-success hover:bg-success/90 shadow-sm">
+              <TrendingUp className="mr-1 h-4 w-4" /> আয় যোগ
+            </Button>
+            <Button onClick={() => openAdd('expense')} variant="destructive" className="shadow-sm">
+              <TrendingDown className="mr-1 h-4 w-4" /> ব্যয় যোগ
+            </Button>
+            <Button onClick={handleExportPdf} variant="outline" disabled={!transactions?.length}>
+              <FileDown className="mr-1 h-4 w-4" /> PDF
+            </Button>
+            <Button onClick={handleExportImage} variant="outline" disabled={!transactions?.length}>
+              <ImageIcon className="mr-1 h-4 w-4" /> ইমেজ
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => openAdd('income')} className="bg-success hover:bg-success/90">
-            <TrendingUp className="mr-1 h-4 w-4" /> আয় যোগ
-          </Button>
-          <Button onClick={() => openAdd('expense')} variant="destructive">
-            <TrendingDown className="mr-1 h-4 w-4" /> ব্যয় যোগ
-          </Button>
-          <Button onClick={handleExportPdf} variant="outline" disabled={!transactions?.length}>
-            <FileDown className="mr-1 h-4 w-4" /> PDF
-          </Button>
-          <Button onClick={handleExportImage} variant="outline" disabled={!transactions?.length}>
-            <ImageIcon className="mr-1 h-4 w-4" /> ইমেজ
-          </Button>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="group relative overflow-hidden rounded-xl border border-success/20 bg-gradient-to-br from-success/10 to-success/5 p-4 transition-all hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">মোট আয়</p>
+              <p className="mt-1 font-display text-lg font-bold text-success">{formatTaka(summary.income)}</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/15 text-success">
+              <ArrowUpRight className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+        <div className="group relative overflow-hidden rounded-xl border border-destructive/20 bg-gradient-to-br from-destructive/10 to-destructive/5 p-4 transition-all hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">মোট ব্যয়</p>
+              <p className="mt-1 font-display text-lg font-bold text-destructive">{formatTaka(summary.expense)}</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+              <ArrowDownRight className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+        <div className="group relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-4 transition-all hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">নিট ব্যালেন্স</p>
+              <p className={`mt-1 font-display text-lg font-bold ${summary.net >= 0 ? 'text-success' : 'text-destructive'}`}>{formatTaka(summary.net)}</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <Wallet className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+        <div className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/40 to-muted/10 p-4 transition-all hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">মোট লেনদেন</p>
+              <p className="mt-1 font-display text-lg font-bold">{summary.count.toLocaleString('bn-BD')}</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/10 text-foreground">
+              <ArrowLeftRight className="h-5 w-5" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -136,9 +204,23 @@ export default function Transactions() {
               {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
           ) : !transactions?.length ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Plus className="mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-muted-foreground">কোনো লেনদেন নেই। প্রথমটি যোগ করুন!</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="relative mb-4">
+                <div className="absolute inset-0 animate-pulse rounded-full bg-primary/10 blur-xl" />
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-sm">
+                  <Receipt className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <p className="font-medium">কোনো লেনদেন নেই</p>
+              <p className="mt-1 text-sm text-muted-foreground">আপনার প্রথম লেনদেন যোগ করে শুরু করুন!</p>
+              <div className="mt-4 flex gap-2">
+                <Button onClick={() => openAdd('income')} size="sm" className="bg-success hover:bg-success/90">
+                  <TrendingUp className="mr-1 h-3.5 w-3.5" /> আয় যোগ
+                </Button>
+                <Button onClick={() => openAdd('expense')} size="sm" variant="destructive">
+                  <TrendingDown className="mr-1 h-3.5 w-3.5" /> ব্যয় যোগ
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -160,12 +242,23 @@ export default function Transactions() {
                     const sign = tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : '↔';
                     const amountColor = tx.type === 'income' ? 'text-success' : tx.type === 'expense' ? 'text-destructive' : 'text-primary';
                     return (
-                      <TableRow key={tx.id}>
+                      <TableRow key={tx.id} className="transition-colors hover:bg-muted/40">
                         <TableCell className="whitespace-nowrap text-sm">
                           {format(new Date(tx.date), 'dd MMM, yyyy')}
                         </TableCell>
-                        <TableCell className="max-w-[200px] truncate text-sm">
-                          {tx.description || '—'}
+                        <TableCell className="max-w-[220px] text-sm">
+                          <div className="flex items-center gap-2">
+                            <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                              tx.type === 'income' ? 'bg-success/10 text-success'
+                              : tx.type === 'expense' ? 'bg-destructive/10 text-destructive'
+                              : 'bg-primary/10 text-primary'
+                            }`}>
+                              {tx.type === 'income' ? <ArrowUpRight className="h-3.5 w-3.5" />
+                                : tx.type === 'expense' ? <ArrowDownRight className="h-3.5 w-3.5" />
+                                : <ArrowLeftRight className="h-3.5 w-3.5" />}
+                            </div>
+                            <span className="truncate">{tx.description || '—'}</span>
+                          </div>
                         </TableCell>
                         <TableCell>
                           {isTransfer ? (
