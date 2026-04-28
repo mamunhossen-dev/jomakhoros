@@ -13,6 +13,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { exportTransactionsPdf, exportTransactionsImage } from '@/lib/exportPdf';
+import { formatTaka } from '@/lib/currency';
 import { toast } from 'sonner';
 import { subDays } from 'date-fns';
 import {
