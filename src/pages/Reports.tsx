@@ -30,11 +30,21 @@ import {
   PieChart, Pie, Cell,
 } from 'recharts';
 
+// Maximally distinct colors — spread evenly across the hue wheel
+// with varied saturation/lightness so no two look similar.
 const COLORS = [
-  'hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(var(--success))',
-  'hsl(38, 92%, 50%)', 'hsl(260, 60%, 55%)', 'hsl(200, 80%, 50%)',
-  'hsl(340, 70%, 55%)', 'hsl(170, 70%, 40%)', 'hsl(30, 80%, 55%)',
-  'hsl(280, 50%, 60%)', 'hsl(100, 50%, 45%)', 'hsl(15, 80%, 55%)',
+  'hsl(210, 85%, 50%)',  // blue
+  'hsl(0, 78%, 55%)',    // red
+  'hsl(140, 65%, 42%)',  // green
+  'hsl(38, 95%, 52%)',   // orange
+  'hsl(280, 60%, 55%)',  // purple
+  'hsl(180, 70%, 40%)',  // teal
+  'hsl(330, 75%, 58%)',  // pink/magenta
+  'hsl(50, 90%, 50%)',   // yellow
+  'hsl(250, 70%, 60%)',  // indigo
+  'hsl(15, 80%, 50%)',   // burnt orange
+  'hsl(100, 55%, 40%)',  // olive green
+  'hsl(195, 80%, 45%)',  // cyan
 ];
 
 const MONTH_NAMES_BN = ['জানু', 'ফেব', 'মার্চ', 'এপ্রি', 'মে', 'জুন',
