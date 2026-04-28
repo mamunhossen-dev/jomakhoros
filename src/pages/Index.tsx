@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, Wallet, ArrowUpDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, ArrowUpDown, Smartphone } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -101,6 +101,45 @@ export default function Index() {
           )
         )}
       </div>
+
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="font-display text-lg">আমার ওয়ালেট</CardTitle>
+          <button onClick={() => navigate('/wallets')} className="text-xs text-primary hover:underline">ম্যানেজ করুন</button>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+            </div>
+          ) : !wallets?.length ? (
+            <div className="flex flex-col items-center py-8 text-center">
+              <Smartphone className="mb-2 h-8 w-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">কোনো ওয়ালেট নেই</p>
+              <button onClick={() => navigate('/wallets')} className="mt-2 text-xs text-primary hover:underline">ওয়ালেট যোগ করুন</button>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {wallets.map((w) => (
+                <div key={w.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <Wallet className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{w.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{w.wallet_type}</p>
+                    </div>
+                  </div>
+                  <span className={`shrink-0 text-sm font-semibold ${Number(w.balance) >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {formatTaka(Number(w.balance))}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-0 shadow-sm">
