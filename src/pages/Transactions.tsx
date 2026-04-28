@@ -63,7 +63,7 @@ export default function Transactions() {
     exportTransactionsPdf(transactions, profile?.display_name || '', user?.email || '', {
       dateFrom: filters.dateFrom || undefined,
       dateTo: filters.dateTo || undefined,
-    });
+    }, wallets);
   };
 
   const openAdd = (type: 'income' | 'expense') => {
