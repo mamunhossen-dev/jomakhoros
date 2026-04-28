@@ -108,18 +108,20 @@ export default function Register() {
               <Input id="confirm-password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
             </div>
 
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="terms"
-                checked={agreedToTerms}
-                onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
-              />
-              <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
-                আমি <Link to="/terms" className="text-primary hover:underline font-medium" target="_blank">শর্তাবলী</Link> পড়েছি এবং সম্মত আছি
-              </label>
-            </div>
+            {termsEnabled && (
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                />
+                <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                  আমি <Link to="/terms" className="text-primary hover:underline font-medium" target="_blank">শর্তাবলী</Link> পড়েছি এবং সম্মত আছি
+                </label>
+              </div>
+            )}
 
-            <Button type="submit" className="w-full" disabled={loading || !agreedToTerms}>
+            <Button type="submit" className="w-full" disabled={loading || (termsEnabled && !agreedToTerms)}>
               {loading ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'রেজিস্টার করুন'}
             </Button>
           </form>
