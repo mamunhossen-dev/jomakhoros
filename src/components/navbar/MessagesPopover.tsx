@@ -347,9 +347,12 @@ export function MessagesPopover() {
                             </span>
                           </div>
                           {t.ticket_number && (
-                            <p className="mt-0.5 text-[10px] font-mono font-semibold text-primary">
-                              {t.ticket_number}
-                            </p>
+                            <div className="mt-0.5 flex items-center gap-1">
+                              <p className="text-[10px] font-mono font-semibold text-primary">
+                                {t.ticket_number}
+                              </p>
+                              <CopyTicketButton value={t.ticket_number} size={10} />
+                            </div>
                           )}
                           <p className="mt-1 line-clamp-2 text-xs text-foreground/80">{preview}</p>
                         </button>
