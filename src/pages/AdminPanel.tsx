@@ -419,6 +419,7 @@ export default function AdminPanel() {
                                     : 'প্রো'}
                                 </Badge>
                               )}
+                            </div>
                           </div>
 
                           {/* Row 2: UID with copy */}
