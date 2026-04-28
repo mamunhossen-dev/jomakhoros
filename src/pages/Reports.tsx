@@ -9,11 +9,11 @@ import { useTransactions, useCategories } from '@/hooks/useTransactions';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { exportAnalyticsPdf } from '@/lib/exportAnalyticsPdf';
+import { exportAnalyticsPdf, exportAnalyticsImage } from '@/lib/exportAnalyticsPdf';
 import { formatTaka } from '@/lib/currency';
 import {
   TrendingUp, TrendingDown, Wallet, PiggyBank, Percent,
-  FileDown, Lock, X, Lightbulb,
+  FileDown, Lock, X, Lightbulb, Image as ImageIcon,
 } from 'lucide-react';
 import {
   format, startOfMonth, endOfMonth, startOfYear, endOfYear,
@@ -270,6 +270,27 @@ export default function Reports() {
     }
   };
 
+  const handleExportImage = async () => {
+    if (isFree) { setUpgradeOpen(true); return; }
+    if (!filteredTxs.length) { toast.error('এই সময়সীমায় কোনো ডেটা নেই'); return; }
+    try {
+      await exportAnalyticsImage(
+        {
+          kpi: stats,
+          timeSeries: timeSeriesData,
+          categories: categoryData,
+          insights,
+        },
+        profile?.display_name || '',
+        user?.email || '',
+        { dateFrom: dateFrom || undefined, dateTo: dateTo || undefined },
+      );
+    } catch (e) {
+      console.error('Image export failed', e);
+      toast.error('ইমেজ তৈরি করা যায়নি');
+    }
+  };
+
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
     border: '1px solid hsl(var(--border))',
@@ -286,10 +307,16 @@ export default function Reports() {
           <h1 className="font-display text-2xl font-bold">রিপোর্ট ও বিশ্লেষণ</h1>
           <p className="text-sm text-muted-foreground">{rangeLabel}</p>
         </div>
-        <Button onClick={handleExportPdf} variant="outline" disabled={!filteredTxs.length && !isFree}>
-          {isFree ? <Lock className="mr-1 h-4 w-4" /> : <FileDown className="mr-1 h-4 w-4" />}
-          PDF এক্সপোর্ট
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleExportPdf} variant="outline" disabled={!filteredTxs.length && !isFree}>
+            {isFree ? <Lock className="mr-1 h-4 w-4" /> : <FileDown className="mr-1 h-4 w-4" />}
+            PDF এক্সপোর্ট
+          </Button>
+          <Button onClick={handleExportImage} variant="outline" disabled={!filteredTxs.length && !isFree}>
+            {isFree ? <Lock className="mr-1 h-4 w-4" /> : <ImageIcon className="mr-1 h-4 w-4" />}
+            ইমেজ এক্সপোর্ট
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
