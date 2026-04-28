@@ -3,8 +3,11 @@ import autoTable from 'jspdf-autotable';
 import type { Transaction } from '@/hooks/useTransactions';
 import type { Wallet } from '@/hooks/useWallets';
 import { format } from 'date-fns';
+import { registerBengaliFont } from './pdfFont';
 
-export function exportTransactionsPdf(
+const FONT = 'NotoBengali';
+
+export async function exportTransactionsPdf(
   transactions: Transaction[],
   userName: string,
   userEmail: string,
@@ -12,10 +15,12 @@ export function exportTransactionsPdf(
   wallets?: Wallet[]
 ) {
   const doc = new jsPDF();
+  await registerBengaliFont(doc);
+  doc.setFont(FONT, 'normal');
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header background
-  doc.setFillColor(30, 41, 59); // sidebar dark color
+  doc.setFillColor(30, 41, 59);
   doc.rect(0, 0, pageWidth, 52, 'F');
 
   // Title
@@ -23,23 +28,23 @@ export function exportTransactionsPdf(
   doc.setFontSize(20);
   doc.text('JomaKhoros.com', 14, 18);
   doc.setFontSize(9);
-  doc.text('Transaction Statement', 14, 25);
+  doc.text('লেনদেন বিবরণী', 14, 25);
 
   // User info
   doc.setFontSize(10);
-  doc.text(`Name: ${userName || 'N/A'}`, 14, 35);
-  doc.text(`Email: ${userEmail}`, 14, 41);
+  doc.text(`নাম: ${userName || 'N/A'}`, 14, 35);
+  doc.text(`ইমেইল: ${userEmail}`, 14, 41);
 
   // Date range
-  const fromLabel = filters?.dateFrom || 'All';
-  const toLabel = filters?.dateTo || 'All';
-  doc.text(`Period: ${fromLabel} to ${toLabel}`, 14, 47);
+  const fromLabel = filters?.dateFrom || 'সব';
+  const toLabel = filters?.dateTo || 'সব';
+  doc.text(`সময়কাল: ${fromLabel} - ${toLabel}`, 14, 47);
 
   // Generated date
   doc.setFontSize(8);
-  doc.text(`Generated: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, pageWidth - 14, 47, { align: 'right' });
+  doc.text(`তৈরি: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, pageWidth - 14, 47, { align: 'right' });
 
-  // Summary (transfers excluded from income/expense totals)
+  // Summary
   let totalIncome = 0, totalExpense = 0;
   transactions.forEach(tx => {
     if (tx.type === 'income') totalIncome += Number(tx.amount);
@@ -58,30 +63,30 @@ export function exportTransactionsPdf(
 
   doc.setFontSize(7);
   doc.setTextColor(100);
-  doc.text('Total Income', 18, summaryY + 6);
-  doc.text('Total Expense', 79, summaryY + 6);
-  doc.text('Balance', 140, summaryY + 6);
+  doc.text('মোট আয়', 18, summaryY + 6);
+  doc.text('মোট ব্যয়', 79, summaryY + 6);
+  doc.text('ব্যালেন্স', 140, summaryY + 6);
 
   doc.setFontSize(11);
   doc.setTextColor(22, 163, 74);
-  doc.text(`TK ${totalIncome.toFixed(2)}`, 18, summaryY + 14);
+  doc.text(`৳ ${totalIncome.toFixed(2)}`, 18, summaryY + 14);
   doc.setTextColor(220, 38, 38);
-  doc.text(`TK ${totalExpense.toFixed(2)}`, 79, summaryY + 14);
+  doc.text(`৳ ${totalExpense.toFixed(2)}`, 79, summaryY + 14);
   const balance = totalIncome - totalExpense;
   doc.setTextColor(balance >= 0 ? 22 : 220, balance >= 0 ? 163 : 38, balance >= 0 ? 74 : 38);
-  doc.text(`TK ${balance.toFixed(2)}`, 140, summaryY + 14);
+  doc.text(`৳ ${balance.toFixed(2)}`, 140, summaryY + 14);
 
-  // Table
+  // Table data
   const tableData = transactions.map(tx => {
-    const typeLabel = tx.type === 'income' ? 'Income' : tx.type === 'expense' ? 'Expense' : 'Transfer';
+    const typeLabel = tx.type === 'income' ? 'আয়' : tx.type === 'expense' ? 'ব্যয়' : 'ট্রান্সফার';
     const amount = tx.type === 'income'
-      ? `+ TK ${Number(tx.amount).toFixed(2)}`
+      ? `+ ৳ ${Number(tx.amount).toFixed(2)}`
       : tx.type === 'expense'
-        ? `- TK ${Number(tx.amount).toFixed(2)}`
-        : `TK ${Number(tx.amount).toFixed(2)}`;
+        ? `- ৳ ${Number(tx.amount).toFixed(2)}`
+        : `৳ ${Number(tx.amount).toFixed(2)}`;
     const category = tx.type === 'transfer'
-      ? `${tx.wallet?.name || '?'} -> ${tx.to_wallet?.name || '?'}`
-      : (tx.category?.name || 'Uncategorized');
+      ? `${tx.wallet?.name || '?'} → ${tx.to_wallet?.name || '?'}`
+      : (tx.category?.name || 'অশ্রেণীবদ্ধ');
     return [
       format(new Date(tx.date), 'dd MMM yyyy'),
       tx.description || '-',
@@ -97,29 +102,29 @@ export function exportTransactionsPdf(
     const walletsTop = summaryY + 22;
     doc.setFontSize(9);
     doc.setTextColor(30, 41, 59);
-    doc.text('Wallet Balances', 14, walletsTop + 4);
+    doc.text('ওয়ালেট ব্যালেন্স', 14, walletsTop + 4);
 
     const walletRows = wallets.map(w => [
       w.name,
       (w.wallet_type || '').toUpperCase(),
-      `TK ${Number(w.balance).toFixed(2)}`,
+      `৳ ${Number(w.balance).toFixed(2)}`,
     ]);
     const totalWallet = wallets.reduce((s, w) => s + Number(w.balance), 0);
-    walletRows.push(['Total', '', `TK ${totalWallet.toFixed(2)}`]);
+    walletRows.push(['মোট', '', `৳ ${totalWallet.toFixed(2)}`]);
 
     autoTable(doc, {
       startY: walletsTop + 7,
-      head: [['Wallet', 'Type', 'Balance']],
+      head: [['ওয়ালেট', 'ধরন', 'ব্যালেন্স']],
       body: walletRows,
-      headStyles: { fillColor: [30, 41, 59], fontSize: 8, halign: 'left' },
-      bodyStyles: { fontSize: 8 },
+      styles: { font: FONT, fontStyle: 'normal' },
+      headStyles: { fillColor: [30, 41, 59], fontSize: 8, halign: 'left', font: FONT, fontStyle: 'normal', textColor: [255, 255, 255] },
+      bodyStyles: { fontSize: 8, font: FONT, fontStyle: 'normal' },
       alternateRowStyles: { fillColor: [248, 250, 252] },
       columnStyles: {
         2: { halign: 'right', cellWidth: 40 },
       },
       didParseCell(data) {
         if (data.section === 'body' && data.row.index === walletRows.length - 1) {
-          data.cell.styles.fontStyle = 'bold';
           data.cell.styles.fillColor = [240, 253, 244];
           data.cell.styles.textColor = [22, 101, 52];
         }
@@ -135,10 +140,11 @@ export function exportTransactionsPdf(
 
   autoTable(doc, {
     startY: tableStartY,
-    head: [['Date', 'Description', 'Category / Wallets', 'Type', 'Amount']],
+    head: [['তারিখ', 'বিবরণ', 'ক্যাটাগরি / ওয়ালেট', 'ধরন', 'পরিমাণ']],
     body: tableData,
-    headStyles: { fillColor: [30, 41, 59], fontSize: 8, halign: 'left' },
-    bodyStyles: { fontSize: 8 },
+    styles: { font: FONT, fontStyle: 'normal' },
+    headStyles: { fillColor: [30, 41, 59], fontSize: 8, halign: 'left', font: FONT, fontStyle: 'normal', textColor: [255, 255, 255] },
+    bodyStyles: { fontSize: 8, font: FONT, fontStyle: 'normal' },
     alternateRowStyles: { fillColor: [248, 250, 252] },
     columnStyles: {
       0: { cellWidth: 28 },
@@ -149,7 +155,7 @@ export function exportTransactionsPdf(
         const text = String(data.cell.raw);
         if (text.startsWith('+')) data.cell.styles.textColor = [22, 163, 74];
         else if (text.startsWith('-')) data.cell.styles.textColor = [220, 38, 38];
-        else if (Array.isArray(data.row.raw) && data.row.raw[3] === 'Transfer') data.cell.styles.textColor = [37, 99, 235];
+        else if (Array.isArray(data.row.raw) && data.row.raw[3] === 'ট্রান্সফার') data.cell.styles.textColor = [37, 99, 235];
       }
     },
     margin: { left: 14, right: 14 },
@@ -159,10 +165,11 @@ export function exportTransactionsPdf(
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
+    doc.setFont(FONT, 'normal');
     doc.setFontSize(7);
     doc.setTextColor(150);
-    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
-    doc.text('JomaKhoros.com - Your Personal Finance Manager', 14, doc.internal.pageSize.getHeight() - 8);
+    doc.text(`পৃষ্ঠা ${i} / ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
+    doc.text('JomaKhoros.com - আপনার ব্যক্তিগত অর্থ ব্যবস্থাপক', 14, doc.internal.pageSize.getHeight() - 8);
   }
 
   doc.save(`JomaKhoros_Statement_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
