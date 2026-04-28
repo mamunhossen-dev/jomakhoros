@@ -28,6 +28,7 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<string>('payments');
 
   // Notifications state
   const [notifTitle, setNotifTitle] = useState('');
@@ -72,7 +73,7 @@ export default function AdminPanel() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Fetch all users (profiles)
+  // Fetch all users (profiles) — only when Users tab is open
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['admin_users'],
     queryFn: async () => {
@@ -80,10 +81,11 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && activeTab === 'users',
+    staleTime: 30_000,
   });
 
-  // Fetch all user roles
+  // Fetch all user roles — only when Users tab is open
   const { data: allRoles } = useQuery({
     queryKey: ['admin_all_roles'],
     queryFn: async () => {
@@ -91,23 +93,25 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && activeTab === 'users',
+    staleTime: 30_000,
   });
 
-  // Fetch all feedback
+  // Fetch all feedback — only when Feedback tab is open
   const { data: feedbacks, isLoading: feedbackLoading } = useQuery({
     queryKey: ['admin_feedback'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(500);
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || isModerator,
+    enabled: (isAdmin || isModerator) && activeTab === 'feedback',
+    staleTime: 30_000,
   });
 
-  // Realtime: refresh feedback list on any change
+  // Realtime refresh only while feedback tab is open
   useEffect(() => {
-    if (!isAdmin && !isModerator) return;
+    if ((!isAdmin && !isModerator) || activeTab !== 'feedback') return;
     const ch = supabase
       .channel('admin-feedback')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' }, () => {
@@ -115,7 +119,7 @@ export default function AdminPanel() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [isAdmin, isModerator, qc]);
+  }, [isAdmin, isModerator, qc, activeTab]);
 
   // Shared admin badge counts (also used by sidebar dot)
   const {
@@ -126,15 +130,16 @@ export default function AdminPanel() {
     markUsersSeen,
   } = useAdminBadges();
 
-  // Fetch payment requests
+  // Fetch payment requests — payments tab is the default tab so eager-load
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['admin_payments'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('payment_requests').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('payment_requests').select('*').order('created_at', { ascending: false }).limit(500);
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || isModerator,
+    enabled: (isAdmin || isModerator) && activeTab === 'payments',
+    staleTime: 30_000,
   });
 
   // Approve payment mutation
@@ -209,7 +214,8 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin && activeTab === 'notifications',
+    staleTime: 60_000,
   });
 
   const saveNotification = useMutation({
@@ -275,11 +281,12 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || isModerator,
+    enabled: (isAdmin || isModerator) && activeTab === 'support',
+    staleTime: 30_000,
   });
 
   useEffect(() => {
-    if (!isAdmin && !isModerator) return;
+    if ((!isAdmin && !isModerator) || activeTab !== 'support') return;
     const ch = supabase
       .channel('admin-support-all')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => {
@@ -287,9 +294,10 @@ export default function AdminPanel() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [isAdmin, isModerator, qc]);
+  }, [isAdmin, isModerator, qc, activeTab]);
 
-  // Support thread statuses
+  // Support thread statuses — kept always-on to power the support tab badge,
+  // but small payload + staleTime keeps it cheap.
   const { data: threads } = useQuery({
     queryKey: ['admin_support_threads'],
     queryFn: async () => {
@@ -298,6 +306,7 @@ export default function AdminPanel() {
       return data;
     },
     enabled: isAdmin || isModerator,
+    staleTime: 30_000,
   });
 
   useEffect(() => {
@@ -455,7 +464,8 @@ export default function AdminPanel() {
         <p className="text-muted-foreground">সাইট ও ব্যবহারকারী পরিচালনা করুন।</p>
       </div>
 
-      <Tabs defaultValue="payments" onValueChange={(v) => {
+      <Tabs value={activeTab} onValueChange={(v) => {
+        setActiveTab(v);
         if (v === 'feedback') markFeedbackSeen();
         if (v === 'users') markUsersSeen();
       }}>
