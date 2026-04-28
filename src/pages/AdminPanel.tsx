@@ -654,6 +654,14 @@ export default function AdminPanel() {
                   const st = getThreadStatus(uid);
                   counts[st] = (counts[st] || 0) + 1;
                 });
+                const COUNT_STYLES: Record<string, { active: string; idle: string }> = {
+                  all:     { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-primary/15 text-primary' },
+                  new:     { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-blue-500 text-white shadow-sm' },
+                  open:    { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-orange-500 text-white shadow-sm' },
+                  pending: { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-yellow-400 text-yellow-950 shadow-sm' },
+                  solved:  { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' },
+                  closed:  { active: 'bg-primary-foreground/20 text-primary-foreground', idle: 'bg-gray-200 text-gray-600 dark:bg-gray-500/15 dark:text-gray-400' },
+                };
                 const tabs: Array<{ key: SupportStatus | 'all'; label: string; dotClass?: string }> = [
                   { key: 'all', label: 'সব' },
                   ...STATUS_LIST.map(s => ({ key: s.value, label: s.label, dotClass: s.dotClass })),
