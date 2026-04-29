@@ -53,7 +53,9 @@ export function WelcomeBanner() {
               <Icon className={`h-8 w-8 ${cls.text}`} />
             </div>
             <h2 className="text-center font-display text-2xl font-bold">{data.title}</h2>
-            <p className="mt-3 text-center text-sm text-muted-foreground whitespace-pre-line">{data.message}</p>
+            <div className="mt-4 rounded-lg border border-border/60 bg-background/80 backdrop-blur-sm p-4 shadow-sm">
+              <p className="text-center text-sm leading-relaxed text-foreground whitespace-pre-line">{data.message}</p>
+            </div>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
               {data.cta_label && (
                 <Button onClick={handleCta} className="flex-1">{data.cta_label}</Button>
