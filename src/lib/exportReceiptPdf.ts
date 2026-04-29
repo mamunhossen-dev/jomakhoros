@@ -20,7 +20,15 @@ export type ReceiptData = {
 
 const drawBnText = (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right' }) => {
   doc.setFont(BN_FONT, 'normal');
-  doc.text(text, x, y, opts);
+  // jsPDF's built-in align option doesn't shape complex Bengali scripts correctly with custom TTF.
+  // Compute width manually and shift x so the text renders without broken glyphs.
+  const align = opts?.align ?? 'left';
+  let drawX = x;
+  if (align !== 'left') {
+    const w = doc.getTextWidth(text);
+    drawX = align === 'right' ? x - w : x - w / 2;
+  }
+  doc.text(text, drawX, y);
 };
 
 const drawEnText = (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right' }) => {
@@ -125,7 +133,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
 
   y += 6;
   drawEnText(doc, 'Transaction ID:', 14, y);
-  drawEnText(doc, data.transactionId, 50, y);
+  drawBnText(doc, data.transactionId, 50, y);
 
   y += 6;
   drawEnText(doc, 'Status:', 14, y);
