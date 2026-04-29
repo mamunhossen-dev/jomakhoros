@@ -192,26 +192,60 @@ export default function Subscription() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {paymentHistory.map(p => (
-                <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5">
-                  <div>
-                    <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
-                    <p className="text-xs text-muted-foreground">{pmLabel(p.payment_method)} • {p.transaction_id}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM, yyyy')}</p>
+              {paymentHistory.map(p => {
+                const isApproved = p.status === 'approved';
+                const handleDownload = async () => {
+                  try {
+                    await downloadReceiptPdf({
+                      receiptNumber: buildReceiptNumber(p.id, p.created_at),
+                      paidOn: p.updated_at || p.created_at,
+                      customerName: profile?.display_name || user?.email?.split('@')[0] || 'Customer',
+                      customerEmail: user?.email || '',
+                      plan: p.plan,
+                      paymentMethod: pmLabel(p.payment_method),
+                      transactionId: p.transaction_id,
+                      amount: Number(p.amount),
+                      brandName: brand?.brand_name,
+                      brandTagline: brand?.tagline,
+                    });
+                    toast.success('রসিদ ডাউনলোড হয়েছে');
+                  } catch (err: any) {
+                    toast.error(err?.message || 'রসিদ তৈরি করা যায়নি');
+                  }
+                };
+                return (
+                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5 gap-2 flex-wrap">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
+                      <p className="text-xs text-muted-foreground">{pmLabel(p.payment_method)} • {p.transaction_id}</p>
+                      <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM, yyyy')}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge
+                        variant="outline"
+                        className={
+                          isApproved ? 'border-success/30 bg-success/10 text-success'
+                          : p.status === 'rejected' ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                          : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-600'
+                        }
+                      >
+                        <Clock className="mr-1 h-3 w-3" />
+                        {isApproved ? 'অনুমোদিত' : p.status === 'rejected' ? 'প্রত্যাখ্যাত' : 'অপেক্ষমান'}
+                      </Badge>
+                      {isApproved && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 gap-1 text-xs border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+                          onClick={handleDownload}
+                        >
+                          <Download className="h-3 w-3" /> রসিদ
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      p.status === 'approved' ? 'border-success/30 bg-success/10 text-success'
-                      : p.status === 'rejected' ? 'border-destructive/30 bg-destructive/10 text-destructive'
-                      : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-600'
-                    }
-                  >
-                    <Clock className="mr-1 h-3 w-3" />
-                    {p.status === 'approved' ? 'অনুমোদিত' : p.status === 'rejected' ? 'প্রত্যাখ্যাত' : 'অপেক্ষমান'}
-                  </Badge>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
