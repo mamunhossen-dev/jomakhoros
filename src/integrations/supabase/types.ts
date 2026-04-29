@@ -417,14 +417,15 @@ export type Database = {
           },
         ]
       }
-      notifications: {
+      notification_templates: {
         Row: {
           body: string
           created_at: string
           created_by: string | null
           id: string
-          is_active: boolean
-          is_default: boolean
+          kind: string
+          link: string | null
+          name: string
           title: string
           updated_at: string
         }
@@ -433,8 +434,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
-          is_active?: boolean
-          is_default?: boolean
+          kind?: string
+          link?: string | null
+          name: string
           title: string
           updated_at?: string
         }
@@ -443,8 +445,57 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          kind?: string
+          link?: string | null
+          name?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          kind: string
+          link: string | null
+          priority: number
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
           is_active?: boolean
           is_default?: boolean
+          kind?: string
+          link?: string | null
+          priority?: number
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          kind?: string
+          link?: string | null
+          priority?: number
+          starts_at?: string | null
           title?: string
           updated_at?: string
         }
