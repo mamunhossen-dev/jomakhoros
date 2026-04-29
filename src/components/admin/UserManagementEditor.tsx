@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_BLOCK_MESSAGE, type BlockMessageContent } from '@/components/BlockedOverlay';
 import { useAuth } from '@/contexts/AuthContext';
+import { logAdminAction } from '@/components/admin/AuditLogViewer';
 import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'inactive_30d' | 'expired' | 'blocked';
