@@ -189,6 +189,11 @@ export default function AdminPanel() {
         payment_status: 'paid',
       }).eq('user_id', userId);
       if (profError) throw profError;
+
+      await logAdminAction('payment_approved', 'payment_request', {
+        entity_id: paymentId, target_user_id: userId,
+        details: { plan, months },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_payments'] });
