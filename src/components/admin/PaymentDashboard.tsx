@@ -298,6 +298,16 @@ export function PaymentDashboard() {
           <Button size="sm" variant="outline" onClick={exportCsv}>
             <Download className="h-3.5 w-3.5 mr-1" /> CSV এক্সপোর্ট
           </Button>
+          {(() => {
+            const adminPayments = (payments || []).filter(p => adminUserIds.has(p.user_id));
+            if (adminPayments.length === 0) return null;
+            return (
+              <Button size="sm" variant="destructive"
+                onClick={() => setDeleteConfirm({ ids: adminPayments.map(p => p.id), mode: 'all_test' })}>
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> অ্যাডমিন/মডের টেস্ট পেমেন্ট মুছুন ({adminPayments.length})
+              </Button>
+            );
+          })()}
           {stats.pending > 5 && (
             <Badge variant="outline" className="gap-1 text-yellow-700 border-yellow-500/40">
               <AlertTriangle className="h-3 w-3" /> {stats.pending} টি অপেক্ষমাণ
