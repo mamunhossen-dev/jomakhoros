@@ -6,6 +6,7 @@ import { Outlet } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { BlockedGate } from '@/components/BlockedOverlay';
+import { SubscriptionReminderBanner } from '@/components/SubscriptionReminderBanner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -34,6 +35,7 @@ export function DashboardLayout() {
               }
             >
               <BlockedGate>
+                <SubscriptionReminderBanner />
                 <Outlet />
               </BlockedGate>
             </ErrorBoundary>
