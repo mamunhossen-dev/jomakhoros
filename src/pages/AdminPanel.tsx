@@ -380,6 +380,7 @@ export default function AdminPanel() {
       .channel('admin-support-threads')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_threads' }, () => {
         qc.invalidateQueries({ queryKey: ['admin_support_threads'] });
+        qc.invalidateQueries({ queryKey: ['admin_users'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
