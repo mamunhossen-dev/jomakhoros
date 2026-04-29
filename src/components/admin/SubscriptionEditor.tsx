@@ -40,13 +40,13 @@ export const DEFAULT_SUBSCRIPTION: SubscriptionContent = {
     { value: 'rocket', label: 'রকেট' },
     { value: 'bank', label: 'ব্যাংক ট্রান্সফার (DBBL)' },
   ],
-  mobile_number: '01770025816',
+  mobile_number: '',
   mobile_warning:
     'এটি একটি ব্যক্তিগত নম্বর, মার্চেন্ট অ্যাকাউন্ট নয়। শুধুমাত্র সেন্ড মানি করুন। পেমেন্ট প্রসেসর হিসেবে ব্যবহার করবেন না।',
-  bank_name: 'Dutch Bangla Bank Limited',
-  bank_account_name: 'Md Mamun Hossen',
-  bank_account_number: '1151580002115',
-  bank_branch: 'Mirpur',
+  bank_name: '',
+  bank_account_name: '',
+  bank_account_number: '',
+  bank_branch: '',
   show_mobile_section: true,
   show_bank_section: true,
 };
