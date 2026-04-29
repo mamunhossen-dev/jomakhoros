@@ -159,6 +159,18 @@ export function AuditLogViewer() {
     };
   }, [logs, actors]);
 
+  // Focused actor summary
+  const focusedActor = useMemo(() => {
+    if (actorFilter === 'all') return null;
+    const info = actors.find(([id]) => id === actorFilter)?.[1];
+    const myLogs = logs.filter(l => l.actor_id === actorFilter);
+    if (myLogs.length === 0) return { info, total: 0, byAction: [], lastAt: null as string | null };
+    const counts = new Map<string, number>();
+    myLogs.forEach(l => counts.set(l.action, (counts.get(l.action) || 0) + 1));
+    const byAction = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    return { info, total: myLogs.length, byAction, lastAt: myLogs[0]?.created_at || null };
+  }, [actorFilter, actors, logs]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
