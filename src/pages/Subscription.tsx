@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CreditCard, CheckCircle2, Clock } from 'lucide-react';
+import { AlertTriangle, CreditCard, CheckCircle2, Clock, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +15,8 @@ import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_SUBSCRIPTION, type SubscriptionContent } from '@/components/admin/SubscriptionEditor';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { downloadReceiptPdf, buildReceiptNumber } from '@/lib/exportReceiptPdf';
+import { useBrand } from '@/hooks/useBrand';
 
 export default function Subscription() {
   const { user } = useAuth();
