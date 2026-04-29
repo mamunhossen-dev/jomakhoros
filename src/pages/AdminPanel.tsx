@@ -555,7 +555,7 @@ export default function AdminPanel() {
                 <div className="relative flex-1">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
-                    placeholder="রিসিপ্ট নং, TxID, প্ল্যান বা UID দিয়ে খুঁজুন"
+                    placeholder="নাম, ইমেইল, ফোন, রিসিপ্ট, TxID, প্ল্যান বা UID"
                     value={paymentSearch}
                     onChange={(e) => setPaymentSearch(e.target.value)}
                     className="pl-8 h-9 text-sm"
