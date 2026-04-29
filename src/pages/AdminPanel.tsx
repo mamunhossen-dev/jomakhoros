@@ -356,6 +356,8 @@ export default function AdminPanel() {
       .channel('admin-support-all')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => {
         qc.invalidateQueries({ queryKey: ['admin_support_messages'] });
+        // New message may come from a brand-new user not yet in profile cache
+        qc.invalidateQueries({ queryKey: ['admin_users'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
@@ -378,6 +380,7 @@ export default function AdminPanel() {
       .channel('admin-support-threads')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_threads' }, () => {
         qc.invalidateQueries({ queryKey: ['admin_support_threads'] });
+        qc.invalidateQueries({ queryKey: ['admin_users'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
@@ -1121,7 +1124,10 @@ export default function AdminPanel() {
                             const u = users?.find(x => x.user_id === uid);
                             const msgs = conversationsByTicket[tid] || [];
                             const last = msgs[msgs.length - 1];
-                            const unread = msgs.filter(m => !m.is_from_admin && !m.is_read).length;
+                            const threadStatus = getThreadStatusByTicket(tid);
+                            const unread = (threadStatus === 'closed' || threadStatus === 'solved')
+                              ? 0
+                              : msgs.filter(m => !m.is_from_admin && !m.is_read).length;
                             const meta = getStatusMeta(getThreadStatusByTicket(tid));
                             const StatusIcon = meta.icon;
                             return (
