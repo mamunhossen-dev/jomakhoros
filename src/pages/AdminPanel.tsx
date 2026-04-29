@@ -38,6 +38,8 @@ import { PersonalNotificationSender } from '@/components/admin/PersonalNotificat
 import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncementManager';
 import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
 import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager } from '@/components/admin/SupportEnhancements';
+import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
+import { BarChart3 } from 'lucide-react';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
