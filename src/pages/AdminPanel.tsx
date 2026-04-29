@@ -356,6 +356,8 @@ export default function AdminPanel() {
       .channel('admin-support-all')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => {
         qc.invalidateQueries({ queryKey: ['admin_support_messages'] });
+        // New message may come from a brand-new user not yet in profile cache
+        qc.invalidateQueries({ queryKey: ['admin_users'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
