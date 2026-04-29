@@ -274,11 +274,17 @@ export default function AdminPanel() {
           title: notifTitle, body: notifBody,
         }).eq('id', editingNotif);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from('notifications').insert({
-          title: notifTitle, body: notifBody, created_by: user?.id, is_active: true,
+        await logAdminAction('announcement_updated', 'notifications', {
+          entity_id: editingNotif, details: { title: notifTitle },
         });
+      } else {
+        const { data: ins, error } = await supabase.from('notifications').insert({
+          title: notifTitle, body: notifBody, created_by: user?.id, is_active: true,
+        }).select('id').maybeSingle();
         if (error) throw error;
+        await logAdminAction('announcement_created', 'notifications', {
+          entity_id: ins?.id, details: { title: notifTitle },
+        });
       }
     },
     onSuccess: () => {
