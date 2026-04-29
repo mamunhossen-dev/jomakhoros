@@ -143,6 +143,9 @@ export function PaymentDashboard() {
       if (note.trim()) update.admin_note = note.trim();
       const { error } = await supabase.from('payment_requests').update(update).in('id', ids);
       if (error) throw error;
+      await logAdminAction('payment_rejected', 'payment_request', {
+        details: { count: ids.length, ids: ids.slice(0, 50), note: note.trim() || null, mode: 'bulk' },
+      });
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin_payments'] });
