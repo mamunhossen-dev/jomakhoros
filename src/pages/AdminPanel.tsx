@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X } from 'lucide-react';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X, Flag } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { STATUS_LIST, getStatusMeta, type SupportStatus } from '@/lib/supportStatus';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ import { AuthPagesEditor } from '@/components/admin/AuthPagesEditor';
 import { WelcomeBannerEditor } from '@/components/admin/WelcomeBannerEditor';
 import { SignupRulesEditor } from '@/components/admin/SignupRulesEditor';
 import { UserManagementEditor } from '@/components/admin/UserManagementEditor';
+import { ForumReportsManager } from '@/components/admin/ForumReportsManager';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
