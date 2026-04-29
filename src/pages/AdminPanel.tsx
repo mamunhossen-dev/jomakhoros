@@ -40,6 +40,8 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [paymentSearch, setPaymentSearch] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   // Notifications state
   const [notifTitle, setNotifTitle] = useState('');
