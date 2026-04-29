@@ -79,14 +79,15 @@ export function UserManagementEditor() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (error) {
-        const context = (error as any).context;
+        const context = (error as { context?: unknown }).context;
         if (context instanceof Response) {
           const body = await context.json().catch(() => null);
           throw new Error(body?.error || error.message);
         }
         throw error;
       }
-      if ((data as any)?.error) throw new Error((data as any).error);
+      const response = data as { error?: string } | null;
+      if (response?.error) throw new Error(response.error);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
