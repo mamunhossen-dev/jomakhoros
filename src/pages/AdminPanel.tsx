@@ -1392,6 +1392,7 @@ export default function AdminPanel() {
 
               {/* General */}
               <TabsContent value="general" className="mt-4 space-y-4">
+                <SupportTemplatesManager />
                 <Card className="border-0 shadow-sm">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base">সাধারণ অ্যাপ সেটিংস</CardTitle>
