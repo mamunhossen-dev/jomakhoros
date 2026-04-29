@@ -181,6 +181,11 @@ export function PaymentDashboard() {
         body: `অ্যাডমিন আপনাকে ম্যানুয়ালি প্রো প্ল্যান (${plan === 'lifetime' ? 'লাইফটাইম' : plan === '1m' ? '১ মাস' : plan === '6m' ? '৬ মাস' : '১ বছর'}) দিয়েছেন।`,
         link: '/subscription',
       });
+
+      await logAdminAction('plan_assigned', 'profile', {
+        target_user_id: user_id,
+        details: { plan, subscription_end: subEnd.toISOString() },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
