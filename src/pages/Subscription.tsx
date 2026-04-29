@@ -205,7 +205,7 @@ export default function Subscription() {
                       paymentMethod: pmLabel(p.payment_method),
                       transactionId: p.transaction_id,
                       amount: Number(p.amount),
-                      brandName: brand?.brand_name,
+                      brandName: brand?.name,
                       brandTagline: brand?.tagline,
                     });
                     toast.success('রসিদ ডাউনলোড হয়েছে');
