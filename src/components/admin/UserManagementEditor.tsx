@@ -225,6 +225,27 @@ export function UserManagementEditor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={o => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ইউজার সম্পূর্ণভাবে ডিলিট করবেন?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{deleteTarget?.name}</strong> এর অ্যাকাউন্ট, লেনদেন, ওয়ালেট, বাজেট, লোন, ক্যাটাগরি, সাপোর্ট মেসেজ সহ <strong>সব ডেটা স্থায়ীভাবে মুছে যাবে</strong>। এই কাজটি আর ফিরিয়ে আনা যাবে না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteUser.isPending}>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteUser.isPending}
+              onClick={() => deleteTarget && deleteUser.mutate(deleteTarget.user_id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUser.isPending ? 'ডিলিট হচ্ছে...' : 'হ্যাঁ, ডিলিট করুন'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
