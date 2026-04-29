@@ -39,7 +39,8 @@ import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncement
 import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
 import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager } from '@/components/admin/SupportEnhancements';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
-import { BarChart3 } from 'lucide-react';
+import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
+import { BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -559,6 +560,7 @@ export default function AdminPanel() {
             )}
           </TabsTrigger>
           {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="mr-1 h-3.5 w-3.5" /> অ্যানালিটিক্স</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="audit"><ShieldCheck className="mr-1 h-3.5 w-3.5" /> অডিট লগ</TabsTrigger>}
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="block"><Lock className="mr-1 h-3.5 w-3.5" /> ইউজার টুলস</TabsTrigger>}
@@ -569,6 +571,13 @@ export default function AdminPanel() {
         {isAdmin && (
           <TabsContent value="analytics" className="space-y-4">
             <AnalyticsDashboard />
+          </TabsContent>
+        )}
+
+        {/* Audit Log Tab */}
+        {isAdmin && (
+          <TabsContent value="audit" className="space-y-4">
+            <AuditLogViewer />
           </TabsContent>
         )}
 
