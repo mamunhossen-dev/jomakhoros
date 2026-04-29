@@ -282,7 +282,44 @@ export function AuditLogViewer() {
         </CardContent>
       </Card>
 
-      {/* Log list */}
+      {/* Focused actor summary */}
+      {focusedActor && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {focusedActor.info?.role === 'admin' && <Crown className="h-4 w-4 text-amber-500 shrink-0" />}
+                {focusedActor.info?.role === 'moderator' && <Shield className="h-4 w-4 text-blue-500 shrink-0" />}
+                {focusedActor.info?.role === 'former' && <Badge variant="outline" className="text-[10px]">প্রাক্তন</Badge>}
+                <p className="font-bold truncate">{focusedActor.info?.name || 'অজানা'}</p>
+                <Badge variant="secondary">{focusedActor.total} টি কাজ</Badge>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setActorFilter('all')}>
+                <X className="h-3.5 w-3.5 mr-1" /> ফিল্টার বাতিল
+              </Button>
+            </div>
+            {focusedActor.lastAt && (
+              <p className="text-xs text-muted-foreground">
+                সর্বশেষ কাজ: {formatDistanceToNow(new Date(focusedActor.lastAt), { addSuffix: true, locale: bn })}
+              </p>
+            )}
+            {focusedActor.byAction.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {focusedActor.byAction.map(([action, count]) => (
+                  <Badge key={action} className={getActionMeta(action).color} variant="secondary">
+                    {getActionMeta(action).label} × {count}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            {focusedActor.total === 0 && (
+              <p className="text-xs text-muted-foreground">এই সময়ের মধ্যে কোনো কাজ নেই।</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">কার্যকলাপ ইতিহাস</CardTitle>
