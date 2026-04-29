@@ -133,7 +133,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
 
   y += 6;
   drawEnText(doc, 'Transaction ID:', 14, y);
-  drawEnText(doc, data.transactionId, 50, y);
+  drawBnText(doc, data.transactionId, 50, y);
 
   y += 6;
   drawEnText(doc, 'Status:', 14, y);
