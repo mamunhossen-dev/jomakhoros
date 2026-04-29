@@ -29,6 +29,7 @@ import { SiteSettingsEditor } from '@/components/admin/SiteSettingsEditor';
 import { BrandingEditor } from '@/components/admin/BrandingEditor';
 import { UserGuideEditor } from '@/components/admin/UserGuideEditor';
 import { AuthPagesEditor } from '@/components/admin/AuthPagesEditor';
+import { WelcomeBannerEditor } from '@/components/admin/WelcomeBannerEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1252,6 +1253,9 @@ export default function AdminPanel() {
             </div>
             <div className="mt-6">
               <AuthPagesEditor />
+            </div>
+            <div className="mt-6">
+              <WelcomeBannerEditor />
             </div>
           </TabsContent>
         )}
