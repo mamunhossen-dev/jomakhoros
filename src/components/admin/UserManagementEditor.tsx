@@ -16,11 +16,13 @@ import { format, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_BLOCK_MESSAGE, type BlockMessageContent } from '@/components/BlockedOverlay';
+import { useAuth } from '@/contexts/AuthContext';
 
 type FilterType = 'all' | 'inactive_30d' | 'expired' | 'blocked';
 
 export function UserManagementEditor() {
   const qc = useQueryClient();
+  const { session } = useAuth();
   const [filter, setFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
   const [days, setDays] = useState(30);
@@ -69,11 +71,23 @@ export function UserManagementEditor() {
 
   const deleteUser = useMutation({
     mutationFn: async (user_id: string) => {
+      const token = session?.access_token;
+      if (!token) throw new Error('সেশন পাওয়া যায়নি, আবার লগইন করুন');
+
       const { data, error } = await supabase.functions.invoke('admin-delete-user', {
         body: { target_user_id: user_id },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+      if (error) {
+        const context = (error as { context?: unknown }).context;
+        if (context instanceof Response) {
+          const body = await context.json().catch(() => null);
+          throw new Error(body?.error || error.message);
+        }
+        throw error;
+      }
+      const response = data as { error?: string } | null;
+      if (response?.error) throw new Error(response.error);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });

@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,9 +9,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "অনুগ্রহ করে আবার লগইন করে চেষ্টা করুন" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -24,9 +24,11 @@ Deno.serve(async (req) => {
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user }, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(token);
+    const callerUserId = claimsData?.claims?.sub;
+    if (claimsErr || !callerUserId) {
+      return new Response(JSON.stringify({ error: "সেশন যাচাই করা যায়নি, আবার লগইন করুন" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -36,7 +38,7 @@ Deno.serve(async (req) => {
 
     // Verify caller is admin
     const { data: isAdmin } = await admin.rpc("has_role", {
-      _user_id: user.id,
+      _user_id: callerUserId,
       _role: "admin",
     });
     if (!isAdmin) {
@@ -54,7 +56,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (target_user_id === user.id) {
+    if (target_user_id === callerUserId) {
       return new Response(JSON.stringify({ error: "নিজেকে ডিলিট করা যাবে না" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -69,6 +71,7 @@ Deno.serve(async (req) => {
     for (const t of tables) {
       await admin.from(t).delete().eq("user_id", target_user_id);
     }
+    await admin.from("support_messages").delete().eq("sender_id", target_user_id);
 
     const { error: delErr } = await admin.auth.admin.deleteUser(target_user_id);
     if (delErr) {
