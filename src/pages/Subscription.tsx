@@ -21,6 +21,7 @@ import { useBrand } from '@/hooks/useBrand';
 export default function Subscription() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const brand = useBrand();
   const { data: settings } = useAppSetting<SubscriptionContent>('subscription_page', DEFAULT_SUBSCRIPTION);
   const content: SubscriptionContent = {
     ...DEFAULT_SUBSCRIPTION,
