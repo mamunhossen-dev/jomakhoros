@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { Search, Lock, Unlock, AlertCircle, Trash2 } from 'lucide-react';
+import { Search, Lock, Unlock, AlertCircle, Trash2, KeyRound } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -29,6 +29,9 @@ export function UserManagementEditor() {
   const [blockTarget, setBlockTarget] = useState<{ user_id: string; name: string } | null>(null);
   const [reason, setReason] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ user_id: string; name: string } | null>(null);
+  const [pwdTarget, setPwdTarget] = useState<{ user_id: string; name: string } | null>(null);
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin_users_full'],
@@ -96,6 +99,32 @@ export function UserManagementEditor() {
       setDeleteTarget(null);
     },
     onError: (e: any) => toast.error(e.message || 'ডিলিট ব্যর্থ হয়েছে'),
+  });
+
+  const resetPassword = useMutation({
+    mutationFn: async ({ user_id, new_password }: { user_id: string; new_password: string }) => {
+      const token = session?.access_token;
+      if (!token) throw new Error('সেশন পাওয়া যায়নি, আবার লগইন করুন');
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { target_user_id: user_id, new_password },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) {
+        const context = (error as { context?: unknown }).context;
+        if (context instanceof Response) {
+          const body = await context.json().catch(() => null);
+          throw new Error(body?.error || error.message);
+        }
+        throw error;
+      }
+      const response = data as { error?: string } | null;
+      if (response?.error) throw new Error(response.error);
+    },
+    onSuccess: () => {
+      toast.success('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে');
+      setPwdTarget(null); setNewPwd(''); setConfirmPwd('');
+    },
+    onError: (e: any) => toast.error(e.message || 'পাসওয়ার্ড রিসেট ব্যর্থ'),
   });
 
   const now = Date.now();
