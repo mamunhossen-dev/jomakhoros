@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,20 +9,46 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Mail, Shield, Calendar, Phone, MapPin, Upload, Crown } from 'lucide-react';
+import { User, Mail, Shield, Calendar, Phone, MapPin, Upload, Crown, Trash2, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const { accountType, isAdmin, isModerator } = useSubscription();
   const updateMutation = useUpdateProfile();
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') {
+      toast.error('নিশ্চিত করতে DELETE লিখুন');
+      return;
+    }
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-account');
+      if (error) throw error;
+      toast.success('আপনার অ্যাকাউন্ট মুছে ফেলা হয়েছে');
+      await supabase.auth.signOut();
+      navigate('/login', { replace: true });
+    } catch (e) {
+      toast.error((e as Error).message || 'অ্যাকাউন্ট মুছতে ব্যর্থ');
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -172,6 +198,54 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Danger Zone — Account Deletion */}
+      <Card className="border-destructive/30 shadow-sm">
+        <CardHeader>
+          <CardTitle className="font-display text-lg flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-4 w-4" /> বিপজ্জনক জোন
+          </CardTitle>
+          <CardDescription>
+            অ্যাকাউন্ট ডিলিট করলে আপনার সকল ডেটা (লেনদেন, ওয়ালেট, ক্যাটেগরি, বাজেট, ঋণ, সাপোর্ট মেসেজ ইত্যাদি) স্থায়ীভাবে মুছে যাবে। এই কাজ পূর্বাবস্থায় ফেরানো সম্ভব নয়।
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="gap-2">
+                <Trash2 className="h-4 w-4" /> অ্যাকাউন্ট ডিলিট করুন
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-display flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="h-5 w-5" /> আপনি কি নিশ্চিত?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="space-y-2">
+                  <span className="block">এই অ্যাকশনটি পূর্বাবস্থায় ফেরানো যাবে না। আপনার অ্যাকাউন্ট ও সকল সংশ্লিষ্ট ডেটা আমাদের সার্ভার থেকে স্থায়ীভাবে মুছে ফেলা হবে।</span>
+                  <span className="block font-medium">নিশ্চিত করতে নিচের ঘরে <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">DELETE</code> লিখুন।</span>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <Input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder="DELETE"
+                autoComplete="off"
+              />
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDeleteConfirm('')}>বাতিল</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAccount}
+                  disabled={deleteConfirm !== 'DELETE' || deleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {deleting ? 'মুছে ফেলা হচ্ছে...' : 'হ্যাঁ, ডিলিট করুন'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
     </div>
   );
 }
