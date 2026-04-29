@@ -26,6 +26,7 @@ export function UserManagementEditor() {
   const [days, setDays] = useState(30);
   const [blockTarget, setBlockTarget] = useState<{ user_id: string; name: string } | null>(null);
   const [reason, setReason] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<{ user_id: string; name: string } | null>(null);
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin_users_full'],
