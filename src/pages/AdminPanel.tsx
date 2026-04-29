@@ -586,12 +586,18 @@ export default function AdminPanel() {
                   if (paymentStatusFilter !== 'all' && p.status !== paymentStatusFilter) return false;
                   if (!q) return true;
                   const receipt = buildReceiptNumber(p.id, p.created_at).toLowerCase();
+                  const prof: any = profilesByUserId.get(p.user_id);
+                  const role: any = rolesByUserId.get(p.user_id);
                   return (
                     receipt.includes(q) ||
                     (p.transaction_id || '').toLowerCase().includes(q) ||
                     (p.plan || '').toLowerCase().includes(q) ||
                     (p.payment_method || '').toLowerCase().includes(q) ||
-                    p.user_id.toLowerCase().includes(q)
+                    p.user_id.toLowerCase().includes(q) ||
+                    (prof?.display_name || '').toLowerCase().includes(q) ||
+                    (prof?.phone || '').toLowerCase().includes(q) ||
+                    (role?.email || '').toLowerCase().includes(q) ||
+                    (role?.user_name || '').toLowerCase().includes(q)
                   );
                 });
                 if (!filtered.length) {
@@ -601,43 +607,131 @@ export default function AdminPanel() {
                   <div className="space-y-3">
                     {filtered.map(p => {
                       const receiptNo = buildReceiptNumber(p.id, p.created_at);
+                      const prof: any = profilesByUserId.get(p.user_id);
+                      const role: any = rolesByUserId.get(p.user_id);
+                      const displayName = prof?.display_name || role?.user_name || 'নাম নেই';
+                      const email = role?.email;
+                      const phone = prof?.phone;
+                      const subEnd = prof?.subscription_end ? new Date(prof.subscription_end) : null;
+                      const isLifetime = subEnd && subEnd.getFullYear() >= 2099;
+                      const noteValue = adminNotes[p.id] ?? (p.admin_note ?? '');
+                      const initial = (displayName || 'U').trim().charAt(0).toUpperCase();
+                      const receiptBadgeClass =
+                        p.status === 'approved' ? 'bg-success/10 text-success hover:bg-success/20'
+                        : p.status === 'rejected' ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+                        : 'bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20';
                       return (
-                        <div key={p.id} className="rounded-lg border border-border/50 p-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
-                                {p.status === 'approved' && (
-                                  <button
-                                    onClick={() => { navigator.clipboard.writeText(receiptNo); toast.success('রিসিপ্ট নম্বর কপি হয়েছে'); }}
-                                    className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-mono text-primary hover:bg-primary/20 transition"
-                                    title="কপি করুন"
-                                  >
-                                    {receiptNo}
-                                    <Copy className="h-2.5 w-2.5" />
-                                  </button>
-                                )}
+                        <div key={p.id} className="rounded-lg border border-border/50 p-3 space-y-2.5">
+                          {/* Header: user identity + status */}
+                          <div className="flex items-start justify-between gap-2 flex-wrap">
+                            <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                                {initial}
                               </div>
-                              <p className="text-xs text-muted-foreground mt-0.5">{p.payment_method} • TxID: {p.transaction_id}</p>
-                              <p className="text-xs text-muted-foreground">UID: {p.user_id.substring(0, 8)}... • {format(new Date(p.created_at), 'dd MMM yyyy, hh:mm a')}</p>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="text-sm font-semibold truncate">{displayName}</p>
+                                  <Badge variant="outline" className={cn('h-5 text-[10px] px-1.5', accountTypeClass(prof?.account_type))}>
+                                    {accountTypeLabel(prof?.account_type)}
+                                  </Badge>
+                                  {prof?.is_blocked && (
+                                    <Badge variant="outline" className="h-5 text-[10px] px-1.5 border-destructive/30 bg-destructive/10 text-destructive">
+                                      ব্লকড
+                                    </Badge>
+                                  )}
+                                </div>
+                                {email && <p className="text-xs text-muted-foreground truncate">{email}</p>}
+                                {phone && <p className="text-xs text-muted-foreground">📱 {phone}</p>}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                              {p.status === 'pending' ? (
-                                <>
-                                  <Button size="sm" className="h-7 bg-success hover:bg-success/90" onClick={() => approvePayment.mutate({ paymentId: p.id, userId: p.user_id, plan: p.plan })}>
-                                    <CheckCircle2 className="mr-1 h-3 w-3" /> অনুমোদন
-                                  </Button>
-                                  <Button size="sm" variant="destructive" className="h-7" onClick={() => rejectPayment.mutate(p.id)}>
-                                    <XCircle className="mr-1 h-3 w-3" /> প্রত্যাখ্যান
-                                  </Button>
-                                </>
-                              ) : (
-                                <Badge variant="outline" className={p.status === 'approved' ? 'text-success border-success/30' : 'text-destructive border-destructive/30'}>
-                                  {p.status === 'approved' ? 'অনুমোদিত' : 'প্রত্যাখ্যাত'}
-                                </Badge>
-                              )}
+                            <div className="flex items-center gap-1.5 flex-wrap shrink-0">
+                              {p.status === 'approved' && <Badge variant="outline" className="text-success border-success/30">অনুমোদিত</Badge>}
+                              {p.status === 'rejected' && <Badge variant="outline" className="text-destructive border-destructive/30">প্রত্যাখ্যাত</Badge>}
+                              {p.status === 'pending' && <Badge variant="outline" className="text-yellow-600 border-yellow-500/30">অপেক্ষমাণ</Badge>}
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs gap-1" onClick={() => goToUser(p.user_id)} title="ইউজার দেখুন">
+                                <Eye className="h-3 w-3" /> ইউজার
+                              </Button>
                             </div>
                           </div>
+
+                          {/* Plan + amount + receipt */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
+                            <button
+                              onClick={() => copyText(receiptNo, 'রিসিপ্ট নম্বর')}
+                              className={cn('inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition', receiptBadgeClass)}
+                              title="রিসিপ্ট নম্বর কপি করুন"
+                            >
+                              {receiptNo}
+                              <Copy className="h-2.5 w-2.5" />
+                            </button>
+                            {subEnd && (
+                              <span className="text-[11px] text-muted-foreground">
+                                বর্তমান সাবস্ক্রিপশন শেষ: {isLifetime ? 'লাইফটাইম ♾' : format(subEnd, 'dd MMM yyyy')}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Payment meta */}
+                          <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+                            <span className="capitalize">{p.payment_method}</span>
+                            <span>•</span>
+                            <span>TxID:</span>
+                            <span className="font-mono text-foreground/80 break-all">{p.transaction_id}</span>
+                            <button
+                              onClick={() => copyText(p.transaction_id, 'TxID')}
+                              className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                              title="TxID কপি করুন"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                            <span>•</span>
+                            <span>{format(new Date(p.created_at), 'dd MMM yyyy, hh:mm a')}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <span>UID: {p.user_id.substring(0, 8)}…</span>
+                            <button
+                              onClick={() => copyText(p.user_id, 'UID')}
+                              className="inline-flex items-center justify-center h-4 w-4 rounded hover:bg-muted hover:text-foreground transition-colors"
+                              title="UID কপি করুন"
+                            >
+                              <Copy className="h-2.5 w-2.5" />
+                            </button>
+                          </div>
+
+                          {/* Admin note */}
+                          <div className="space-y-1.5">
+                            <Label className="text-[11px] text-muted-foreground">অ্যাডমিন নোট {p.status === 'rejected' && <span className="text-destructive">(প্রত্যাখ্যানের কারণ ইউজার দেখতে পাবেন)</span>}</Label>
+                            <div className="flex items-center gap-1.5">
+                              <Input
+                                value={noteValue}
+                                onChange={(e) => setAdminNotes(s => ({ ...s, [p.id]: e.target.value }))}
+                                placeholder={p.status === 'pending' ? 'প্রত্যাখ্যানের কারণ লিখুন (ঐচ্ছিক)' : 'নোট লিখুন'}
+                                className="h-8 text-xs"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-xs"
+                                disabled={(p.admin_note ?? '') === noteValue.trim()}
+                                onClick={() => saveAdminNote.mutate({ paymentId: p.id, note: noteValue })}
+                              >
+                                সেভ
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          {p.status === 'pending' && (
+                            <div className="flex items-center gap-1.5 pt-1">
+                              <Button size="sm" className="h-7 bg-success hover:bg-success/90" onClick={() => approvePayment.mutate({ paymentId: p.id, userId: p.user_id, plan: p.plan })}>
+                                <CheckCircle2 className="mr-1 h-3 w-3" /> অনুমোদন
+                              </Button>
+                              <Button size="sm" variant="destructive" className="h-7" onClick={() => rejectPayment.mutate({ paymentId: p.id, note: noteValue })}>
+                                <XCircle className="mr-1 h-3 w-3" /> প্রত্যাখ্যান
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
