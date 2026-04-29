@@ -1169,6 +1169,7 @@ export default function AdminPanel() {
                             {getTicketNumber(displayedTicketId) || `#${displayedTicketId.substring(0, 8)}`}
                             <CopyTicketButton value={getTicketNumber(displayedTicketId) || displayedTicketId} size={11} />
                           </span>
+                          <ThreadPriorityBadge ticketId={displayedTicketId} priority={(threadByTicket[displayedTicketId]?.priority || 'normal') as any} />
                         </div>
                         {isAdminReadOnly ? (
                           <span className={cn(
