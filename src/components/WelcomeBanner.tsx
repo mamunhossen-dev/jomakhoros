@@ -59,8 +59,8 @@ export function WelcomeBanner() {
             >
               {data.title}
             </h2>
-            <div className={`mt-4 rounded-lg border ${cls.ring} ring-1 bg-background/90 backdrop-blur-sm p-4 shadow-sm`}>
-              <p className="text-center text-[15px] font-medium leading-relaxed text-foreground whitespace-pre-line">{data.message}</p>
+            <div className={`mt-4 rounded-lg border ${cls.ring} ring-1 bg-gradient-to-br from-background via-background to-muted/40 p-4 shadow-inner`}>
+              <p className="text-center text-[15px] font-medium leading-relaxed text-foreground/90 whitespace-pre-line">{data.message}</p>
             </div>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
               {data.cta_label && (
