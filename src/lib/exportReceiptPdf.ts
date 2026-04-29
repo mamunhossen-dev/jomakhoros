@@ -144,8 +144,11 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
 
   y += 6;
   drawEnText(doc, 'Status:', 14, y);
-  doc.setTextColor(13, 150, 104);
-  drawEnText(doc, 'APPROVED', 50, y);
+  const statusKey = data.status ?? 'approved';
+  const statusLabel = statusKey === 'approved' ? 'APPROVED' : statusKey === 'rejected' ? 'NOT APPROVED' : 'PENDING - NOT APPROVED';
+  const statusColor: [number, number, number] = statusKey === 'approved' ? [13, 150, 104] : statusKey === 'rejected' ? [220, 38, 38] : [202, 138, 4];
+  doc.setTextColor(...statusColor);
+  drawEnText(doc, statusLabel, 50, y);
 
   // Footer
   doc.setTextColor(148, 163, 184);
