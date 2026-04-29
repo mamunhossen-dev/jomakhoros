@@ -224,6 +224,61 @@ export default function Settings() {
         </Card>
       </div>
 
+      {/* Password Change */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="font-display text-lg flex items-center gap-2">
+            <Lock className="h-4 w-4" /> পাসওয়ার্ড পরিবর্তন
+          </CardTitle>
+          <CardDescription>
+            নিরাপত্তার জন্য একটি শক্তিশালী পাসওয়ার্ড ব্যবহার করুন (কমপক্ষে ৬ অক্ষর)।
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">নতুন পাসওয়ার্ড</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showPwd ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="নতুন পাসওয়ার্ড লিখুন"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showPwd ? 'লুকান' : 'দেখান'}
+                >
+                  {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">পাসওয়ার্ড নিশ্চিত করুন</Label>
+              <Input
+                id="confirmPassword"
+                type={showPwd ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="আবার লিখুন"
+                autoComplete="new-password"
+              />
+            </div>
+          </div>
+          <Button
+            onClick={handleChangePassword}
+            disabled={changingPwd || !newPassword || !confirmPassword}
+            className="w-full md:w-auto"
+          >
+            {changingPwd ? 'পরিবর্তন হচ্ছে...' : 'পাসওয়ার্ড পরিবর্তন করুন'}
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Danger Zone — Account Deletion */}
       <Card className="border-destructive/30 shadow-sm">
         <CardHeader>
