@@ -169,6 +169,9 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
         } as any);
         if (error) throw error;
       }
+      await logAdminAction(blocked ? 'bulk_block' : 'bulk_unblock', 'user', {
+        details: { count: ids.length, reason: reason || null, user_ids: ids.slice(0, 50) },
+      });
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
