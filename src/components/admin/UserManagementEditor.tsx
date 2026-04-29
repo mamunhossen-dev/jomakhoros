@@ -200,7 +200,10 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
       }
       return { success, failed };
     },
-    onSuccess: (r) => {
+    onSuccess: async (r, ids) => {
+      await logAdminAction('bulk_delete', 'user', {
+        details: { success: r.success, failed: r.failed, count: ids.length },
+      });
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
       toast.success(`${r.success} জন ডিলিট হয়েছে${r.failed ? `, ${r.failed} জন ব্যর্থ` : ''}`);
       setBulkDeleteOpen(false); setSelectedIds(new Set());
