@@ -89,6 +89,10 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
         _user_id: user_id, _blocked: blocked, _reason: reason || null,
       } as any);
       if (error) throw error;
+      await logAdminAction(blocked ? 'user_blocked' : 'user_unblocked', 'user', {
+        target_user_id: user_id,
+        details: { reason: reason || null },
+      });
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
