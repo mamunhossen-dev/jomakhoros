@@ -1349,6 +1349,17 @@ export default function AdminPanel() {
         {/* Notifications Tab (Admin only) */}
         {isAdmin && (
           <TabsContent value="notifications">
+            <Tabs defaultValue="global" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="global"><Bell className="mr-1 h-3.5 w-3.5" /> ঘোষণা (সবার কাছে)</TabsTrigger>
+                <TabsTrigger value="personal"><Send className="mr-1 h-3.5 w-3.5" /> ব্যক্তিগত</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="personal">
+                <PersonalNotificationSender />
+              </TabsContent>
+
+              <TabsContent value="global">
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="border-0 shadow-sm">
                 <CardHeader>
