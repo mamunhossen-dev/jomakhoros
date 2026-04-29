@@ -32,6 +32,7 @@ import { UserGuideEditor } from '@/components/admin/UserGuideEditor';
 import { AuthPagesEditor } from '@/components/admin/AuthPagesEditor';
 import { WelcomeBannerEditor } from '@/components/admin/WelcomeBannerEditor';
 import { SignupRulesEditor } from '@/components/admin/SignupRulesEditor';
+import { UserManagementEditor } from '@/components/admin/UserManagementEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -494,6 +495,7 @@ export default function AdminPanel() {
           </TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="block"><Lock className="mr-1 h-3.5 w-3.5" /> ব্লক</TabsTrigger>}
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
 
@@ -752,6 +754,12 @@ export default function AdminPanel() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+        )}
+
+        {isAdmin && (
+          <TabsContent value="block">
+            <UserManagementEditor />
           </TabsContent>
         )}
 

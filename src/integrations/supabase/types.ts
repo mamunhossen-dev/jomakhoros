@@ -272,9 +272,13 @@ export type Database = {
           account_type: string
           address: string | null
           avatar_url: string | null
+          block_reason: string | null
+          blocked_at: string | null
           created_at: string
           display_name: string | null
           id: string
+          is_blocked: boolean
+          last_login_at: string | null
           onboarding_completed: boolean
           payment_status: string | null
           phone: string | null
@@ -289,9 +293,13 @@ export type Database = {
           account_type?: string
           address?: string | null
           avatar_url?: string | null
+          block_reason?: string | null
+          blocked_at?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_blocked?: boolean
+          last_login_at?: string | null
           onboarding_completed?: boolean
           payment_status?: string | null
           phone?: string | null
@@ -306,9 +314,13 @@ export type Database = {
           account_type?: string
           address?: string | null
           avatar_url?: string | null
+          block_reason?: string | null
+          blocked_at?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_blocked?: boolean
+          last_login_at?: string | null
           onboarding_completed?: boolean
           payment_status?: string | null
           phone?: string | null
@@ -504,6 +516,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_user_block: {
+        Args: { _blocked: boolean; _reason: string; _user_id: string }
+        Returns: undefined
+      }
       generate_support_ticket_number: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -512,6 +528,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      touch_last_login: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
