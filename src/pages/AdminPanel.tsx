@@ -1136,6 +1136,16 @@ export default function AdminPanel() {
           </Card>
         </TabsContent>
 
+        {/* Forum Reports Tab */}
+        <TabsContent value="forum-reports">
+          <Card className="border-0 shadow-sm">
+            <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><Flag className="h-5 w-5" /> ফোরাম রিপোর্ট</CardTitle></CardHeader>
+            <CardContent>
+              <ForumReportsManager />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Notifications Tab (Admin only) */}
         {isAdmin && (
           <TabsContent value="notifications">
