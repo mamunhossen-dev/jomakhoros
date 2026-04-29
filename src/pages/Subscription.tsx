@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CreditCard, CheckCircle2, Clock, Download } from 'lucide-react';
+import { AlertTriangle, CreditCard, CheckCircle2, Clock, Download, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -220,7 +220,26 @@ export default function Subscription() {
                   <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5 gap-2 flex-wrap">
                     <div className="min-w-0">
                       <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{receiptNumber}</p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs text-muted-foreground">রিসিপ্ট:</span>
+                        <span className="text-xs text-foreground font-mono">{receiptNumber}</span>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(receiptNumber);
+                              toast.success('রিসিপ্ট নম্বর কপি হয়েছে');
+                            } catch {
+                              toast.error('কপি করা যায়নি');
+                            }
+                          }}
+                          className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label="রিসিপ্ট নম্বর কপি করুন"
+                          title="কপি করুন"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </button>
+                      </div>
                       <p className="text-xs text-muted-foreground">{pmLabel(p.payment_method)} • {p.transaction_id}</p>
                       <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM, yyyy')}</p>
                     </div>
