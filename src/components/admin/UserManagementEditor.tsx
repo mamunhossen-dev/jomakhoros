@@ -122,6 +122,7 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
       }
       const response = data as { error?: string } | null;
       if (response?.error) throw new Error(response.error);
+      await logAdminAction('user_deleted', 'user', { target_user_id: user_id });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
