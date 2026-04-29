@@ -472,6 +472,29 @@ export default function AdminPanel() {
       (u.phone || '').toLowerCase().includes(term);
   });
 
+  // Lookups for payment cards
+  const profilesByUserId = new Map((users || []).map((u: any) => [u.user_id, u]));
+  const rolesByUserId = new Map((allRoles || []).map((r: any) => [r.user_id, r]));
+  const pendingPaymentCount = (payments || []).filter(p => p.status === 'pending').length;
+
+  const accountTypeLabel = (t?: string | null) => t === 'pro' ? 'প্রো' : t === 'trial' ? 'ট্রায়াল' : t === 'free' ? 'ফ্রি' : '—';
+  const accountTypeClass = (t?: string | null) =>
+    t === 'pro' ? 'border-success/30 bg-success/10 text-success'
+    : t === 'trial' ? 'border-primary/30 bg-primary/10 text-primary'
+    : 'border-muted-foreground/30 bg-muted text-muted-foreground';
+
+  const goToUser = (uid: string) => {
+    const p: any = profilesByUserId.get(uid);
+    const r: any = rolesByUserId.get(uid);
+    setUsersInitialSearch(p?.display_name || r?.email || uid);
+    setActiveTab('users');
+  };
+
+  const copyText = async (text: string, label: string) => {
+    try { await navigator.clipboard.writeText(text); toast.success(`${label} কপি হয়েছে`); }
+    catch { toast.error('কপি করা যায়নি'); }
+  };
+
   if (!isAdmin && !isModerator) {
     return (
       <div className="flex items-center justify-center py-20">
