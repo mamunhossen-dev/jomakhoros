@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { Search, Lock, Unlock, AlertCircle } from 'lucide-react';
+import { Search, Lock, Unlock, AlertCircle, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
 import { useAppSetting } from '@/hooks/useAppSetting';
@@ -25,6 +26,7 @@ export function UserManagementEditor() {
   const [days, setDays] = useState(30);
   const [blockTarget, setBlockTarget] = useState<{ user_id: string; name: string } | null>(null);
   const [reason, setReason] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<{ user_id: string; name: string } | null>(null);
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin_users_full'],
@@ -63,6 +65,23 @@ export function UserManagementEditor() {
       setBlockTarget(null); setReason('');
     },
     onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteUser = useMutation({
+    mutationFn: async (user_id: string) => {
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { target_user_id: user_id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_users_full'] });
+      qc.invalidateQueries({ queryKey: ['admin_users'] });
+      toast.success('ইউজার সম্পূর্ণভাবে মুছে ফেলা হয়েছে');
+      setDeleteTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message || 'ডিলিট ব্যর্থ হয়েছে'),
   });
 
   const now = Date.now();
@@ -151,7 +170,7 @@ export function UserManagementEditor() {
                           </p>
                         )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {u.is_blocked ? (
                           <Button size="sm" variant="outline" onClick={() => setBlock.mutate({ user_id: u.user_id, blocked: false, reason: '' })}>
                             <Unlock className="h-3.5 w-3.5 mr-1" /> আনব্লক
@@ -161,6 +180,14 @@ export function UserManagementEditor() {
                             <Lock className="h-3.5 w-3.5 mr-1" /> ব্লক
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => setDeleteTarget({ user_id: u.user_id, name: u.display_name || email || '' })}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> ডিলিট
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -198,6 +225,27 @@ export function UserManagementEditor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={o => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ইউজার সম্পূর্ণভাবে ডিলিট করবেন?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{deleteTarget?.name}</strong> এর অ্যাকাউন্ট, লেনদেন, ওয়ালেট, বাজেট, লোন, ক্যাটাগরি, সাপোর্ট মেসেজ সহ <strong>সব ডেটা স্থায়ীভাবে মুছে যাবে</strong>। এই কাজটি আর ফিরিয়ে আনা যাবে না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteUser.isPending}>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteUser.isPending}
+              onClick={() => deleteTarget && deleteUser.mutate(deleteTarget.user_id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUser.isPending ? 'ডিলিট হচ্ছে...' : 'হ্যাঁ, ডিলিট করুন'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
