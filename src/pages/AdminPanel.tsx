@@ -22,6 +22,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CopyTicketButton } from '@/components/support/CopyTicketButton';
+import { buildReceiptNumber } from '@/lib/exportReceiptPdf';
 import { AboutPageEditor } from '@/components/admin/AboutPageEditor';
 import { SubscriptionEditor } from '@/components/admin/SubscriptionEditor';
 import { TermsEditor } from '@/components/admin/TermsEditor';
