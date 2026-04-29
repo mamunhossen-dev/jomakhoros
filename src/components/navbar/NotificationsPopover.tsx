@@ -199,12 +199,11 @@ export function NotificationsPopover() {
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h3 className="font-display text-sm font-semibold">নোটিফিকেশন</h3>
-          <button
-            onClick={() => { setOpen(false); navigate('/notifications'); }}
-            className="text-xs font-medium text-primary hover:underline"
-          >
-            সব দেখুন
-          </button>
+          {unreadCount > 0 && (
+            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+              {unreadCount} নতুন
+            </span>
+          )}
         </div>
         <ScrollArea className="max-h-96">
           {!feed.length ? (
