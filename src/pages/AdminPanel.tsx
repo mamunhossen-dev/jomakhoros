@@ -284,6 +284,18 @@ export default function AdminPanel() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const toggleDefault = useMutation({
+    mutationFn: async ({ id, is_default }: { id: string; is_default: boolean }) => {
+      const { error } = await supabase.from('notifications').update({ is_default }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ['admin_notifications'] });
+      toast.success(vars.is_default ? 'ডিফল্ট হিসেবে চিহ্নিত হয়েছে' : 'ডিফল্ট থেকে সরানো হয়েছে');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const deleteNotif = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('notifications').delete().eq('id', id);
