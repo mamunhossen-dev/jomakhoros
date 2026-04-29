@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_BLOCK_MESSAGE, type BlockMessageContent } from '@/components/BlockedOverlay';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'inactive_30d' | 'expired' | 'blocked';
 type AccountFilter = 'all' | 'trial' | 'free' | 'pro';
@@ -745,8 +746,6 @@ function Stat({ label, value }: { label: string; value: any }) {
     </div>
   );
 }
-
-import { cn } from '@/lib/utils';
 
 function BlockMessageEditor() {
   const qc = useQueryClient();
