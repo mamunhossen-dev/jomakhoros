@@ -151,6 +151,7 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
       }
       const response = data as { error?: string } | null;
       if (response?.error) throw new Error(response.error);
+      await logAdminAction('password_reset', 'user', { target_user_id: user_id });
     },
     onSuccess: () => {
       toast.success('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে');
