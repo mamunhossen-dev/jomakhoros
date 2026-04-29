@@ -1217,12 +1217,12 @@ export default function AdminPanel() {
           <TabsContent value="settings">
             <Tabs defaultValue="general" className="w-full">
               <ScrollArea className="w-full whitespace-nowrap rounded-md">
-                <TabsList className="inline-flex h-auto w-full justify-start gap-1 bg-muted/50 p-1">
-                  <TabsTrigger value="general" className="text-xs sm:text-sm">সাধারণ</TabsTrigger>
-                  <TabsTrigger value="branding" className="text-xs sm:text-sm">ব্র্যান্ডিং</TabsTrigger>
-                  <TabsTrigger value="pages" className="text-xs sm:text-sm">পেইজ কন্টেন্ট</TabsTrigger>
-                  <TabsTrigger value="auth" className="text-xs sm:text-sm">অথ ও সাবস্ক্রিপশন</TabsTrigger>
-                  <TabsTrigger value="banner" className="text-xs sm:text-sm">পপআপ ব্যানার</TabsTrigger>
+                <TabsList className="inline-flex h-auto w-full flex-wrap justify-start gap-1 bg-primary/5 p-1 border border-primary/10">
+                  <TabsTrigger value="general" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">সাধারণ</TabsTrigger>
+                  <TabsTrigger value="branding" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">ব্র্যান্ডিং</TabsTrigger>
+                  <TabsTrigger value="pages" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">পেইজ কন্টেন্ট</TabsTrigger>
+                  <TabsTrigger value="auth" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">অথ ও সাবস্ক্রিপশন</TabsTrigger>
+                  <TabsTrigger value="banner" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">পপআপ ব্যানার</TabsTrigger>
                 </TabsList>
               </ScrollArea>
 
