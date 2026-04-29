@@ -22,6 +22,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CopyTicketButton } from '@/components/support/CopyTicketButton';
+import { buildReceiptNumber } from '@/lib/exportReceiptPdf';
 import { AboutPageEditor } from '@/components/admin/AboutPageEditor';
 import { SubscriptionEditor } from '@/components/admin/SubscriptionEditor';
 import { TermsEditor } from '@/components/admin/TermsEditor';
@@ -39,6 +40,8 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [paymentSearch, setPaymentSearch] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   // Notifications state
   const [notifTitle, setNotifTitle] = useState('');
@@ -502,43 +505,101 @@ export default function AdminPanel() {
         {/* Payments Tab */}
         <TabsContent value="payments">
           <Card className="border-0 shadow-sm">
-            <CardHeader><CardTitle className="font-display text-lg">পেমেন্ট রিকোয়েস্ট</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="font-display text-lg">পেমেন্ট রিকোয়েস্ট</CardTitle>
+              <div className="flex flex-col sm:flex-row gap-2 mt-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="রিসিপ্ট নং, TxID, প্ল্যান বা UID দিয়ে খুঁজুন"
+                    value={paymentSearch}
+                    onChange={(e) => setPaymentSearch(e.target.value)}
+                    className="pl-8 h-9 text-sm"
+                  />
+                  {paymentSearch && (
+                    <button onClick={() => setPaymentSearch('')} className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <Select value={paymentStatusFilter} onValueChange={(v: any) => setPaymentStatusFilter(v)}>
+                  <SelectTrigger className="w-full sm:w-[160px] h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
+                    <SelectItem value="pending">অপেক্ষমাণ</SelectItem>
+                    <SelectItem value="approved">অনুমোদিত</SelectItem>
+                    <SelectItem value="rejected">প্রত্যাখ্যাত</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
             <CardContent>
               {paymentsLoading ? (
                 <div className="space-y-3">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16" />)}</div>
-              ) : !payments?.length ? (
-                <p className="text-center py-8 text-muted-foreground text-sm">কোনো পেমেন্ট রিকোয়েস্ট নেই</p>
-              ) : (
-                <div className="space-y-3">
-                  {payments.map(p => (
-                    <div key={p.id} className="rounded-lg border border-border/50 p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
-                          <p className="text-xs text-muted-foreground">{p.payment_method} • TxID: {p.transaction_id}</p>
-                          <p className="text-xs text-muted-foreground">UID: {p.user_id.substring(0, 8)}... • {format(new Date(p.created_at), 'dd MMM yyyy')}</p>
+              ) : (() => {
+                const q = paymentSearch.trim().toLowerCase();
+                const filtered = (payments || []).filter(p => {
+                  if (paymentStatusFilter !== 'all' && p.status !== paymentStatusFilter) return false;
+                  if (!q) return true;
+                  const receipt = buildReceiptNumber(p.id, p.created_at).toLowerCase();
+                  return (
+                    receipt.includes(q) ||
+                    (p.transaction_id || '').toLowerCase().includes(q) ||
+                    (p.plan || '').toLowerCase().includes(q) ||
+                    (p.payment_method || '').toLowerCase().includes(q) ||
+                    p.user_id.toLowerCase().includes(q)
+                  );
+                });
+                if (!filtered.length) {
+                  return <p className="text-center py-8 text-muted-foreground text-sm">কোনো পেমেন্ট রিকোয়েস্ট পাওয়া যায়নি</p>;
+                }
+                return (
+                  <div className="space-y-3">
+                    {filtered.map(p => {
+                      const receiptNo = buildReceiptNumber(p.id, p.created_at);
+                      return (
+                        <div key={p.id} className="rounded-lg border border-border/50 p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
+                                {p.status === 'approved' && (
+                                  <button
+                                    onClick={() => { navigator.clipboard.writeText(receiptNo); toast.success('রিসিপ্ট নম্বর কপি হয়েছে'); }}
+                                    className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-mono text-primary hover:bg-primary/20 transition"
+                                    title="কপি করুন"
+                                  >
+                                    {receiptNo}
+                                    <Copy className="h-2.5 w-2.5" />
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">{p.payment_method} • TxID: {p.transaction_id}</p>
+                              <p className="text-xs text-muted-foreground">UID: {p.user_id.substring(0, 8)}... • {format(new Date(p.created_at), 'dd MMM yyyy, hh:mm a')}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {p.status === 'pending' ? (
+                                <>
+                                  <Button size="sm" className="h-7 bg-success hover:bg-success/90" onClick={() => approvePayment.mutate({ paymentId: p.id, userId: p.user_id, plan: p.plan })}>
+                                    <CheckCircle2 className="mr-1 h-3 w-3" /> অনুমোদন
+                                  </Button>
+                                  <Button size="sm" variant="destructive" className="h-7" onClick={() => rejectPayment.mutate(p.id)}>
+                                    <XCircle className="mr-1 h-3 w-3" /> প্রত্যাখ্যান
+                                  </Button>
+                                </>
+                              ) : (
+                                <Badge variant="outline" className={p.status === 'approved' ? 'text-success border-success/30' : 'text-destructive border-destructive/30'}>
+                                  {p.status === 'approved' ? 'অনুমোদিত' : 'প্রত্যাখ্যাত'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          {p.status === 'pending' ? (
-                            <>
-                              <Button size="sm" className="h-7 bg-success hover:bg-success/90" onClick={() => approvePayment.mutate({ paymentId: p.id, userId: p.user_id, plan: p.plan })}>
-                                <CheckCircle2 className="mr-1 h-3 w-3" /> অনুমোদন
-                              </Button>
-                              <Button size="sm" variant="destructive" className="h-7" onClick={() => rejectPayment.mutate(p.id)}>
-                                <XCircle className="mr-1 h-3 w-3" /> প্রত্যাখ্যান
-                              </Button>
-                            </>
-                          ) : (
-                            <Badge variant="outline" className={p.status === 'approved' ? 'text-success border-success/30' : 'text-destructive border-destructive/30'}>
-                              {p.status === 'approved' ? 'অনুমোদিত' : 'প্রত্যাখ্যাত'}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
