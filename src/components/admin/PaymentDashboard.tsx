@@ -199,7 +199,27 @@ export function PaymentDashboard() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // CSV Export
+  // Delete payment requests (single / bulk / all-test)
+  const deletePayments = useMutation({
+    mutationFn: async (ids: string[]) => {
+      if (!ids.length) return { count: 0 };
+      const { error } = await supabase.from('payment_requests').delete().in('id', ids);
+      if (error) throw error;
+      await logAdminAction('payment_deleted', 'payment_request', {
+        details: { count: ids.length, ids: ids.slice(0, 50) },
+      });
+      return { count: ids.length };
+    },
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ['admin_payments'] });
+      toast.success(`${r.count} টি পেমেন্ট ডিলিট হয়েছে`);
+      setDeleteConfirm(null);
+      setSelectedIds(new Set());
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+
   const exportCsv = () => {
     const list = payments || [];
     if (!list.length) { toast.error('কোনো পেমেন্ট নেই'); return; }
