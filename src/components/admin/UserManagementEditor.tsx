@@ -224,6 +224,9 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
         const { error } = await supabase.from('user_notifications').insert(chunk);
         if (error) throw error;
       }
+      await logAdminAction('notification_sent', 'user_notifications', {
+        details: { count: ids.length, title, link: link || null, mode: 'bulk_personal' },
+      });
     },
     onSuccess: (_d, vars) => {
       toast.success(`${vars.ids.length} জনকে নোটিফিকেশন পাঠানো হয়েছে`);
