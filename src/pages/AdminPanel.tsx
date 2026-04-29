@@ -192,11 +192,22 @@ export default function AdminPanel() {
   });
 
   const rejectPayment = useMutation({
-    mutationFn: async (paymentId: string) => {
-      const { error } = await supabase.from('payment_requests').update({ status: 'rejected' }).eq('id', paymentId);
+    mutationFn: async ({ paymentId, note }: { paymentId: string; note?: string }) => {
+      const update: Record<string, any> = { status: 'rejected' };
+      if (note !== undefined) update.admin_note = note?.trim() || null;
+      const { error } = await supabase.from('payment_requests').update(update).eq('id', paymentId);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin_payments'] }); toast.success('পেমেন্ট প্রত্যাখ্যাত'); },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const saveAdminNote = useMutation({
+    mutationFn: async ({ paymentId, note }: { paymentId: string; note: string }) => {
+      const { error } = await supabase.from('payment_requests').update({ admin_note: note?.trim() || null }).eq('id', paymentId);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin_payments'] }); toast.success('নোট সংরক্ষিত'); },
     onError: (err: Error) => toast.error(err.message),
   });
 
