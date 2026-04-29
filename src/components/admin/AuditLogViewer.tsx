@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Shield, Search, Download, Eye, RefreshCw, Activity, User, AlertTriangle } from 'lucide-react';
+import { Shield, Search, Download, Eye, RefreshCw, Activity, User, AlertTriangle, X, Crown } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { bn } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -68,13 +68,38 @@ export function AuditLogViewer() {
     refetchInterval: 30000,
   });
 
+  // All admins/moderators (so dropdown shows them even with zero logs in range)
+  const { data: staffRoles = [] } = useQuery({
+    queryKey: ['audit_staff_roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, email, user_name, role')
+        .in('role', ['admin', 'moderator']);
+      if (error) throw error;
+      return data as { user_id: string; email: string | null; user_name: string | null; role: 'admin' | 'moderator' }[];
+    },
+  });
+
+  // Merge: staff roles + any actor that appears in logs (covers ex-staff)
   const actors = useMemo(() => {
-    const map = new Map<string, string>();
-    logs.forEach(l => {
-      if (l.actor_id) map.set(l.actor_id, l.actor_email || l.actor_name || l.actor_id.slice(0, 8));
+    const map = new Map<string, { name: string; role: 'admin' | 'moderator' | 'former' }>();
+    staffRoles.forEach(r => {
+      map.set(r.user_id, {
+        name: r.user_name || r.email || r.user_id.slice(0, 8),
+        role: r.role,
+      });
     });
-    return Array.from(map.entries());
-  }, [logs]);
+    logs.forEach(l => {
+      if (l.actor_id && !map.has(l.actor_id)) {
+        map.set(l.actor_id, {
+          name: l.actor_name || l.actor_email || l.actor_id.slice(0, 8),
+          role: 'former',
+        });
+      }
+    });
+    return Array.from(map.entries()).sort((a, b) => a[1].name.localeCompare(b[1].name));
+  }, [logs, staffRoles]);
 
   const actions = useMemo(() => {
     return Array.from(new Set(logs.map(l => l.action)));
@@ -133,6 +158,18 @@ export function AuditLogViewer() {
       ).length,
     };
   }, [logs, actors]);
+
+  // Focused actor summary
+  const focusedActor = useMemo(() => {
+    if (actorFilter === 'all') return null;
+    const info = actors.find(([id]) => id === actorFilter)?.[1];
+    const myLogs = logs.filter(l => l.actor_id === actorFilter);
+    if (myLogs.length === 0) return { info, total: 0, byAction: [], lastAt: null as string | null };
+    const counts = new Map<string, number>();
+    myLogs.forEach(l => counts.set(l.action, (counts.get(l.action) || 0) + 1));
+    const byAction = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    return { info, total: myLogs.length, byAction, lastAt: myLogs[0]?.created_at || null };
+  }, [actorFilter, actors, logs]);
 
   return (
     <div className="space-y-4">
@@ -217,11 +254,18 @@ export function AuditLogViewer() {
               </SelectContent>
             </Select>
             <Select value={actorFilter} onValueChange={setActorFilter}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="অ্যাডমিন" /></SelectTrigger>
+              <SelectTrigger className="w-44"><SelectValue placeholder="অ্যাডমিন" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">সব অ্যাডমিন</SelectItem>
-                {actors.map(([id, name]) => (
-                  <SelectItem key={id} value={id}>{name}</SelectItem>
+                {actors.map(([id, info]) => (
+                  <SelectItem key={id} value={id}>
+                    <span className="flex items-center gap-1.5">
+                      {info.role === 'admin' && <Crown className="h-3 w-3 text-amber-500" />}
+                      {info.role === 'moderator' && <Shield className="h-3 w-3 text-blue-500" />}
+                      {info.role === 'former' && <span className="text-muted-foreground text-[10px]">⊘</span>}
+                      <span className="truncate">{info.name}</span>
+                    </span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -238,7 +282,44 @@ export function AuditLogViewer() {
         </CardContent>
       </Card>
 
-      {/* Log list */}
+      {/* Focused actor summary */}
+      {focusedActor && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {focusedActor.info?.role === 'admin' && <Crown className="h-4 w-4 text-amber-500 shrink-0" />}
+                {focusedActor.info?.role === 'moderator' && <Shield className="h-4 w-4 text-blue-500 shrink-0" />}
+                {focusedActor.info?.role === 'former' && <Badge variant="outline" className="text-[10px]">প্রাক্তন</Badge>}
+                <p className="font-bold truncate">{focusedActor.info?.name || 'অজানা'}</p>
+                <Badge variant="secondary">{focusedActor.total} টি কাজ</Badge>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setActorFilter('all')}>
+                <X className="h-3.5 w-3.5 mr-1" /> ফিল্টার বাতিল
+              </Button>
+            </div>
+            {focusedActor.lastAt && (
+              <p className="text-xs text-muted-foreground">
+                সর্বশেষ কাজ: {formatDistanceToNow(new Date(focusedActor.lastAt), { addSuffix: true, locale: bn })}
+              </p>
+            )}
+            {focusedActor.byAction.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {focusedActor.byAction.map(([action, count]) => (
+                  <Badge key={action} className={getActionMeta(action).color} variant="secondary">
+                    {getActionMeta(action).label} × {count}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            {focusedActor.total === 0 && (
+              <p className="text-xs text-muted-foreground">এই সময়ের মধ্যে কোনো কাজ নেই।</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">কার্যকলাপ ইতিহাস</CardTitle>
@@ -271,9 +352,13 @@ export function AuditLogViewer() {
                               {log.entity_type}{log.entity_id ? ` · ${log.entity_id.slice(0, 8)}` : ''}
                             </span>
                           </div>
-                          <p className="text-sm font-medium truncate">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); if (log.actor_id) setActorFilter(log.actor_id); }}
+                            className="text-sm font-medium truncate hover:text-primary hover:underline text-left max-w-full"
+                          >
                             {log.actor_name || log.actor_email || 'Unknown'}
-                          </p>
+                          </button>
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: bn })}
                             {' · '}
