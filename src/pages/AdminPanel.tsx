@@ -558,11 +558,19 @@ export default function AdminPanel() {
               </span>
             )}
           </TabsTrigger>
+          {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="mr-1 h-3.5 w-3.5" /> অ্যানালিটিক্স</TabsTrigger>}
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="block"><Lock className="mr-1 h-3.5 w-3.5" /> ইউজার টুলস</TabsTrigger>}
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
+
+        {/* Analytics Tab */}
+        {isAdmin && (
+          <TabsContent value="analytics" className="space-y-4">
+            <AnalyticsDashboard />
+          </TabsContent>
+        )}
 
         {/* Payments Tab */}
         <TabsContent value="payments" className="space-y-4">
