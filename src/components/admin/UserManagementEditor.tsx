@@ -67,6 +67,23 @@ export function UserManagementEditor() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (user_id: string) => {
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { target_user_id: user_id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_users_full'] });
+      qc.invalidateQueries({ queryKey: ['admin_users'] });
+      toast.success('ইউজার সম্পূর্ণভাবে মুছে ফেলা হয়েছে');
+      setDeleteTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message || 'ডিলিট ব্যর্থ হয়েছে'),
+  });
+
   const now = Date.now();
   const filtered = (users || []).filter(u => {
     if (filter === 'blocked' && !u.is_blocked) return false;
