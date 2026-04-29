@@ -42,6 +42,9 @@ export default function AdminPanel() {
   const [searchTerm, setSearchTerm] = useState('');
   const [paymentSearch, setPaymentSearch] = useState('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [activeTab, setActiveTab] = useState<string>('payments');
+  const [usersInitialSearch, setUsersInitialSearch] = useState<string>('');
+  const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
 
   // Notifications state
   const [notifTitle, setNotifTitle] = useState('');
