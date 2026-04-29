@@ -45,7 +45,7 @@ export function WelcomeBanner() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) dismiss(); }}>
-      <DialogContent className="max-w-md overflow-hidden border-0 p-0">
+      <DialogContent className="w-[calc(100%-1rem)] max-w-md overflow-hidden border-0 p-0 rounded-lg sm:w-full">
         <div className={`relative ${cls.ring} ring-1`}>
           <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cls.gradient}`} />
           <div className="relative p-6 sm:p-7">
