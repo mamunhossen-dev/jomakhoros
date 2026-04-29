@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X } from 'lucide-react';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X, Inbox } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { STATUS_LIST, getStatusMeta, type SupportStatus } from '@/lib/supportStatus';
 import { cn } from '@/lib/utils';
