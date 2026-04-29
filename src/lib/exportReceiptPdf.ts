@@ -88,7 +88,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   y += 6;
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(12);
-  drawBnText(doc, data.customerName || 'N/A', 14, y);
+  drawEnText(doc, toSafeEnglish(data.customerName), 14, y);
   y += 6;
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
@@ -109,7 +109,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   y += 8;
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(11);
-  drawBnText(doc, `${brand} প্রো প্ল্যান — ${data.plan}`, 14, y);
+  drawEnText(doc, `${brand} Pro Plan - ${toSafeEnglish(data.plan, 'Subscription')}`, 14, y);
   drawEnText(doc, `BDT ${data.amount.toFixed(2)}`, pageWidth - 14, y, { align: 'right' });
 
   y += 4;
@@ -135,11 +135,11 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(10);
   drawEnText(doc, 'Method:', 14, y);
-  drawBnText(doc, data.paymentMethod, 50, y);
+  drawEnText(doc, toSafeEnglish(data.paymentMethod), 50, y);
 
   y += 6;
   drawEnText(doc, 'Transaction ID:', 14, y);
-  drawBnText(doc, data.transactionId, 50, y);
+  drawEnText(doc, toSafeEnglish(data.transactionId), 50, y);
 
   y += 6;
   drawEnText(doc, 'Status:', 14, y);
@@ -149,13 +149,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   // Footer
   doc.setTextColor(148, 163, 184);
   doc.setFontSize(8);
-  drawBnText(
-    doc,
-    'এই রসিদটি স্বয়ংক্রিয়ভাবে তৈরি হয়েছে। কোনো প্রশ্ন থাকলে সাপোর্টে যোগাযোগ করুন।',
-    pageWidth / 2,
-    doc.internal.pageSize.getHeight() - 14,
-    { align: 'center' }
-  );
+  drawEnText(doc, 'This receipt was generated automatically. For questions, please contact support.', pageWidth / 2, doc.internal.pageSize.getHeight() - 14, { align: 'center' });
   drawEnText(doc, `Generated: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
 
   return doc;
