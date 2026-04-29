@@ -14,6 +14,7 @@ export type ReceiptData = {
   amount: number;
   brandName?: string;
   brandTagline?: string;
+  status?: 'approved' | 'pending' | 'rejected';
 };
 
 const drawEnText = (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right' }) => {
