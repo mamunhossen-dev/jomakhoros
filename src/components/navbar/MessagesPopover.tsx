@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { MessageCircle, Send, Info, FolderArchive, ChevronDown, ChevronUp, ArrowLeft, Lock } from 'lucide-react';
+import { MessageCircle, Send, Info, FolderArchive, ChevronDown, ChevronUp, ArrowLeft, Lock, Headphones } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
