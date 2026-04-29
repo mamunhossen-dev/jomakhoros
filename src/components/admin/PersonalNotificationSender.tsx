@@ -148,6 +148,10 @@ export function PersonalNotificationSender() {
         const { error } = await supabase.from('user_notifications').insert(chunk);
         if (error) throw error;
       }
+      await logAdminAction('notification_sent', 'user_notifications', {
+        target_user_id: targetIds.length === 1 ? targetIds[0] : undefined,
+        details: { count: targetIds.length, mode, type, title: title.trim() },
+      });
       return targetIds.length;
     },
     onSuccess: (count) => {
