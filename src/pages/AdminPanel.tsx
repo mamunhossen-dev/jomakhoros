@@ -958,7 +958,7 @@ export default function AdminPanel() {
 
         {isAdmin && (
           <TabsContent value="block">
-            <UserManagementEditor />
+            <UserManagementEditor initialSearch={usersInitialSearch} />
           </TabsContent>
         )}
 
