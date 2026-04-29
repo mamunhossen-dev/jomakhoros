@@ -36,6 +36,8 @@ export function PaymentDashboard() {
   const [assignSearch, setAssignSearch] = useState('');
   const [assignUser, setAssignUser] = useState<{ user_id: string; name: string } | null>(null);
   const [assignPlan, setAssignPlan] = useState<'1m' | '6m' | '1y' | 'lifetime'>('1m');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[]; mode: 'single' | 'bulk' | 'all_test' } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   const { data: payments } = useQuery({
     queryKey: ['admin_payments'],
