@@ -52,7 +52,7 @@ export function WelcomeBanner() {
             <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${cls.bgIcon}`}>
               <Icon className={`h-8 w-8 ${cls.text}`} />
             </div>
-            <h2 className={`text-center font-display text-2xl font-bold ${cls.text}`}>{data.title}</h2>
+            <h2 className={`text-center font-sans text-2xl font-bold leading-snug ${cls.text}`} lang="bn">{data.title}</h2>
             <div className={`mt-4 rounded-lg border ${cls.ring} ring-1 bg-background/90 backdrop-blur-sm p-4 shadow-sm`}>
               <p className="text-center text-[15px] font-medium leading-relaxed text-foreground whitespace-pre-line">{data.message}</p>
             </div>
