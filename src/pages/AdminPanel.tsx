@@ -1398,12 +1398,21 @@ export default function AdminPanel() {
                                 <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(n.created_at), 'dd MMM yyyy')}</p>
                               </div>
                             </div>
-                            <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t flex-wrap gap-2">
                               <div className="flex items-center gap-2">
                                 <Switch checked={n.is_active} onCheckedChange={(v) => toggleNotif.mutate({ id: n.id, is_active: v })} />
                                 <span className="text-xs text-muted-foreground">{n.is_active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span>
                               </div>
                               <div className="flex items-center gap-1">
+                                <Button
+                                  variant={n.is_default ? 'default' : 'outline'}
+                                  size="sm"
+                                  className="h-7 text-[11px] px-2"
+                                  onClick={() => toggleDefault.mutate({ id: n.id, is_default: !n.is_default })}
+                                  title="নতুন ইউজার একাউন্ট খোলার পর এই নোটিফিকেশনটি স্বয়ংক্রিয়ভাবে দেখতে পাবে"
+                                >
+                                  {n.is_default ? '✓ ডিফল্ট' : 'ডিফল্ট করুন'}
+                                </Button>
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEditNotif(n)}>
                                   <Pencil className="h-3 w-3" />
                                 </Button>
