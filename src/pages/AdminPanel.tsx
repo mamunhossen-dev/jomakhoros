@@ -37,6 +37,7 @@ import { UserManagementEditor } from '@/components/admin/UserManagementEditor';
 import { PersonalNotificationSender } from '@/components/admin/PersonalNotificationSender';
 import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncementManager';
 import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
+import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager } from '@/components/admin/SupportEnhancements';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -985,6 +986,7 @@ export default function AdminPanel() {
               <CardTitle className="font-display text-lg">সাপোর্ট কথোপকথন</CardTitle>
             </CardHeader>
             <CardContent>
+              <SupportStatsBar />
               {/* Ticket-number search bar */}
               <div className="mb-3 flex gap-2">
                 <div className="relative flex-1">
@@ -1325,19 +1327,24 @@ export default function AdminPanel() {
                           </Button>
                         </div>
                       ) : (
-                        <div className="border-t p-2 flex gap-1">
-                          <Textarea
-                            value={supportText}
-                            onChange={e => setSupportText(e.target.value)}
-                            placeholder={getThreadStatusByTicket(selectedTicketId) === 'closed' ? 'টিকেটটি বন্ধ। স্ট্যাটাস "ওপেন" করুন।' : 'উত্তর লিখুন...'}
-                            rows={1}
-                            disabled={getThreadStatusByTicket(selectedTicketId) === 'closed'}
-                            className="min-h-9 resize-none text-sm"
-                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
-                          />
-                          <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim() || getThreadStatusByTicket(selectedTicketId) === 'closed'}>
-                            <Send className="h-4 w-4" />
-                          </Button>
+                        <div className="border-t p-2 space-y-1.5">
+                          <div className="flex justify-end">
+                            <QuickReplyButton onPick={(text) => setSupportText(prev => prev ? prev + '\n' + text : text)} />
+                          </div>
+                          <div className="flex gap-1">
+                            <Textarea
+                              value={supportText}
+                              onChange={e => setSupportText(e.target.value)}
+                              placeholder={getThreadStatusByTicket(selectedTicketId) === 'closed' ? 'টিকেটটি বন্ধ। স্ট্যাটাস "ওপেন" করুন।' : 'উত্তর লিখুন...'}
+                              rows={1}
+                              disabled={getThreadStatusByTicket(selectedTicketId) === 'closed'}
+                              className="min-h-9 resize-none text-sm"
+                              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupportReply(); } }}
+                            />
+                            <Button size="icon" onClick={sendSupportReply} disabled={!supportText.trim() || getThreadStatusByTicket(selectedTicketId) === 'closed'}>
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </>
