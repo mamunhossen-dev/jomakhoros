@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Mail, Shield, Calendar, Phone, MapPin, Upload, Crown, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Mail, Shield, Calendar, Phone, MapPin, Upload, Crown, Trash2, AlertTriangle, Lock, Eye, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -31,6 +31,31 @@ export default function Settings() {
   const [uploading, setUploading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
+  const [changingPwd, setChangingPwd] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('পাসওয়ার্ড মিলছে না');
+      return;
+    }
+    setChangingPwd(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPwd(false);
+    if (error) {
+      toast.error(error.message || 'পাসওয়ার্ড পরিবর্তন ব্যর্থ');
+      return;
+    }
+    toast.success('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে');
+    setNewPassword('');
+    setConfirmPassword('');
+  };
 
   const handleDeleteAccount = async () => {
     if (deleteConfirm !== 'DELETE') {
