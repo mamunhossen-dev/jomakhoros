@@ -37,6 +37,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const UserGuide = lazy(() => import("./pages/UserGuide"));
 const About = lazy(() => import("./pages/About"));
+const Notifications = lazy(() => import("./pages/Notifications"));
 
 function PageFallback() {
   return (
@@ -155,6 +156,7 @@ const App = () => (
               <Route path="/admin" element={<AdminRoute>{lazyPage(<AdminPanel />)}</AdminRoute>} />
               <Route path="/settings" element={lazyPage(<Settings />)} />
               <Route path="/about" element={lazyPage(<About />)} />
+              <Route path="/notifications" element={lazyPage(<Notifications />)} />
             </Route>
             <Route path="*" element={lazyPage(<NotFound />)} />
           </Routes>
