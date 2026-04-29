@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { Search, Lock, Unlock, AlertCircle, Trash2 } from 'lucide-react';
+import { Search, Lock, Unlock, AlertCircle, Trash2, KeyRound } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -29,6 +29,9 @@ export function UserManagementEditor() {
   const [blockTarget, setBlockTarget] = useState<{ user_id: string; name: string } | null>(null);
   const [reason, setReason] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ user_id: string; name: string } | null>(null);
+  const [pwdTarget, setPwdTarget] = useState<{ user_id: string; name: string } | null>(null);
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin_users_full'],
@@ -96,6 +99,32 @@ export function UserManagementEditor() {
       setDeleteTarget(null);
     },
     onError: (e: any) => toast.error(e.message || 'ডিলিট ব্যর্থ হয়েছে'),
+  });
+
+  const resetPassword = useMutation({
+    mutationFn: async ({ user_id, new_password }: { user_id: string; new_password: string }) => {
+      const token = session?.access_token;
+      if (!token) throw new Error('সেশন পাওয়া যায়নি, আবার লগইন করুন');
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { target_user_id: user_id, new_password },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) {
+        const context = (error as { context?: unknown }).context;
+        if (context instanceof Response) {
+          const body = await context.json().catch(() => null);
+          throw new Error(body?.error || error.message);
+        }
+        throw error;
+      }
+      const response = data as { error?: string } | null;
+      if (response?.error) throw new Error(response.error);
+    },
+    onSuccess: () => {
+      toast.success('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে');
+      setPwdTarget(null); setNewPwd(''); setConfirmPwd('');
+    },
+    onError: (e: any) => toast.error(e.message || 'পাসওয়ার্ড রিসেট ব্যর্থ'),
   });
 
   const now = Date.now();
@@ -197,6 +226,14 @@ export function UserManagementEditor() {
                         <Button
                           size="sm"
                           variant="outline"
+                          className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+                          onClick={() => { setPwdTarget({ user_id: u.user_id, name: u.display_name || email || '' }); setNewPwd(''); setConfirmPwd(''); }}
+                        >
+                          <KeyRound className="h-3.5 w-3.5 mr-1" /> পাসওয়ার্ড
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                           onClick={() => setDeleteTarget({ user_id: u.user_id, name: u.display_name || email || '' })}
                         >
@@ -235,6 +272,36 @@ export function UserManagementEditor() {
               onClick={() => blockTarget && setBlock.mutate({ user_id: blockTarget.user_id, blocked: true, reason })}
             >
               ব্লক নিশ্চিত করুন
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!pwdTarget} onOpenChange={o => { if (!o) { setPwdTarget(null); setNewPwd(''); setConfirmPwd(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>পাসওয়ার্ড রিসেট করুন</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm">
+              <strong>{pwdTarget?.name}</strong> এর জন্য নতুন পাসওয়ার্ড সেট করুন। ইউজারকে নতুন পাসওয়ার্ডটি জানিয়ে দিন।
+            </p>
+            <div className="space-y-2">
+              <Label>নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</Label>
+              <Input type="text" autoComplete="off" value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="নতুন পাসওয়ার্ড লিখুন" />
+            </div>
+            <div className="space-y-2">
+              <Label>পাসওয়ার্ড নিশ্চিত করুন</Label>
+              <Input type="text" autoComplete="off" value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} placeholder="আবার লিখুন" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setPwdTarget(null); setNewPwd(''); setConfirmPwd(''); }}>বাতিল</Button>
+            <Button
+              disabled={resetPassword.isPending || newPwd.length < 6 || newPwd !== confirmPwd}
+              onClick={() => pwdTarget && resetPassword.mutate({ user_id: pwdTarget.user_id, new_password: newPwd })}
+            >
+              {resetPassword.isPending ? 'পরিবর্তন হচ্ছে...' : 'নিশ্চিত করুন'}
             </Button>
           </DialogFooter>
         </DialogContent>
