@@ -60,11 +60,16 @@ export function PaymentDashboard() {
   const { data: roles } = useQuery({
     queryKey: ['admin_user_roles_emails'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_roles').select('user_id, email, user_name');
+      const { data, error } = await supabase.from('user_roles').select('user_id, email, user_name, role');
       if (error) throw error;
       return data;
     },
   });
+
+  const adminUserIds = useMemo(
+    () => new Set((roles || []).filter((r: any) => r.role === 'admin' || r.role === 'moderator').map((r: any) => r.user_id)),
+    [roles]
+  );
 
   const emailByUser = new Map((roles || []).map(r => [r.user_id, r.email]));
 
