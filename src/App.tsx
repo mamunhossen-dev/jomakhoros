@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
@@ -151,7 +152,7 @@ const App = () => (
               <Route path="/analytics" element={lazyPage(<Reports />)} />
               <Route path="/feedback" element={lazyPage(<Feedback />)} />
               <Route path="/subscription" element={lazyPage(<Subscription />)} />
-              <Route path="/admin" element={lazyPage(<AdminPanel />)} />
+              <Route path="/admin" element={<AdminRoute>{lazyPage(<AdminPanel />)}</AdminRoute>} />
               <Route path="/settings" element={lazyPage(<Settings />)} />
               <Route path="/about" element={lazyPage(<About />)} />
             </Route>
