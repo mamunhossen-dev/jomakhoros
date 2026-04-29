@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { CheckCircle2, XCircle, Download, Search, UserPlus, TrendingUp, Wallet, Clock, AlertTriangle } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subDays, isAfter } from 'date-fns';
 import { toast } from 'sonner';
+import { logAdminAction } from '@/components/admin/AuditLogViewer';
 
 type PaymentStats = {
   total: number;
