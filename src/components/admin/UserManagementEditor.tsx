@@ -170,7 +170,7 @@ export function UserManagementEditor() {
                           </p>
                         )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {u.is_blocked ? (
                           <Button size="sm" variant="outline" onClick={() => setBlock.mutate({ user_id: u.user_id, blocked: false, reason: '' })}>
                             <Unlock className="h-3.5 w-3.5 mr-1" /> আনব্লক
@@ -180,6 +180,14 @@ export function UserManagementEditor() {
                             <Lock className="h-3.5 w-3.5 mr-1" /> ব্লক
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => setDeleteTarget({ user_id: u.user_id, name: u.display_name || email || '' })}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> ডিলিট
+                        </Button>
                       </div>
                     </div>
                   </div>
