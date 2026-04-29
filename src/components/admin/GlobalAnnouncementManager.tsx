@@ -117,9 +117,15 @@ export function GlobalAnnouncementManager() {
       if (editingId) {
         const { error } = await supabase.from('notifications').update(payload).eq('id', editingId);
         if (error) throw error;
+        await logAdminAction('announcement_updated', 'notifications', {
+          entity_id: editingId, details: { title: payload.title, kind, priority },
+        });
       } else {
-        const { error } = await supabase.from('notifications').insert({ ...payload, created_by: user?.id, is_active: true });
+        const { data: ins, error } = await supabase.from('notifications').insert({ ...payload, created_by: user?.id, is_active: true }).select('id').maybeSingle();
         if (error) throw error;
+        await logAdminAction('announcement_created', 'notifications', {
+          entity_id: ins?.id, details: { title: payload.title, kind, priority },
+        });
       }
     },
     onSuccess: () => {
