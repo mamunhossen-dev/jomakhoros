@@ -1441,6 +1441,8 @@ export default function AdminPanel() {
                 </CardContent>
               </Card>
             </div>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         )}
 
