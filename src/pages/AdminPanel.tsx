@@ -35,6 +35,7 @@ import { WelcomeBannerEditor } from '@/components/admin/WelcomeBannerEditor';
 import { SignupRulesEditor } from '@/components/admin/SignupRulesEditor';
 import { UserManagementEditor } from '@/components/admin/UserManagementEditor';
 import { PersonalNotificationSender } from '@/components/admin/PersonalNotificationSender';
+import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncementManager';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
