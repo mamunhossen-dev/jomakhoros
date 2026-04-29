@@ -242,11 +242,18 @@ export function AuditLogViewer() {
               </SelectContent>
             </Select>
             <Select value={actorFilter} onValueChange={setActorFilter}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="অ্যাডমিন" /></SelectTrigger>
+              <SelectTrigger className="w-44"><SelectValue placeholder="অ্যাডমিন" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">সব অ্যাডমিন</SelectItem>
-                {actors.map(([id, name]) => (
-                  <SelectItem key={id} value={id}>{name}</SelectItem>
+                {actors.map(([id, info]) => (
+                  <SelectItem key={id} value={id}>
+                    <span className="flex items-center gap-1.5">
+                      {info.role === 'admin' && <Crown className="h-3 w-3 text-amber-500" />}
+                      {info.role === 'moderator' && <Shield className="h-3 w-3 text-blue-500" />}
+                      {info.role === 'former' && <span className="text-muted-foreground text-[10px]">⊘</span>}
+                      <span className="truncate">{info.name}</span>
+                    </span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
