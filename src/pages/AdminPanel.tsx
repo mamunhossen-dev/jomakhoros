@@ -39,7 +39,7 @@ import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncement
 import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
 import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager } from '@/components/admin/SupportEnhancements';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
-import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
+import { AuditLogViewer, logAdminAction } from '@/components/admin/AuditLogViewer';
 import { BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function AdminPanel() {
