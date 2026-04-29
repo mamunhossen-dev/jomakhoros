@@ -209,6 +209,9 @@ export default function AdminPanel() {
       if (note !== undefined) update.admin_note = note?.trim() || null;
       const { error } = await supabase.from('payment_requests').update(update).eq('id', paymentId);
       if (error) throw error;
+      await logAdminAction('payment_rejected', 'payment_request', {
+        entity_id: paymentId, details: { note: note?.trim() || null },
+      });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin_payments'] }); toast.success('পেমেন্ট প্রত্যাখ্যাত'); },
     onError: (err: Error) => toast.error(err.message),
