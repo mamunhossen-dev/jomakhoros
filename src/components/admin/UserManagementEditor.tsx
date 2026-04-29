@@ -20,11 +20,15 @@ import { useAuth } from '@/contexts/AuthContext';
 
 type FilterType = 'all' | 'inactive_30d' | 'expired' | 'blocked';
 
-export function UserManagementEditor() {
+export function UserManagementEditor({ initialSearch }: { initialSearch?: string } = {}) {
   const qc = useQueryClient();
   const { session } = useAuth();
   const [filter, setFilter] = useState<FilterType>('all');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch ?? '');
+
+  useEffect(() => {
+    if (initialSearch !== undefined) setSearch(initialSearch);
+  }, [initialSearch]);
   const [days, setDays] = useState(30);
   const [blockTarget, setBlockTarget] = useState<{ user_id: string; name: string } | null>(null);
   const [reason, setReason] = useState('');
