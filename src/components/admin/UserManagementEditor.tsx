@@ -226,6 +226,14 @@ export function UserManagementEditor() {
                         <Button
                           size="sm"
                           variant="outline"
+                          className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+                          onClick={() => { setPwdTarget({ user_id: u.user_id, name: u.display_name || email || '' }); setNewPwd(''); setConfirmPwd(''); }}
+                        >
+                          <KeyRound className="h-3.5 w-3.5 mr-1" /> পাসওয়ার্ড
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                           onClick={() => setDeleteTarget({ user_id: u.user_id, name: u.display_name || email || '' })}
                         >
