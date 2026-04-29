@@ -194,10 +194,12 @@ export default function Subscription() {
             <div className="space-y-3">
               {paymentHistory.map(p => {
                 const isApproved = p.status === 'approved';
+                const isRejected = p.status === 'rejected';
+                const receiptNumber = buildReceiptNumber(p.id, p.created_at);
                 const handleDownload = async () => {
                   try {
                     await downloadReceiptPdf({
-                      receiptNumber: buildReceiptNumber(p.id, p.created_at),
+                      receiptNumber,
                       paidOn: p.updated_at || p.created_at,
                       customerName: profile?.display_name || user?.email?.split('@')[0] || 'Customer',
                       customerEmail: user?.email || '',
@@ -207,6 +209,7 @@ export default function Subscription() {
                       amount: Number(p.amount),
                       brandName: brand?.name,
                       brandTagline: brand?.tagline,
+                      status: isApproved ? 'approved' : isRejected ? 'rejected' : 'pending',
                     });
                     toast.success('রসিদ ডাউনলোড হয়েছে');
                   } catch (err: any) {
@@ -217,6 +220,7 @@ export default function Subscription() {
                   <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5 gap-2 flex-wrap">
                     <div className="min-w-0">
                       <p className="text-sm font-medium">{p.plan} — ৳{Number(p.amount).toFixed(0)}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{receiptNumber}</p>
                       <p className="text-xs text-muted-foreground">{pmLabel(p.payment_method)} • {p.transaction_id}</p>
                       <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM, yyyy')}</p>
                     </div>
@@ -225,23 +229,21 @@ export default function Subscription() {
                         variant="outline"
                         className={
                           isApproved ? 'border-success/30 bg-success/10 text-success'
-                          : p.status === 'rejected' ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                          : isRejected ? 'border-destructive/30 bg-destructive/10 text-destructive'
                           : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-600'
                         }
                       >
                         <Clock className="mr-1 h-3 w-3" />
-                        {isApproved ? 'অনুমোদিত' : p.status === 'rejected' ? 'প্রত্যাখ্যাত' : 'অপেক্ষমান'}
+                        {isApproved ? 'অনুমোদিত' : isRejected ? 'প্রত্যাখ্যাত' : 'অপেক্ষমান'}
                       </Badge>
-                      {isApproved && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 gap-1 text-xs border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
-                          onClick={handleDownload}
-                        >
-                          <Download className="h-3 w-3" /> রসিদ
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className={`h-7 gap-1 text-xs ${isApproved ? 'border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground' : 'border-border text-muted-foreground hover:bg-muted'}`}
+                        onClick={handleDownload}
+                      >
+                        <Download className="h-3 w-3" /> রসিদ
+                      </Button>
                     </div>
                   </div>
                 );
