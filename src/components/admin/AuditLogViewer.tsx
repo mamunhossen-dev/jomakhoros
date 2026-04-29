@@ -68,13 +68,38 @@ export function AuditLogViewer() {
     refetchInterval: 30000,
   });
 
+  // All admins/moderators (so dropdown shows them even with zero logs in range)
+  const { data: staffRoles = [] } = useQuery({
+    queryKey: ['audit_staff_roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, email, user_name, role')
+        .in('role', ['admin', 'moderator']);
+      if (error) throw error;
+      return data as { user_id: string; email: string | null; user_name: string | null; role: 'admin' | 'moderator' }[];
+    },
+  });
+
+  // Merge: staff roles + any actor that appears in logs (covers ex-staff)
   const actors = useMemo(() => {
-    const map = new Map<string, string>();
-    logs.forEach(l => {
-      if (l.actor_id) map.set(l.actor_id, l.actor_email || l.actor_name || l.actor_id.slice(0, 8));
+    const map = new Map<string, { name: string; role: 'admin' | 'moderator' | 'former' }>();
+    staffRoles.forEach(r => {
+      map.set(r.user_id, {
+        name: r.user_name || r.email || r.user_id.slice(0, 8),
+        role: r.role,
+      });
     });
-    return Array.from(map.entries());
-  }, [logs]);
+    logs.forEach(l => {
+      if (l.actor_id && !map.has(l.actor_id)) {
+        map.set(l.actor_id, {
+          name: l.actor_name || l.actor_email || l.actor_id.slice(0, 8),
+          role: 'former',
+        });
+      }
+    });
+    return Array.from(map.entries()).sort((a, b) => a[1].name.localeCompare(b[1].name));
+  }, [logs, staffRoles]);
 
   const actions = useMemo(() => {
     return Array.from(new Set(logs.map(l => l.action)));
