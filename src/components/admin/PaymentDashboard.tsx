@@ -118,6 +118,10 @@ export function PaymentDashboard() {
           }).eq('user_id', p.user_id);
           if (profErr) throw profErr;
           success++;
+          await logAdminAction('payment_approved', 'payment_request', {
+            entity_id: p.id, target_user_id: p.user_id,
+            details: { amount: p.amount, plan: p.plan, mode: 'bulk' },
+          });
         } catch { failed++; }
       }
       return { success, failed };
