@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X } from 'lucide-react';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X, Flag } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { STATUS_LIST, getStatusMeta, type SupportStatus } from '@/lib/supportStatus';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ import { AuthPagesEditor } from '@/components/admin/AuthPagesEditor';
 import { WelcomeBannerEditor } from '@/components/admin/WelcomeBannerEditor';
 import { SignupRulesEditor } from '@/components/admin/SignupRulesEditor';
 import { UserManagementEditor } from '@/components/admin/UserManagementEditor';
+import { ForumReportsManager } from '@/components/admin/ForumReportsManager';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -493,6 +494,7 @@ export default function AdminPanel() {
               </span>
             )}
           </TabsTrigger>
+          <TabsTrigger value="forum-reports"><Flag className="mr-1 h-3.5 w-3.5" /> রিপোর্ট</TabsTrigger>
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="block"><Lock className="mr-1 h-3.5 w-3.5" /> ব্লক</TabsTrigger>}
@@ -1130,6 +1132,16 @@ export default function AdminPanel() {
                   })()}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Forum Reports Tab */}
+        <TabsContent value="forum-reports">
+          <Card className="border-0 shadow-sm">
+            <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><Flag className="h-5 w-5" /> ফোরাম রিপোর্ট</CardTitle></CardHeader>
+            <CardContent>
+              <ForumReportsManager />
             </CardContent>
           </Card>
         </TabsContent>

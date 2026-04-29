@@ -37,6 +37,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const UserGuide = lazy(() => import("./pages/UserGuide"));
 const About = lazy(() => import("./pages/About"));
+const Forum = lazy(() => import("./pages/Forum"));
 
 function PageFallback() {
   return (
@@ -150,6 +151,7 @@ const App = () => (
               <Route path="/wallets" element={lazyPage(<Wallets />)} />
               <Route path="/loans" element={lazyPage(<Loans />)} />
               <Route path="/analytics" element={lazyPage(<Reports />)} />
+              <Route path="/forum" element={lazyPage(<Forum />)} />
               <Route path="/feedback" element={lazyPage(<Feedback />)} />
               <Route path="/subscription" element={lazyPage(<Subscription />)} />
               <Route path="/admin" element={<AdminRoute>{lazyPage(<AdminPanel />)}</AdminRoute>} />
