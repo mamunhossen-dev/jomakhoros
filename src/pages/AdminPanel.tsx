@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X } from 'lucide-react';
+import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X, Inbox } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { STATUS_LIST, getStatusMeta, type SupportStatus } from '@/lib/supportStatus';
 import { cn } from '@/lib/utils';
@@ -40,6 +40,7 @@ import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
 import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager } from '@/components/admin/SupportEnhancements';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { AuditLogViewer, logAdminAction } from '@/components/admin/AuditLogViewer';
+import { AdminRequestsPanel } from '@/components/admin/AdminRequestsPanel';
 import { BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function AdminPanel() {
@@ -584,8 +585,13 @@ export default function AdminPanel() {
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
           {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="block"><Lock className="mr-1 h-3.5 w-3.5" /> ইউজার টুলস</TabsTrigger>}
+          <TabsTrigger value="admin-requests"><Inbox className="mr-1 h-3.5 w-3.5" /> এডমিন রিকোয়েস্ট</TabsTrigger>
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
         </TabsList>
+
+        <TabsContent value="admin-requests" className="space-y-4">
+          <AdminRequestsPanel />
+        </TabsContent>
 
         {/* Analytics Tab */}
         {isAdmin && (

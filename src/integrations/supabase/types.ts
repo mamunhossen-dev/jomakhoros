@@ -59,6 +59,60 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_requests: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          description: string
+          id: string
+          priority: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          request_type: string
+          requester_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          target_user_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          priority?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          request_type: string
+          requester_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_user_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          request_type?: string
+          requester_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_user_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string
