@@ -39,7 +39,7 @@ import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncement
 import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
 import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager } from '@/components/admin/SupportEnhancements';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
-import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
+import { AuditLogViewer, logAdminAction } from '@/components/admin/AuditLogViewer';
 import { BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function AdminPanel() {
@@ -189,6 +189,11 @@ export default function AdminPanel() {
         payment_status: 'paid',
       }).eq('user_id', userId);
       if (profError) throw profError;
+
+      await logAdminAction('payment_approved', 'payment_request', {
+        entity_id: paymentId, target_user_id: userId,
+        details: { plan, months },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_payments'] });
@@ -204,6 +209,9 @@ export default function AdminPanel() {
       if (note !== undefined) update.admin_note = note?.trim() || null;
       const { error } = await supabase.from('payment_requests').update(update).eq('id', paymentId);
       if (error) throw error;
+      await logAdminAction('payment_rejected', 'payment_request', {
+        entity_id: paymentId, details: { note: note?.trim() || null },
+      });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin_payments'] }); toast.success('পেমেন্ট প্রত্যাখ্যাত'); },
     onError: (err: Error) => toast.error(err.message),
@@ -236,6 +244,9 @@ export default function AdminPanel() {
       // Insert new role
       const { error: insError } = await supabase.from('user_roles').insert([{ user_id: userId, role: role as any }]);
       if (insError) throw insError;
+      await logAdminAction('role_changed', 'user_roles', {
+        target_user_id: userId, details: { new_role: role },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_all_roles'] });
@@ -263,11 +274,17 @@ export default function AdminPanel() {
           title: notifTitle, body: notifBody,
         }).eq('id', editingNotif);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from('notifications').insert({
-          title: notifTitle, body: notifBody, created_by: user?.id, is_active: true,
+        await logAdminAction('announcement_updated', 'notifications', {
+          entity_id: editingNotif, details: { title: notifTitle },
         });
+      } else {
+        const { data: ins, error } = await supabase.from('notifications').insert({
+          title: notifTitle, body: notifBody, created_by: user?.id, is_active: true,
+        }).select('id').maybeSingle();
         if (error) throw error;
+        await logAdminAction('announcement_created', 'notifications', {
+          entity_id: ins?.id, details: { title: notifTitle },
+        });
       }
     },
     onSuccess: () => {

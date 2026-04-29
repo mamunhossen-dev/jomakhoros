@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_BLOCK_MESSAGE, type BlockMessageContent } from '@/components/BlockedOverlay';
 import { useAuth } from '@/contexts/AuthContext';
+import { logAdminAction } from '@/components/admin/AuditLogViewer';
 import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'inactive_30d' | 'expired' | 'blocked';
@@ -88,6 +89,10 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
         _user_id: user_id, _blocked: blocked, _reason: reason || null,
       } as any);
       if (error) throw error;
+      await logAdminAction(blocked ? 'user_blocked' : 'user_unblocked', 'user', {
+        target_user_id: user_id,
+        details: { reason: reason || null },
+      });
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
@@ -117,6 +122,7 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
       }
       const response = data as { error?: string } | null;
       if (response?.error) throw new Error(response.error);
+      await logAdminAction('user_deleted', 'user', { target_user_id: user_id });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
@@ -145,6 +151,7 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
       }
       const response = data as { error?: string } | null;
       if (response?.error) throw new Error(response.error);
+      await logAdminAction('password_reset', 'user', { target_user_id: user_id });
     },
     onSuccess: () => {
       toast.success('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে');
@@ -162,6 +169,9 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
         } as any);
         if (error) throw error;
       }
+      await logAdminAction(blocked ? 'bulk_block' : 'bulk_unblock', 'user', {
+        details: { count: ids.length, reason: reason || null, user_ids: ids.slice(0, 50) },
+      });
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
@@ -190,7 +200,10 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
       }
       return { success, failed };
     },
-    onSuccess: (r) => {
+    onSuccess: async (r, ids) => {
+      await logAdminAction('bulk_delete', 'user', {
+        details: { success: r.success, failed: r.failed, count: ids.length },
+      });
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
       toast.success(`${r.success} জন ডিলিট হয়েছে${r.failed ? `, ${r.failed} জন ব্যর্থ` : ''}`);
       setBulkDeleteOpen(false); setSelectedIds(new Set());
@@ -211,6 +224,9 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
         const { error } = await supabase.from('user_notifications').insert(chunk);
         if (error) throw error;
       }
+      await logAdminAction('notification_sent', 'user_notifications', {
+        details: { count: ids.length, title, link: link || null, mode: 'bulk_personal' },
+      });
     },
     onSuccess: (_d, vars) => {
       toast.success(`${vars.ids.length} জনকে নোটিফিকেশন পাঠানো হয়েছে`);

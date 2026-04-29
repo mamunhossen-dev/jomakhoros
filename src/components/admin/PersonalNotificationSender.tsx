@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logAdminAction } from '@/components/admin/AuditLogViewer';
 
 type Profile = {
   user_id: string;
@@ -147,6 +148,10 @@ export function PersonalNotificationSender() {
         const { error } = await supabase.from('user_notifications').insert(chunk);
         if (error) throw error;
       }
+      await logAdminAction('notification_sent', 'user_notifications', {
+        target_user_id: targetIds.length === 1 ? targetIds[0] : undefined,
+        details: { count: targetIds.length, mode, type, title: title.trim() },
+      });
       return targetIds.length;
     },
     onSuccess: (count) => {
