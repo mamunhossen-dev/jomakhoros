@@ -364,7 +364,77 @@ export function PaymentDashboard() {
         </Card>
       )}
 
-      {/* Bulk reject dialog */}
+      {/* All payments list with delete */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
+          <CardTitle className="text-base">সব পেমেন্ট ({(payments || []).length})</CardTitle>
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
+              <SelectItem value="pending">অপেক্ষমাণ</SelectItem>
+              <SelectItem value="approved">অনুমোদিত</SelectItem>
+              <SelectItem value="rejected">প্রত্যাখ্যাত</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardHeader>
+        <CardContent className="space-y-1 max-h-96 overflow-y-auto">
+          {(payments || [])
+            .filter(p => statusFilter === 'all' || p.status === statusFilter)
+            .map(p => {
+              const prof: any = (profiles || []).find(x => x.user_id === p.user_id);
+              const isAdminPayment = adminUserIds.has(p.user_id);
+              return (
+                <div key={p.id} className="flex items-center gap-2 p-2 rounded hover:bg-muted/50 text-xs border-b last:border-b-0">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate font-medium">{prof?.display_name || emailByUser.get(p.user_id) || p.user_id.slice(0, 8)}</span>
+                      {isAdminPayment && <Badge variant="outline" className="text-[9px] py-0 h-4 border-destructive/40 text-destructive">টেস্ট</Badge>}
+                    </div>
+                    <div className="text-muted-foreground text-[10px]">{p.plan} • ৳{p.amount} • {p.payment_method} • {format(new Date(p.created_at), 'dd MMM yy')}</div>
+                  </div>
+                  <Badge variant="outline" className={
+                    p.status === 'approved' ? 'border-success/40 text-success' :
+                    p.status === 'rejected' ? 'border-destructive/40 text-destructive' :
+                    'border-yellow-500/40 text-yellow-700'
+                  }>{p.status}</Badge>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                    onClick={() => setDeleteConfirm({ ids: [p.id], mode: 'single' })}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
+          {(payments || []).filter(p => statusFilter === 'all' || p.status === statusFilter).length === 0 && (
+            <p className="text-center text-xs text-muted-foreground py-6">কোনো পেমেন্ট নেই</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete confirm dialog */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>পেমেন্ট ডিলিট করবেন?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirm?.mode === 'all_test'
+                ? `অ্যাডমিন/মডারেটর অ্যাকাউন্ট থেকে করা ${deleteConfirm.ids.length} টি টেস্ট পেমেন্ট স্থায়ীভাবে মুছে যাবে। এটি রিভেনিউ স্ট্যাট থেকেও বাদ পড়বে।`
+                : `${deleteConfirm?.ids.length || 0} টি পেমেন্ট রিকোয়েস্ট স্থায়ীভাবে ডিলিট হবে। এই কাজটি ফিরিয়ে আনা যাবে না।`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deletePayments.isPending}
+              onClick={() => deleteConfirm && deletePayments.mutate(deleteConfirm.ids)}>
+              {deletePayments.isPending ? 'ডিলিট হচ্ছে...' : 'হ্যাঁ, ডিলিট করুন'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <Dialog open={bulkRejectOpen} onOpenChange={setBulkRejectOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>বাল্ক প্রত্যাখ্যান ({selectedIds.size} টি)</DialogTitle></DialogHeader>
