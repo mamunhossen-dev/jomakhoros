@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Bell, Copy } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Bell, Copy, CheckCircle2, XCircle, Clock, Megaphone, ExternalLink } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,13 +8,37 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+
+type FeedItem = {
+  id: string;
+  title: string;
+  body: string;
+  created_at: string;
+  source: 'global' | 'user';
+  type?: string;
+  link?: string | null;
+  is_read: boolean;
+};
+
+const typeIcon = (type?: string) => {
+  switch (type) {
+    case 'payment_approved': return <CheckCircle2 className="h-4 w-4 text-success" />;
+    case 'payment_rejected': return <XCircle className="h-4 w-4 text-destructive" />;
+    case 'payment_submitted': return <Clock className="h-4 w-4 text-yellow-600" />;
+    case 'subscription_reminder': return <Clock className="h-4 w-4 text-yellow-600" />;
+    default: return <Megaphone className="h-4 w-4 text-primary" />;
+  }
+};
 
 export function NotificationsPopover() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const { data: notifications } = useQuery({
+  const { data: globals } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,7 +50,6 @@ export function NotificationsPopover() {
       if (error) throw error;
       return data;
     },
-    // Badge data: poll instead of constantly refetching, fail silently to []
     staleTime: 60_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: false,
@@ -52,7 +75,27 @@ export function NotificationsPopover() {
     placeholderData: [],
   });
 
-  // Realtime subscription
+  const { data: userNotifs } = useQuery({
+    queryKey: ['user_notifications', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_notifications')
+        .select('id, type, title, body, link, created_at, is_read')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: false,
+    retry: 0,
+    placeholderData: [],
+  });
+
+  // Realtime: invalidate on changes
   useEffect(() => {
     const ch = supabase
       .channel('notifications-list')
@@ -63,16 +106,65 @@ export function NotificationsPopover() {
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
 
-  const unreadCount = (notifications || []).filter(n => !reads?.includes(n.id)).length;
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`user-notifs-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_notifications', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          qc.invalidateQueries({ queryKey: ['user_notifications', user.id] });
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const n = payload.new as { title?: string };
+            if (n.title) toast.success(n.title);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, qc]);
+
+  const feed: FeedItem[] = useMemo(() => {
+    const g: FeedItem[] = (globals || []).map(n => ({
+      id: `g-${n.id}`,
+      title: n.title,
+      body: n.body,
+      created_at: n.created_at,
+      source: 'global',
+      is_read: reads?.includes(n.id) ?? false,
+    }));
+    const u: FeedItem[] = (userNotifs || []).map(n => ({
+      id: `u-${n.id}`,
+      title: n.title,
+      body: n.body,
+      created_at: n.created_at,
+      source: 'user',
+      type: n.type,
+      link: n.link,
+      is_read: n.is_read,
+    }));
+    return [...u, ...g].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [globals, userNotifs, reads]);
+
+  const unreadCount = feed.filter(n => !n.is_read).length;
 
   const markAllRead = async () => {
-    if (!user || !notifications?.length) return;
-    const toMark = notifications
-      .filter(n => !reads?.includes(n.id))
-      .map(n => ({ user_id: user.id, notification_id: n.id }));
-    if (!toMark.length) return;
-    await supabase.from('notification_reads').insert(toMark);
-    qc.invalidateQueries({ queryKey: ['notification_reads'] });
+    if (!user) return;
+    // Global ones via notification_reads
+    const unreadGlobals = (globals || []).filter(n => !reads?.includes(n.id));
+    if (unreadGlobals.length) {
+      await supabase
+        .from('notification_reads')
+        .insert(unreadGlobals.map(n => ({ user_id: user.id, notification_id: n.id })));
+      qc.invalidateQueries({ queryKey: ['notification_reads'] });
+    }
+    // Per-user: update is_read
+    const unreadUser = (userNotifs || []).filter(n => !n.is_read).map(n => n.id);
+    if (unreadUser.length) {
+      await supabase.from('user_notifications').update({ is_read: true }).in('id', unreadUser);
+      qc.invalidateQueries({ queryKey: ['user_notifications', user.id] });
+    }
   };
 
   useEffect(() => {
@@ -83,6 +175,13 @@ export function NotificationsPopover() {
   const copyMessage = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('কপি হয়েছে');
+  };
+
+  const handleClick = (item: FeedItem) => {
+    if (item.link) {
+      navigate(item.link);
+      setOpen(false);
+    }
   };
 
   return (
@@ -102,20 +201,43 @@ export function NotificationsPopover() {
           <h3 className="font-display text-sm font-semibold">নোটিফিকেশন</h3>
         </div>
         <ScrollArea className="max-h-96">
-          {!notifications?.length ? (
+          {!feed.length ? (
             <p className="p-6 text-center text-sm text-muted-foreground">কোনো নোটিফিকেশন নেই</p>
           ) : (
             <div className="divide-y">
-              {notifications.map(n => (
-                <div key={n.id} className="p-3 hover:bg-muted/50">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium">{n.title}</p>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0" onClick={() => copyMessage(`${n.title}\n\n${n.body}`)}>
-                      <Copy className="h-3 w-3" />
-                    </Button>
+              {feed.map(n => (
+                <div
+                  key={n.id}
+                  className={cn(
+                    'p-3 hover:bg-muted/50 transition-colors',
+                    !n.is_read && 'bg-primary/5',
+                    n.link && 'cursor-pointer'
+                  )}
+                  onClick={() => handleClick(n)}
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="mt-0.5 flex-shrink-0">{typeIcon(n.type)}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium">{n.title}</p>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {n.link && <ExternalLink className="h-3 w-3 text-muted-foreground" />}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => { e.stopPropagation(); copyMessage(`${n.title}\n\n${n.body}`); }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="mt-1 text-xs whitespace-pre-wrap text-muted-foreground select-text">{n.body}</p>
+                      <p className="mt-2 text-[10px] text-muted-foreground">
+                        {format(new Date(n.created_at), 'dd MMM yyyy, hh:mm a')}
+                      </p>
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs whitespace-pre-wrap text-muted-foreground select-text">{n.body}</p>
-                  <p className="mt-2 text-[10px] text-muted-foreground">{format(new Date(n.created_at), 'dd MMM yyyy')}</p>
                 </div>
               ))}
             </div>
