@@ -491,9 +491,16 @@ export default function AdminPanel() {
         <p className="text-muted-foreground">সাইট ও ব্যবহারকারী পরিচালনা করুন।</p>
       </div>
 
-      <Tabs defaultValue="payments" onValueChange={(v) => { if (v === 'feedback') markFeedbackSeen(); }}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v === 'feedback') markFeedbackSeen(); }}>
         <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="payments"><CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট</TabsTrigger>
+          <TabsTrigger value="payments" className="relative">
+            <CreditCard className="mr-1 h-3.5 w-3.5" /> পেমেন্ট
+            {pendingPaymentCount > 0 && (
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm">
+                {pendingPaymentCount > 99 ? '99+' : pendingPaymentCount}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="feedback" className="relative">
             <MessageSquare className="mr-1 h-3.5 w-3.5" /> ফিডব্যাক
             {feedbackUnreadCount > 0 && (
