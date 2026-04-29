@@ -36,6 +36,7 @@ import { SignupRulesEditor } from '@/components/admin/SignupRulesEditor';
 import { UserManagementEditor } from '@/components/admin/UserManagementEditor';
 import { PersonalNotificationSender } from '@/components/admin/PersonalNotificationSender';
 import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncementManager';
+import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -561,7 +562,8 @@ export default function AdminPanel() {
         </TabsList>
 
         {/* Payments Tab */}
-        <TabsContent value="payments">
+        <TabsContent value="payments" className="space-y-4">
+          <PaymentDashboard />
           <Card className="border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="font-display text-lg">পেমেন্ট রিকোয়েস্ট</CardTitle>
