@@ -31,6 +31,7 @@ import { BrandingEditor } from '@/components/admin/BrandingEditor';
 import { UserGuideEditor } from '@/components/admin/UserGuideEditor';
 import { AuthPagesEditor } from '@/components/admin/AuthPagesEditor';
 import { WelcomeBannerEditor } from '@/components/admin/WelcomeBannerEditor';
+import { SignupRulesEditor } from '@/components/admin/SignupRulesEditor';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1274,7 +1275,11 @@ export default function AdminPanel() {
 
               {/* Auth & Subscription */}
               <TabsContent value="auth" className="mt-4">
-                <Accordion type="single" collapsible defaultValue="auth" className="space-y-2">
+                <Accordion type="single" collapsible defaultValue="signup" className="space-y-2">
+                  <AccordionItem value="signup" className="rounded-lg border bg-card px-3">
+                    <AccordionTrigger className="py-3 text-sm font-semibold">নতুন ইউজার রেজিস্ট্রেশন নিয়ম</AccordionTrigger>
+                    <AccordionContent className="pt-0"><SignupRulesEditor /></AccordionContent>
+                  </AccordionItem>
                   <AccordionItem value="auth" className="rounded-lg border bg-card px-3">
                     <AccordionTrigger className="py-3 text-sm font-semibold">লগইন / রেজিস্টার পেইজ</AccordionTrigger>
                     <AccordionContent className="pt-0"><AuthPagesEditor /></AccordionContent>
