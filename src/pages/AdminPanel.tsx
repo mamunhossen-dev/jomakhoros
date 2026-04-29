@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Users, MessageSquare, CreditCard, Shield, CheckCircle2, XCircle, Trash2, Copy, RotateCcw, Bell, Send, Pencil, Plus, Settings as SettingsIcon, ChevronDown, ChevronUp, FolderArchive, ArrowLeft, Lock, Eye, Search, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { STATUS_LIST, getStatusMeta, type SupportStatus } from '@/lib/supportStatus';
@@ -1205,58 +1206,91 @@ export default function AdminPanel() {
         {/* Settings Tab */}
         {isAdmin && (
           <TabsContent value="settings">
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">অ্যাপ সেটিংস</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="terms-toggle" className="text-base font-medium">
-                      রেজিস্ট্রেশনে শর্তাবলী চেকবক্স
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      চালু থাকলে রেজিস্ট্রেশন পেইজে ব্যবহারকারীকে শর্তাবলীতে সম্মতি দিতে হবে।
-                      বন্ধ করলে চেকবক্সটি দেখানো হবে না।
-                    </p>
-                  </div>
-                  <Switch
-                    id="terms-toggle"
-                    checked={termsSetting ?? true}
-                    onCheckedChange={(checked) => updateTermsSetting.mutate(checked)}
-                    disabled={updateTermsSetting.isPending}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <Tabs defaultValue="general" className="w-full">
+              <ScrollArea className="w-full whitespace-nowrap rounded-md">
+                <TabsList className="inline-flex h-auto w-full justify-start gap-1 bg-muted/50 p-1">
+                  <TabsTrigger value="general" className="text-xs sm:text-sm">সাধারণ</TabsTrigger>
+                  <TabsTrigger value="branding" className="text-xs sm:text-sm">ব্র্যান্ডিং</TabsTrigger>
+                  <TabsTrigger value="pages" className="text-xs sm:text-sm">পেইজ কন্টেন্ট</TabsTrigger>
+                  <TabsTrigger value="auth" className="text-xs sm:text-sm">অথ ও সাবস্ক্রিপশন</TabsTrigger>
+                  <TabsTrigger value="banner" className="text-xs sm:text-sm">পপআপ ব্যানার</TabsTrigger>
+                </TabsList>
+              </ScrollArea>
 
-            <div className="mt-6">
-              <BrandingEditor />
-            </div>
-            <div className="mt-6">
-              <SiteSettingsEditor />
-            </div>
-            <div className="mt-6">
-              <LandingPageEditor />
-            </div>
-            <div className="mt-6">
-              <AboutPageEditor />
-            </div>
-            <div className="mt-6">
-              <SubscriptionEditor />
-            </div>
-            <div className="mt-6">
-              <TermsEditor />
-            </div>
-            <div className="mt-6">
-              <UserGuideEditor />
-            </div>
-            <div className="mt-6">
-              <AuthPagesEditor />
-            </div>
-            <div className="mt-6">
-              <WelcomeBannerEditor />
-            </div>
+              {/* General */}
+              <TabsContent value="general" className="mt-4 space-y-4">
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">সাধারণ অ্যাপ সেটিংস</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="terms-toggle" className="text-sm font-medium">
+                          রেজিস্ট্রেশনে শর্তাবলী চেকবক্স
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          চালু থাকলে রেজিস্ট্রেশন পেইজে ব্যবহারকারীকে শর্তাবলীতে সম্মতি দিতে হবে।
+                        </p>
+                      </div>
+                      <Switch
+                        id="terms-toggle"
+                        checked={termsSetting ?? true}
+                        onCheckedChange={(checked) => updateTermsSetting.mutate(checked)}
+                        disabled={updateTermsSetting.isPending}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+                <SiteSettingsEditor />
+              </TabsContent>
+
+              {/* Branding */}
+              <TabsContent value="branding" className="mt-4">
+                <BrandingEditor />
+              </TabsContent>
+
+              {/* Pages content (Landing, About, Terms, User Guide) */}
+              <TabsContent value="pages" className="mt-4">
+                <Accordion type="single" collapsible defaultValue="landing" className="space-y-2">
+                  <AccordionItem value="landing" className="rounded-lg border bg-card px-3">
+                    <AccordionTrigger className="py-3 text-sm font-semibold">ল্যান্ডিং পেইজ</AccordionTrigger>
+                    <AccordionContent className="pt-0"><LandingPageEditor /></AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="about" className="rounded-lg border bg-card px-3">
+                    <AccordionTrigger className="py-3 text-sm font-semibold">About পেইজ</AccordionTrigger>
+                    <AccordionContent className="pt-0"><AboutPageEditor /></AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="terms" className="rounded-lg border bg-card px-3">
+                    <AccordionTrigger className="py-3 text-sm font-semibold">শর্তাবলী পেইজ</AccordionTrigger>
+                    <AccordionContent className="pt-0"><TermsEditor /></AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="guide" className="rounded-lg border bg-card px-3">
+                    <AccordionTrigger className="py-3 text-sm font-semibold">ব্যবহারকারী গাইড</AccordionTrigger>
+                    <AccordionContent className="pt-0"><UserGuideEditor /></AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </TabsContent>
+
+              {/* Auth & Subscription */}
+              <TabsContent value="auth" className="mt-4">
+                <Accordion type="single" collapsible defaultValue="auth" className="space-y-2">
+                  <AccordionItem value="auth" className="rounded-lg border bg-card px-3">
+                    <AccordionTrigger className="py-3 text-sm font-semibold">লগইন / রেজিস্টার পেইজ</AccordionTrigger>
+                    <AccordionContent className="pt-0"><AuthPagesEditor /></AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="sub" className="rounded-lg border bg-card px-3">
+                    <AccordionTrigger className="py-3 text-sm font-semibold">সাবস্ক্রিপশন প্ল্যান</AccordionTrigger>
+                    <AccordionContent className="pt-0"><SubscriptionEditor /></AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </TabsContent>
+
+              {/* Welcome Banner */}
+              <TabsContent value="banner" className="mt-4">
+                <WelcomeBannerEditor />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         )}
       </Tabs>
