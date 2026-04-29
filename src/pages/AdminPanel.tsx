@@ -244,6 +244,9 @@ export default function AdminPanel() {
       // Insert new role
       const { error: insError } = await supabase.from('user_roles').insert([{ user_id: userId, role: role as any }]);
       if (insError) throw insError;
+      await logAdminAction('role_changed', 'user_roles', {
+        target_user_id: userId, details: { new_role: role },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_all_roles'] });
