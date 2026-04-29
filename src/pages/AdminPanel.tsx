@@ -1124,7 +1124,10 @@ export default function AdminPanel() {
                             const u = users?.find(x => x.user_id === uid);
                             const msgs = conversationsByTicket[tid] || [];
                             const last = msgs[msgs.length - 1];
-                            const unread = msgs.filter(m => !m.is_from_admin && !m.is_read).length;
+                            const threadStatus = getThreadStatusByTicket(tid);
+                            const unread = (threadStatus === 'closed' || threadStatus === 'solved')
+                              ? 0
+                              : msgs.filter(m => !m.is_from_admin && !m.is_read).length;
                             const meta = getStatusMeta(getThreadStatusByTicket(tid));
                             const StatusIcon = meta.icon;
                             return (
