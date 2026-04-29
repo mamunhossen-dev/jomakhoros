@@ -1,8 +1,6 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
-import { registerBengaliFont } from './pdfFont';
 
-const BN_FONT = 'NotoBengali';
 const EN_FONT = 'helvetica';
 
 export type ReceiptData = {
@@ -10,7 +8,7 @@ export type ReceiptData = {
   paidOn: string;              // ISO date
   customerName: string;
   customerEmail: string;
-  plan: string;                // e.g. ১ মাস / ৬ মাস / ১ বছর
+  plan: string;                // e.g. 1 Month / 6 Months / 1 Year
   paymentMethod: string;       // bKash / Nagad / etc (label)
   transactionId: string;
   amount: number;
@@ -18,31 +16,39 @@ export type ReceiptData = {
   brandTagline?: string;
 };
 
-const drawBnText = (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right' }) => {
-  doc.setFont(BN_FONT, 'normal');
-  // jsPDF's built-in align option doesn't shape complex Bengali scripts correctly with custom TTF.
-  // Compute width manually and shift x so the text renders without broken glyphs.
-  const align = opts?.align ?? 'left';
-  let drawX = x;
-  if (align !== 'left') {
-    const w = doc.getTextWidth(text);
-    drawX = align === 'right' ? x - w : x - w / 2;
-  }
-  doc.text(text, drawX, y);
-};
-
 const drawEnText = (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right' }) => {
   doc.setFont(EN_FONT, 'normal');
   doc.text(text, x, y, opts);
 };
 
+const bnDigits: Record<string, string> = {
+  '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+  '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9',
+};
+
+const toSafeEnglish = (value: string | null | undefined, fallback = 'N/A') => {
+  const normalized = String(value || '')
+    .replace(/[০-৯]/g, d => bnDigits[d] ?? d)
+    .replace(/বিকাশ/gi, 'bKash')
+    .replace(/নগদ/gi, 'Nagad')
+    .replace(/রকেট/gi, 'Rocket')
+    .replace(/ব্যাংক ট্রান্সফার|ব্যাংক/gi, 'Bank Transfer')
+    .replace(/মাস/gi, 'Month')
+    .replace(/বছর/gi, 'Year')
+    .replace(/৳/g, 'BDT')
+    .replace(/[—–]/g, '-')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+  const ascii = normalized.replace(/[^\x20-\x7E]/g, '').replace(/\s+/g, ' ').trim();
+  return ascii || fallback;
+};
+
 export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  await registerBengaliFont(doc);
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const brand = data.brandName || 'JomaKhoros';
-  const tagline = data.brandTagline || 'ব্যক্তিগত আর্থিক ব্যবস্থাপনা';
+  const brand = toSafeEnglish(data.brandName, 'JomaKhoros');
+  const tagline = toSafeEnglish(data.brandTagline, 'Track. Save. Grow.');
 
   // Header bar
   doc.setFillColor(13, 150, 104); // primary teal
@@ -52,12 +58,12 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   doc.setFontSize(22);
   drawEnText(doc, brand, 14, 18);
   doc.setFontSize(10);
-  drawBnText(doc, tagline, 14, 26);
+  drawEnText(doc, tagline, 14, 26);
 
   doc.setFontSize(14);
   drawEnText(doc, 'PAYMENT RECEIPT', pageWidth - 14, 18, { align: 'right' });
   doc.setFontSize(9);
-  drawBnText(doc, 'পেমেন্ট রসিদ', pageWidth - 14, 26, { align: 'right' });
+  drawEnText(doc, 'Official Payment Confirmation', pageWidth - 14, 26, { align: 'right' });
 
   // Receipt meta box
   doc.setTextColor(30, 41, 59);
@@ -82,7 +88,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   y += 6;
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(12);
-  drawBnText(doc, data.customerName || 'N/A', 14, y);
+  drawEnText(doc, toSafeEnglish(data.customerName), 14, y);
   y += 6;
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
@@ -103,7 +109,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   y += 8;
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(11);
-  drawBnText(doc, `${brand} প্রো প্ল্যান — ${data.plan}`, 14, y);
+  drawEnText(doc, `${brand} Pro Plan - ${toSafeEnglish(data.plan, 'Subscription')}`, 14, y);
   drawEnText(doc, `BDT ${data.amount.toFixed(2)}`, pageWidth - 14, y, { align: 'right' });
 
   y += 4;
@@ -129,11 +135,11 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(10);
   drawEnText(doc, 'Method:', 14, y);
-  drawBnText(doc, data.paymentMethod, 50, y);
+  drawEnText(doc, toSafeEnglish(data.paymentMethod), 50, y);
 
   y += 6;
   drawEnText(doc, 'Transaction ID:', 14, y);
-  drawBnText(doc, data.transactionId, 50, y);
+  drawEnText(doc, toSafeEnglish(data.transactionId), 50, y);
 
   y += 6;
   drawEnText(doc, 'Status:', 14, y);
@@ -143,13 +149,7 @@ export async function buildReceiptPdf(data: ReceiptData): Promise<jsPDF> {
   // Footer
   doc.setTextColor(148, 163, 184);
   doc.setFontSize(8);
-  drawBnText(
-    doc,
-    'এই রসিদটি স্বয়ংক্রিয়ভাবে তৈরি হয়েছে। কোনো প্রশ্ন থাকলে সাপোর্টে যোগাযোগ করুন।',
-    pageWidth / 2,
-    doc.internal.pageSize.getHeight() - 14,
-    { align: 'center' }
-  );
+  drawEnText(doc, 'This receipt was generated automatically. For questions, please contact support.', pageWidth / 2, doc.internal.pageSize.getHeight() - 14, { align: 'center' });
   drawEnText(doc, `Generated: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
 
   return doc;
