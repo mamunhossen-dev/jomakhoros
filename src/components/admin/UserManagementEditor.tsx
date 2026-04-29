@@ -277,6 +277,36 @@ export function UserManagementEditor() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!pwdTarget} onOpenChange={o => { if (!o) { setPwdTarget(null); setNewPwd(''); setConfirmPwd(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>পাসওয়ার্ড রিসেট করুন</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm">
+              <strong>{pwdTarget?.name}</strong> এর জন্য নতুন পাসওয়ার্ড সেট করুন। ইউজারকে নতুন পাসওয়ার্ডটি জানিয়ে দিন।
+            </p>
+            <div className="space-y-2">
+              <Label>নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</Label>
+              <Input type="text" autoComplete="off" value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="নতুন পাসওয়ার্ড লিখুন" />
+            </div>
+            <div className="space-y-2">
+              <Label>পাসওয়ার্ড নিশ্চিত করুন</Label>
+              <Input type="text" autoComplete="off" value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} placeholder="আবার লিখুন" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setPwdTarget(null); setNewPwd(''); setConfirmPwd(''); }}>বাতিল</Button>
+            <Button
+              disabled={resetPassword.isPending || newPwd.length < 6 || newPwd !== confirmPwd}
+              onClick={() => pwdTarget && resetPassword.mutate({ user_id: pwdTarget.user_id, new_password: newPwd })}
+            >
+              {resetPassword.isPending ? 'পরিবর্তন হচ্ছে...' : 'নিশ্চিত করুন'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteTarget} onOpenChange={o => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
