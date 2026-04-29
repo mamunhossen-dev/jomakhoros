@@ -352,9 +352,13 @@ export function AuditLogViewer() {
                               {log.entity_type}{log.entity_id ? ` · ${log.entity_id.slice(0, 8)}` : ''}
                             </span>
                           </div>
-                          <p className="text-sm font-medium truncate">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); if (log.actor_id) setActorFilter(log.actor_id); }}
+                            className="text-sm font-medium truncate hover:text-primary hover:underline text-left max-w-full"
+                          >
                             {log.actor_name || log.actor_email || 'Unknown'}
-                          </p>
+                          </button>
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: bn })}
                             {' · '}
