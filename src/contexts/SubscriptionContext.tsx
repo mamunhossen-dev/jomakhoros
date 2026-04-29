@@ -14,6 +14,8 @@ interface SubscriptionContextType {
   userRole: 'admin' | 'moderator' | 'user';
   isAdmin: boolean;
   isModerator: boolean;
+  isBlocked: boolean;
+  blockReason: string | null;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType>({
@@ -26,6 +28,8 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
   userRole: 'user',
   isAdmin: false,
   isModerator: false,
+  isBlocked: false,
+  blockReason: null,
 });
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
