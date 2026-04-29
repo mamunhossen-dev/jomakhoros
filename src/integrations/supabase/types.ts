@@ -639,10 +639,42 @@ export type Database = {
         }
         Relationships: []
       }
+      support_templates: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       support_threads: {
         Row: {
+          assigned_to: string | null
           created_at: string
           id: string
+          priority: string
           status: string
           ticket_id: string
           ticket_number: string
@@ -650,8 +682,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assigned_to?: string | null
           created_at?: string
           id?: string
+          priority?: string
           status?: string
           ticket_id?: string
           ticket_number?: string
@@ -659,8 +693,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assigned_to?: string | null
           created_at?: string
           id?: string
+          priority?: string
           status?: string
           ticket_id?: string
           ticket_number?: string
