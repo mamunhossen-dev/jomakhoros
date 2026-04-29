@@ -17,14 +17,25 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+// Actions a moderator CANNOT do alone — needs admin assistance
 const REQUEST_TYPES = [
-  { value: 'user_delete', label: '🗑️ ইউজার ডিলিট' },
-  { value: 'role_change', label: '👑 রোল পরিবর্তন' },
-  { value: 'subscription_change', label: '📅 সাবস্ক্রিপশন এডিট' },
-  { value: 'profile_edit', label: '👤 প্রোফাইল এডিট' },
-  { value: 'content_remove', label: '🚫 কন্টেন্ট রিমুভ' },
-  { value: 'settings_change', label: '⚙️ সিস্টেম সেটিংস পরিবর্তন' },
-  { value: 'other', label: '📝 অন্যান্য' },
+  { value: 'user_delete', label: '🗑️ ইউজার অ্যাকাউন্ট ডিলিট' },
+  { value: 'user_block', label: '🚫 ইউজার ব্লক / আনব্লক' },
+  { value: 'role_change', label: '👑 রোল পরিবর্তন (admin/moderator/user)' },
+  { value: 'password_reset', label: '🔑 ইউজারের পাসওয়ার্ড রিসেট' },
+  { value: 'subscription_change', label: '📅 সাবস্ক্রিপশন / প্ল্যান ম্যানুয়াল এডিট' },
+  { value: 'trial_extend', label: '⏰ ট্রায়াল মেয়াদ বাড়ানো' },
+  { value: 'profile_edit', label: '👤 ইউজার প্রোফাইল ডেটা সংশোধন' },
+  { value: 'payment_manual', label: '💳 ম্যানুয়াল পেমেন্ট অ্যাক্টিভেশন (ভেরিফিকেশন ছাড়া)' },
+  { value: 'notification_send', label: '📢 গ্লোবাল নোটিফিকেশন/ঘোষণা পাঠানো' },
+  { value: 'template_manage', label: '📝 নোটিফিকেশন টেমপ্লেট তৈরি/এডিট' },
+  { value: 'site_settings', label: '⚙️ সাইট সেটিংস / ব্র্যান্ডিং পরিবর্তন' },
+  { value: 'cms_edit', label: '🖋️ পেইজ কন্টেন্ট এডিট (Landing/Terms/About)' },
+  { value: 'signup_rules', label: '📋 সাইনআপ রুলস পরিবর্তন' },
+  { value: 'audit_check', label: '🔍 অডিট লগ চেক / তদন্ত' },
+  { value: 'data_export', label: '📤 ইউজার ডেটা এক্সপোর্ট' },
+  { value: 'feedback_delete', label: '🗑️ ফিডব্যাক ডিলিট' },
+  { value: 'other', label: '📝 অন্যান্য (বিস্তারিত লিখুন)' },
 ];
 
 const PRIORITIES = [
