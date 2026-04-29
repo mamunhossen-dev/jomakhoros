@@ -240,10 +240,18 @@ export function MessagesPopover() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
-          <MessageCircle className="h-5 w-5" />
+        <button
+          className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          aria-label="এডমিন সাপোর্ট"
+          title="এডমিন সাপোর্ট"
+        >
+          <Headphones className="h-5 w-5" />
+          {/* Small chat dot to indicate live support */}
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-primary ring-2 ring-background">
+            <MessageCircle className="h-2 w-2 text-primary-foreground" strokeWidth={3} />
+          </span>
           {unread > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-semibold text-destructive-foreground ring-2 ring-background">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
