@@ -756,6 +756,12 @@ export default function AdminPanel() {
           </TabsContent>
         )}
 
+        {isAdmin && (
+          <TabsContent value="block">
+            <UserManagementEditor />
+          </TabsContent>
+        )}
+
         {/* Support Tab */}
         <TabsContent value="support">
           <Card className="border-0 shadow-sm">
