@@ -248,6 +248,14 @@ export function NotificationsPopover() {
             </div>
           )}
         </ScrollArea>
+        <div className="border-t px-4 py-2 text-center">
+          <button
+            onClick={() => { setOpen(false); navigate('/notifications'); }}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            সব নোটিফিকেশন দেখুন →
+          </button>
+        </div>
       </PopoverContent>
     </Popover>
   );
