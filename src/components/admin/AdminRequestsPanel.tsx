@@ -20,7 +20,6 @@ import { cn } from '@/lib/utils';
 const REQUEST_TYPES = [
   { value: 'user_delete', label: '🗑️ ইউজার ডিলিট' },
   { value: 'role_change', label: '👑 রোল পরিবর্তন' },
-  { value: 'payment_refund', label: '💰 পেমেন্ট রিফান্ড/বাতিল' },
   { value: 'subscription_change', label: '📅 সাবস্ক্রিপশন এডিট' },
   { value: 'profile_edit', label: '👤 প্রোফাইল এডিট' },
   { value: 'content_remove', label: '🚫 কন্টেন্ট রিমুভ' },
