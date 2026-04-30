@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { ModeratorOnlyRoute, AdminOnlyRoute } from "@/components/RoleRoutes";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
@@ -36,6 +37,8 @@ const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const UserGuide = lazy(() => import("./pages/UserGuide"));
+const ModeratorGuide = lazy(() => import("./pages/ModeratorGuide"));
+const AdminGuide = lazy(() => import("./pages/AdminGuide"));
 const About = lazy(() => import("./pages/About"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 
@@ -154,6 +157,8 @@ const App = () => (
               <Route path="/feedback" element={lazyPage(<Feedback />)} />
               <Route path="/subscription" element={lazyPage(<Subscription />)} />
               <Route path="/admin" element={<AdminRoute>{lazyPage(<AdminPanel />)}</AdminRoute>} />
+              <Route path="/moderator-guide" element={<ModeratorOnlyRoute>{lazyPage(<ModeratorGuide />)}</ModeratorOnlyRoute>} />
+              <Route path="/admin-guide" element={<AdminOnlyRoute>{lazyPage(<AdminGuide />)}</AdminOnlyRoute>} />
               <Route path="/settings" element={lazyPage(<Settings />)} />
               <Route path="/about" element={lazyPage(<About />)} />
               <Route path="/notifications" element={lazyPage(<Notifications />)} />
