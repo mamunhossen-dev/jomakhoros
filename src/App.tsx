@@ -15,6 +15,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import { SiteMeta } from "./components/SiteMeta";
 import { BrandTheme } from "./components/BrandTheme";
 import { WelcomeBanner } from "./components/WelcomeBanner";
+import { UnsupportedBrowserNotice } from "./components/UnsupportedBrowserNotice";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Lazy-load every route — including auth + landing — so the initial bundle
@@ -115,6 +116,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <UnsupportedBrowserNotice />
       <BrowserRouter>
         <ScrollToTop />
         <SiteMeta />
