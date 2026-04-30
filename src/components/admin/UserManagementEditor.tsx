@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Lock, Unlock, AlertCircle, Trash2, KeyRound, Download, Send, Eye, Filter as FilterIcon } from 'lucide-react';
+import { Search, Lock, Unlock, AlertCircle, Trash2, KeyRound, Download, Send, Eye, Filter as FilterIcon, Pencil } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -48,6 +48,8 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
   const [detailsTarget, setDetailsTarget] = useState<any | null>(null);
+  const [editTarget, setEditTarget] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ display_name: '', phone: '', address: '' });
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
