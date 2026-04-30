@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# Money Management BD
 
-TODO: Document your project here
+A personal finance management application.
