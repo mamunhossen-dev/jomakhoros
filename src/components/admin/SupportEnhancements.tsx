@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Plus, Pencil, Trash2, Zap, AlertTriangle, MessageCircle, Clock, CheckCircle2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Zap, AlertTriangle, MessageCircle, Clock, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { differenceInHours, formatDistanceToNow } from 'date-fns';
 
@@ -285,5 +285,162 @@ export function SupportTemplatesManager() {
         </DialogContent>
       </Dialog>
     </Card>
+  );
+}
+
+/* ---------------- Forward to Admin ---------------- */
+const FORWARD_REQUEST_TYPES = [
+  { value: 'user_block', label: '🚫 ইউজার ব্লক/আনব্লক' },
+  { value: 'user_delete', label: '🗑️ ইউজার ডিলিট' },
+  { value: 'role_change', label: '👑 রোল পরিবর্তন' },
+  { value: 'password_reset', label: '🔑 পাসওয়ার্ড রিসেট' },
+  { value: 'subscription_change', label: '📅 সাবস্ক্রিপশন এডিট' },
+  { value: 'trial_extend', label: '⏰ ট্রায়াল বাড়ানো' },
+  { value: 'payment_manual', label: '💳 ম্যানুয়াল পেমেন্ট অ্যাক্টিভেশন' },
+  { value: 'profile_edit', label: '👤 প্রোফাইল সংশোধন' },
+  { value: 'data_export', label: '📤 ডেটা এক্সপোর্ট' },
+  { value: 'audit_check', label: '🔍 অডিট লগ চেক' },
+  { value: 'other', label: '📝 অন্যান্য' },
+];
+
+export function ForwardToAdminButton({
+  ticketId,
+  ticketNumber,
+  targetUserId,
+  requesterId,
+  onMessageSent,
+  disabled,
+}: {
+  ticketId: string;
+  ticketNumber?: string | null;
+  targetUserId: string | null;
+  requesterId: string;
+  onMessageSent?: () => void;
+  disabled?: boolean;
+}) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [requestType, setRequestType] = useState('other');
+  const [priority, setPriority] = useState<Priority>('normal');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [includeChatNote, setIncludeChatNote] = useState(true);
+
+  const submit = useMutation({
+    mutationFn: async () => {
+      if (!title.trim() || !description.trim()) {
+        throw new Error('শিরোনাম ও বিস্তারিত আবশ্যক');
+      }
+      // 1) Create admin request — triggers admin notification automatically
+      const ticketRef = ticketNumber ? ` (টিকেট: ${ticketNumber})` : '';
+      const { error: reqErr } = await supabase.from('admin_requests').insert({
+        requester_id: requesterId,
+        request_type: requestType,
+        title: title.trim() + ticketRef,
+        description: description.trim(),
+        target_user_id: targetUserId,
+        priority,
+        related_entity_type: 'support_ticket',
+        related_entity_id: ticketId,
+      });
+      if (reqErr) throw reqErr;
+
+      // 2) Optional auto-message in support chat so the user knows
+      if (includeChatNote && targetUserId) {
+        await supabase.from('support_messages').insert({
+          user_id: targetUserId,
+          sender_id: requesterId,
+          is_from_admin: true,
+          message: 'আপনার রিকোয়েস্টটি এডমিনের কাছে ফরোয়ার্ড করা হয়েছে। অনুগ্রহ করে ২৪-৪৮ ঘণ্টা অপেক্ষা করুন — সমাধান হলে এই চ্যাটেই জানানো হবে।',
+          ticket_id: ticketId,
+        });
+      }
+    },
+    onSuccess: () => {
+      toast.success('এডমিনে ফরোয়ার্ড করা হয়েছে');
+      qc.invalidateQueries({ queryKey: ['admin_requests'] });
+      qc.invalidateQueries({ queryKey: ['admin_support_messages'] });
+      setOpen(false);
+      setTitle(''); setDescription(''); setRequestType('other'); setPriority('normal');
+      onMessageSent?.();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        className="border-orange-500/40 text-orange-600 hover:bg-orange-500 hover:text-white"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+      >
+        <ShieldAlert className="mr-1 h-3.5 w-3.5" /> এডমিনে ফরোয়ার্ড
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>এডমিনের কাছে রিকোয়েস্ট পাঠান</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              যেসব কাজ আপনি (মডারেটর) করতে পারবেন না, সেগুলোর জন্য এডমিনের সাহায্য চান। এডমিন তাৎক্ষণিক নোটিফিকেশন পাবেন।
+            </p>
+            <div>
+              <Label>রিকোয়েস্টের ধরন</Label>
+              <Select value={requestType} onValueChange={setRequestType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FORWARD_REQUEST_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>প্রায়োরিটি</Label>
+              <Select value={priority} onValueChange={(v: any) => setPriority(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">নিম্ন</SelectItem>
+                  <SelectItem value="normal">সাধারণ</SelectItem>
+                  <SelectItem value="high">উচ্চ</SelectItem>
+                  <SelectItem value="urgent">জরুরি</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>শিরোনাম *</Label>
+              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="যেমন: ইউজারের পাসওয়ার্ড রিসেট" />
+            </div>
+            <div>
+              <Label>বিস্তারিত / কারণ *</Label>
+              <Textarea
+                rows={4}
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="কী সমস্যা, কেন এডমিন সাহায্য দরকার, কী ধরনের প্রমাণ আছে — বিস্তারিত লিখুন..."
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeChatNote}
+                onChange={e => setIncludeChatNote(e.target.checked)}
+                className="rounded border-input"
+              />
+              ইউজারকেও সাপোর্ট চ্যাটে জানান (অটো-মেসেজ)
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>বাতিল</Button>
+            <Button onClick={() => submit.mutate()} disabled={submit.isPending}>
+              <ShieldAlert className="mr-1 h-4 w-4" />
+              {submit.isPending ? 'পাঠানো হচ্ছে...' : 'এডমিনে পাঠান'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
