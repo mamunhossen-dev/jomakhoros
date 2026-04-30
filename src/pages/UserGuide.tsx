@@ -9,7 +9,7 @@ import { DEFAULT_GUIDE, type UserGuideContent } from '@/components/admin/UserGui
 import {
   BookOpen, Sparkles, PieChart, ShieldCheck,
   Tag, Wallet, Share2, FileImage, FileText, Lightbulb, CheckCircle2, ArrowRight,
-  UserPlus, Banknote, BarChart3, LogIn,
+  UserPlus, Banknote, BarChart3, LogIn, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -24,6 +24,7 @@ const SECTION_ICONS: Record<string, any> = {
   analytics: BarChart3,
   features: Sparkles,
   tips: Lightbulb,
+  data_security: ShieldCheck,
   benefits: CheckCircle2,
 };
 
@@ -35,6 +36,7 @@ const SECTION_COLORS: Record<string, string> = {
   analytics: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
   features: 'bg-primary/10 text-primary',
   tips: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+  data_security: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
   benefits: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
 };
 
