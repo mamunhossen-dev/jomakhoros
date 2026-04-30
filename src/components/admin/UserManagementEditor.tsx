@@ -671,6 +671,44 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
         </DialogContent>
       </Dialog>
 
+      {/* Edit profile dialog */}
+      <Dialog open={!!editTarget} onOpenChange={o => !o && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>প্রোফাইল এডিট করুন</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              ইউজারের নাম, ফোন ও ঠিকানা আপডেট করুন। ইমেইল ও সাবস্ক্রিপশন এখান থেকে পরিবর্তন হবে না।
+            </p>
+            <div className="space-y-2">
+              <Label>নাম</Label>
+              <Input value={editForm.display_name} onChange={e => setEditForm(f => ({ ...f, display_name: e.target.value }))} placeholder="পূর্ণ নাম" />
+            </div>
+            <div className="space-y-2">
+              <Label>ফোন</Label>
+              <Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="01XXXXXXXXX" />
+            </div>
+            <div className="space-y-2">
+              <Label>ঠিকানা</Label>
+              <Textarea rows={2} value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} placeholder="ঠিকানা" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)}>বাতিল</Button>
+            <Button
+              disabled={editProfile.isPending}
+              onClick={() => editTarget && editProfile.mutate({
+                user_id: editTarget.user_id,
+                display_name: editForm.display_name,
+                phone: editForm.phone,
+                address: editForm.address,
+              })}
+            >
+              {editProfile.isPending ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Details */}
       <UserDetailsDialog
         user={detailsTarget}
