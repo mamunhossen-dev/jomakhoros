@@ -157,6 +157,8 @@ const App = () => (
               <Route path="/feedback" element={lazyPage(<Feedback />)} />
               <Route path="/subscription" element={lazyPage(<Subscription />)} />
               <Route path="/admin" element={<AdminRoute>{lazyPage(<AdminPanel />)}</AdminRoute>} />
+              <Route path="/moderator-guide" element={<ModeratorOnlyRoute>{lazyPage(<ModeratorGuide />)}</ModeratorOnlyRoute>} />
+              <Route path="/admin-guide" element={<AdminOnlyRoute>{lazyPage(<AdminGuide />)}</AdminOnlyRoute>} />
               <Route path="/settings" element={lazyPage(<Settings />)} />
               <Route path="/about" element={lazyPage(<About />)} />
               <Route path="/notifications" element={lazyPage(<Notifications />)} />
