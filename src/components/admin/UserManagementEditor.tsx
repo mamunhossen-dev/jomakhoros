@@ -483,6 +483,16 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
                               <Button size="sm" variant="outline" onClick={() => setDetailsTarget(u)}>
                                 <Eye className="h-3.5 w-3.5 mr-1" /> বিস্তারিত
                               </Button>
+                              <Button size="sm" variant="outline" onClick={() => {
+                                setEditTarget(u);
+                                setEditForm({
+                                  display_name: u.display_name || '',
+                                  phone: u.phone || '',
+                                  address: u.address || '',
+                                });
+                              }}>
+                                <Pencil className="h-3.5 w-3.5 mr-1" /> এডিট
+                              </Button>
                               {u.is_blocked ? (
                                 <Button size="sm" variant="outline" onClick={() => setBlock.mutate({ user_id: u.user_id, blocked: false, reason: '' })}>
                                   <Unlock className="h-3.5 w-3.5 mr-1" /> আনব্লক
