@@ -162,6 +162,36 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
     onError: (e: any) => toast.error(e.message || 'পাসওয়ার্ড রিসেট ব্যর্থ'),
   });
 
+  const editProfile = useMutation({
+    mutationFn: async ({ user_id, display_name, phone, address }: { user_id: string; display_name: string; phone: string; address: string }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: display_name.trim() || null,
+          phone: phone.trim() || null,
+          address: address.trim() || null,
+        })
+        .eq('user_id', user_id);
+      if (error) throw error;
+      // Sync display_name to user_roles for consistent display across admin views
+      if (display_name.trim()) {
+        await supabase.from('user_roles').update({ user_name: display_name.trim() }).eq('user_id', user_id);
+      }
+      await logAdminAction('profile_edited', 'profiles', {
+        target_user_id: user_id,
+        details: { display_name: display_name.trim(), phone: phone.trim(), address: address.trim() },
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_users_full'] });
+      qc.invalidateQueries({ queryKey: ['admin_users'] });
+      qc.invalidateQueries({ queryKey: ['admin_user_roles_emails'] });
+      toast.success('প্রোফাইল আপডেট হয়েছে');
+      setEditTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message || 'আপডেট ব্যর্থ'),
+  });
+
   // Bulk: block / unblock
   const bulkBlock = useMutation({
     mutationFn: async ({ ids, blocked, reason }: { ids: string[]; blocked: boolean; reason: string }) => {
