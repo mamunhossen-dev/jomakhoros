@@ -1,3 +1,3 @@
-# Money Management BD
+# JomaKhoros
 
 A personal finance management application.
