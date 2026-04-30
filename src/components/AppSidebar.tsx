@@ -10,6 +10,8 @@ import {
   MessageSquare,
   CreditCard,
   Shield,
+  ShieldCheck,
+  BookOpen,
   Info,
   X,
 } from 'lucide-react';
@@ -97,6 +99,26 @@ export function AppSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {isModerator && !isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/moderator-guide" onClick={closeMobileSidebar} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                        <BookOpen className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="truncate">মডারেটর গাইড</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/admin-guide" onClick={closeMobileSidebar} className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                        <ShieldCheck className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="truncate">এডমিন গাইড</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
