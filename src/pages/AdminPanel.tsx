@@ -37,7 +37,7 @@ import { UserManagementEditor } from '@/components/admin/UserManagementEditor';
 import { PersonalNotificationSender } from '@/components/admin/PersonalNotificationSender';
 import { GlobalAnnouncementManager } from '@/components/admin/GlobalAnnouncementManager';
 import { PaymentDashboard } from '@/components/admin/PaymentDashboard';
-import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager } from '@/components/admin/SupportEnhancements';
+import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplatesManager, ForwardToAdminButton } from '@/components/admin/SupportEnhancements';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { AuditLogViewer, logAdminAction } from '@/components/admin/AuditLogViewer';
 import { AdminRequestsPanel } from '@/components/admin/AdminRequestsPanel';
@@ -1377,7 +1377,16 @@ export default function AdminPanel() {
                         </div>
                       ) : (
                         <div className="border-t p-2 space-y-1.5">
-                          <div className="flex justify-end">
+                          <div className="flex justify-end gap-1.5 flex-wrap">
+                            {user && (
+                              <ForwardToAdminButton
+                                ticketId={selectedTicketId}
+                                ticketNumber={getTicketNumber(selectedTicketId)}
+                                targetUserId={getTicketUserId(selectedTicketId)}
+                                requesterId={user.id}
+                                disabled={getThreadStatusByTicket(selectedTicketId) === 'closed'}
+                              />
+                            )}
                             <QuickReplyButton onPick={(text) => setSupportText(prev => prev ? prev + '\n' + text : text)} />
                           </div>
                           <div className="flex gap-1">
