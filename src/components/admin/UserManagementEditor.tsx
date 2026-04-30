@@ -459,7 +459,17 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
                               <div className="flex items-center gap-2 flex-wrap">
                                 <p className="font-medium text-sm truncate">{u.display_name || 'নামহীন'}</p>
                                 <Badge variant="outline" className="text-xs">{u.account_type}</Badge>
-                                {role && role !== 'user' && <Badge className="text-xs">{role}</Badge>}
+                                <Badge
+                                  className={`text-xs ${
+                                    role === 'admin'
+                                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                                      : role === 'moderator'
+                                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                                      : 'bg-muted text-muted-foreground hover:bg-muted'
+                                  }`}
+                                >
+                                  {role || 'user'}
+                                </Badge>
                                 {u.is_blocked && (
                                   <Badge variant="destructive" className="text-xs gap-1">
                                     <Lock className="h-3 w-3" /> ব্লকড
