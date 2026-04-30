@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Lock, Unlock, AlertCircle, Trash2, KeyRound, Download, Send, Eye, Filter as FilterIcon } from 'lucide-react';
+import { Search, Lock, Unlock, AlertCircle, Trash2, KeyRound, Download, Send, Eye, Filter as FilterIcon, Pencil } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -48,6 +48,8 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
   const [detailsTarget, setDetailsTarget] = useState<any | null>(null);
+  const [editTarget, setEditTarget] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ display_name: '', phone: '', address: '' });
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -158,6 +160,36 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
       setPwdTarget(null); setNewPwd(''); setConfirmPwd('');
     },
     onError: (e: any) => toast.error(e.message || 'পাসওয়ার্ড রিসেট ব্যর্থ'),
+  });
+
+  const editProfile = useMutation({
+    mutationFn: async ({ user_id, display_name, phone, address }: { user_id: string; display_name: string; phone: string; address: string }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: display_name.trim() || null,
+          phone: phone.trim() || null,
+          address: address.trim() || null,
+        })
+        .eq('user_id', user_id);
+      if (error) throw error;
+      // Sync display_name to user_roles for consistent display across admin views
+      if (display_name.trim()) {
+        await supabase.from('user_roles').update({ user_name: display_name.trim() }).eq('user_id', user_id);
+      }
+      await logAdminAction('profile_edited', 'profiles', {
+        target_user_id: user_id,
+        details: { display_name: display_name.trim(), phone: phone.trim(), address: address.trim() },
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_users_full'] });
+      qc.invalidateQueries({ queryKey: ['admin_users'] });
+      qc.invalidateQueries({ queryKey: ['admin_user_roles_emails'] });
+      toast.success('প্রোফাইল আপডেট হয়েছে');
+      setEditTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message || 'আপডেট ব্যর্থ'),
   });
 
   // Bulk: block / unblock
@@ -451,6 +483,16 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
                               <Button size="sm" variant="outline" onClick={() => setDetailsTarget(u)}>
                                 <Eye className="h-3.5 w-3.5 mr-1" /> বিস্তারিত
                               </Button>
+                              <Button size="sm" variant="outline" onClick={() => {
+                                setEditTarget(u);
+                                setEditForm({
+                                  display_name: u.display_name || '',
+                                  phone: u.phone || '',
+                                  address: u.address || '',
+                                });
+                              }}>
+                                <Pencil className="h-3.5 w-3.5 mr-1" /> এডিট
+                              </Button>
                               {u.is_blocked ? (
                                 <Button size="sm" variant="outline" onClick={() => setBlock.mutate({ user_id: u.user_id, blocked: false, reason: '' })}>
                                   <Unlock className="h-3.5 w-3.5 mr-1" /> আনব্লক
@@ -624,6 +666,44 @@ export function UserManagementEditor({ initialSearch }: { initialSearch?: string
             <Button disabled={bulkNotify.isPending || !bulkNotifTitle.trim() || !bulkNotifBody.trim()}
               onClick={() => bulkNotify.mutate({ ids: Array.from(selectedIds), title: bulkNotifTitle, body: bulkNotifBody, link: bulkNotifLink })}>
               {bulkNotify.isPending ? 'পাঠানো হচ্ছে...' : 'পাঠান'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit profile dialog */}
+      <Dialog open={!!editTarget} onOpenChange={o => !o && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>প্রোফাইল এডিট করুন</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              ইউজারের নাম, ফোন ও ঠিকানা আপডেট করুন। ইমেইল ও সাবস্ক্রিপশন এখান থেকে পরিবর্তন হবে না।
+            </p>
+            <div className="space-y-2">
+              <Label>নাম</Label>
+              <Input value={editForm.display_name} onChange={e => setEditForm(f => ({ ...f, display_name: e.target.value }))} placeholder="পূর্ণ নাম" />
+            </div>
+            <div className="space-y-2">
+              <Label>ফোন</Label>
+              <Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="01XXXXXXXXX" />
+            </div>
+            <div className="space-y-2">
+              <Label>ঠিকানা</Label>
+              <Textarea rows={2} value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} placeholder="ঠিকানা" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)}>বাতিল</Button>
+            <Button
+              disabled={editProfile.isPending}
+              onClick={() => editTarget && editProfile.mutate({
+                user_id: editTarget.user_id,
+                display_name: editForm.display_name,
+                phone: editForm.phone,
+                address: editForm.address,
+              })}
+            >
+              {editProfile.isPending ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন'}
             </Button>
           </DialogFooter>
         </DialogContent>
