@@ -9,7 +9,7 @@ import { DEFAULT_GUIDE, type UserGuideContent } from '@/components/admin/UserGui
 import {
   BookOpen, Sparkles, PieChart, ShieldCheck,
   Tag, Wallet, Share2, FileImage, FileText, Lightbulb, CheckCircle2, ArrowRight,
-  UserPlus, Banknote, BarChart3, LogIn,
+  UserPlus, Banknote, BarChart3, LogIn, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -24,6 +24,7 @@ const SECTION_ICONS: Record<string, any> = {
   analytics: BarChart3,
   features: Sparkles,
   tips: Lightbulb,
+  data_security: ShieldCheck,
   benefits: CheckCircle2,
 };
 
@@ -35,6 +36,7 @@ const SECTION_COLORS: Record<string, string> = {
   analytics: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
   features: 'bg-primary/10 text-primary',
   tips: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+  data_security: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
   benefits: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
 };
 
@@ -189,6 +191,24 @@ export default function UserGuide() {
           const color = SECTION_COLORS[section.key];
           return (
             <section key={section.key}>
+              {section.key === 'data_security' && (
+                <Card className="mb-3 overflow-hidden border-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white shadow-lg">
+                  <CardContent className="p-6 sm:p-7">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
+                        <Lock className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider opacity-80">আপনার বিশ্বাসই আমাদের সম্পদ</p>
+                        <h2 className="mt-1 font-display text-xl font-bold sm:text-2xl">আপনার আর্থিক তথ্য — শুধুই আপনার</h2>
+                        <p className="mt-2 text-sm opacity-95">
+                          আপনি যে তথ্য JomaKhoros-এ লিখছেন সেটি কতটা নিরাপদ — কে দেখতে পারে, কে পারে না, কীভাবে আমরা প্রযুক্তিগতভাবে এটি নিশ্চিত করি — সবকিছু নিচে স্বচ্ছভাবে ব্যাখ্যা করা হলো।
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               <SectionHeader icon={Icon} title={section.heading} />
               <div className="grid gap-3 sm:grid-cols-2">
                 {section.items.map((item, i) => (
