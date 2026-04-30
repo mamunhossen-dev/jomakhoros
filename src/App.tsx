@@ -116,6 +116,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <UnsupportedBrowserNotice />
       <BrowserRouter>
         <ScrollToTop />
         <SiteMeta />
