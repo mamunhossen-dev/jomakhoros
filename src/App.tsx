@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { ModeratorOnlyRoute, AdminOnlyRoute } from "@/components/RoleRoutes";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
@@ -36,6 +37,8 @@ const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const UserGuide = lazy(() => import("./pages/UserGuide"));
+const ModeratorGuide = lazy(() => import("./pages/ModeratorGuide"));
+const AdminGuide = lazy(() => import("./pages/AdminGuide"));
 const About = lazy(() => import("./pages/About"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 
