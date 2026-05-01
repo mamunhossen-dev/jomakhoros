@@ -282,6 +282,9 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      {/* Data Export */}
+      <DataExportCard />
+
       {/* Danger Zone — Account Deletion */}
       <Card className="border-destructive/30 shadow-sm">
         <CardHeader>
