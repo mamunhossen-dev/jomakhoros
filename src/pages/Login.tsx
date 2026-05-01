@@ -10,6 +10,7 @@ import { lovable } from '@/integrations/lovable';
 import { useBrand } from '@/hooks/useBrand';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_AUTH, type AuthPagesContent } from '@/components/admin/AuthPagesEditor';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 
 const fmt = (s: string, brand: string) => s.replace(/\{brand\}/g, brand);
 
