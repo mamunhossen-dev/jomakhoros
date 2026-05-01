@@ -71,19 +71,7 @@ export function DashboardTour() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) finish(); }}>
-      <DialogContent
-        className="max-w-[92vw] sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl"
-        showCloseButton={false}
-      >
-        {/* Close button */}
-        <button
-          onClick={finish}
-          aria-label="বন্ধ করুন"
-          className="absolute right-3 top-3 z-10 rounded-full p-1.5 text-muted-foreground hover:bg-muted transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
+      <DialogContent className="max-w-[92vw] sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
         {/* Gradient header */}
         <div className="bg-gradient-to-br from-primary/15 via-primary/5 to-transparent px-5 pt-7 pb-4 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 ring-4 ring-primary/5">
