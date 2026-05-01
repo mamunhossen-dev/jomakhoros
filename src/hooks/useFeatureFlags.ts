@@ -51,7 +51,10 @@ type AutoRegisterMeta = {
  * If the key doesn't exist in DB, attempts to auto-register it (so admins can manage it).
  * Returns `enabled: defaultEnabled` while loading or auto-registering.
  */
-export function useFeatureFlag(key: string, meta: AutoRegisterMeta = {}) {
+export function useFeatureFlag(key: string, metaOrDefault: AutoRegisterMeta | boolean = {}) {
+  const meta: AutoRegisterMeta = typeof metaOrDefault === 'boolean'
+    ? { defaultEnabled: metaOrDefault }
+    : metaOrDefault;
   const { defaultEnabled = true, label, description, category = 'general' } = meta;
   const { data, isLoading } = useFeatureFlags();
   const flag = data?.find((f) => f.feature_key === key);
