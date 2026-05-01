@@ -26,6 +26,7 @@ export default function Settings() {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const { accountType, isAdmin, isModerator } = useSubscription();
+  const { enabled: dataExportEnabled } = useFeatureFlag('data_export', true);
   const updateMutation = useUpdateProfile();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
