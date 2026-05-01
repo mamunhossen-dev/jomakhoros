@@ -256,6 +256,42 @@ export default function AdminPanel() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  // Moderator: request manual Pro plan grant (creates admin_request + notifies user)
+  const requestProGrant = useMutation({
+    mutationFn: async ({
+      userId, months, lifetime, displayName,
+    }: { userId: string; months: number; lifetime?: boolean; displayName?: string }) => {
+      if (!user) throw new Error('লগইন প্রয়োজন');
+      const label = lifetime ? 'লাইফটাইম' : `${months} মাস`;
+      const { error: reqErr } = await supabase.from('admin_requests').insert({
+        requester_id: user.id,
+        request_type: 'manual_pro_grant',
+        title: `ম্যানুয়াল প্রো প্ল্যান (${label}) — ${displayName || userId.slice(0, 8)}`,
+        description: `মডারেটর ম্যানুয়ালি ${label} প্রো প্ল্যান সক্রিয় করার অনুরোধ করেছেন। অ্যাডমিন অনুমোদন করলে স্বয়ংক্রিয়ভাবে কার্যকর হবে।`,
+        target_user_id: userId,
+        priority: 'high',
+        meta: { target_user_id: userId, months, lifetime: !!lifetime },
+      });
+      if (reqErr) throw reqErr;
+
+      // Inform the target user that a request has been submitted
+      const { error: nErr } = await supabase.from('user_notifications').insert({
+        user_id: userId,
+        type: 'pro_grant_requested',
+        title: '⏳ প্রো প্ল্যান অনুমোদনের অপেক্ষায়',
+        body: `একজন মডারেটর আপনার অ্যাকাউন্টে ${label} প্রো প্ল্যান সক্রিয় করার জন্য অ্যাডমিনকে অনুরোধ পাঠিয়েছেন। অ্যাডমিন অনুমোদন করলে প্ল্যানটি কার্যকর হবে এবং আপনি আরেকটি নোটিফিকেশন পাবেন।`,
+        link: '/subscription',
+        meta: { months, lifetime: !!lifetime },
+      });
+      if (nErr) throw nErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_requests'] });
+      toast.success('অ্যাডমিনের কাছে রিকোয়েস্ট পাঠানো হয়েছে');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   // ============== NOTIFICATIONS ==============
   const { data: notifications, isLoading: notifLoading } = useQuery({
     queryKey: ['admin_notifications'],
