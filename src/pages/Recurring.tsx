@@ -120,6 +120,10 @@ export default function RecurringPage() {
 
   const filteredCategories = categories.filter((c: any) => c.type === form.type);
 
+  if (!flagLoading && !featureEnabled) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="space-y-6">
       <PageMeta title="পুনরাবৃত্তি লেনদেন | JomaKhoros" description="মাসিক, সাপ্তাহিক বা বার্ষিক স্বয়ংক্রিয় লেনদেন সেট করুন।" />
