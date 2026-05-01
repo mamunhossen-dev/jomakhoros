@@ -105,7 +105,7 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin || isModerator,
   });
 
   // Fetch all user roles
@@ -116,7 +116,7 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin || isModerator,
   });
 
   // Fetch all feedback
@@ -583,7 +583,7 @@ export default function AdminPanel() {
           {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="mr-1 h-3.5 w-3.5" /> অ্যানালিটিক্স</TabsTrigger>}
           {isAdmin && <TabsTrigger value="audit"><ShieldCheck className="mr-1 h-3.5 w-3.5" /> অডিট লগ</TabsTrigger>}
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
+          {(isAdmin || isModerator) && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="block"><Lock className="mr-1 h-3.5 w-3.5" /> ইউজার টুলস</TabsTrigger>}
           <TabsTrigger value="admin-requests"><Inbox className="mr-1 h-3.5 w-3.5" /> এডমিন রিকোয়েস্ট</TabsTrigger>
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
@@ -837,8 +837,8 @@ export default function AdminPanel() {
           </Card>
         </TabsContent>
 
-        {/* Users Tab (Admin only) */}
-        {isAdmin && (
+        {/* Users Tab (Admin & Moderator) */}
+        {(isAdmin || isModerator) && (
           <TabsContent value="users">
             <Card className="border-0 shadow-sm">
               <CardHeader>
