@@ -10,6 +10,7 @@ import { lovable } from '@/integrations/lovable';
 import { useBrand } from '@/hooks/useBrand';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_AUTH, type AuthPagesContent } from '@/components/admin/AuthPagesEditor';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 
 const fmt = (s: string, brand: string) => s.replace(/\{brand\}/g, brand);
 
@@ -22,6 +23,7 @@ export default function Login() {
   const brand = useBrand();
   const { data: authData } = useAppSetting<AuthPagesContent>('auth_pages_content', DEFAULT_AUTH);
   const a: AuthPagesContent = { ...DEFAULT_AUTH, ...(authData ?? {}) };
+  const { enabled: forgotPasswordEnabled } = useFeatureFlag('forgot_password', true);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,9 +95,11 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{a.login_password_label}</Label>
-                <Link to="/forgot-password" className="text-xs font-medium text-primary hover:underline">
-                  পাসওয়ার্ড ভুলে গেছেন?
-                </Link>
+                {forgotPasswordEnabled && (
+                  <Link to="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                    পাসওয়ার্ড ভুলে গেছেন?
+                  </Link>
+                )}
               </div>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>

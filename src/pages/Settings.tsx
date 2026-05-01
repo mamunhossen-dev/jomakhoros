@@ -19,12 +19,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useNavigate } from 'react-router-dom';
 import { DataExportCard } from '@/components/DataExportCard';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 import { PageMeta } from '@/components/PageMeta';
 
 export default function Settings() {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const { accountType, isAdmin, isModerator } = useSubscription();
+  const { enabled: dataExportEnabled } = useFeatureFlag('data_export', true);
   const updateMutation = useUpdateProfile();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
@@ -283,7 +285,7 @@ export default function Settings() {
       </Card>
 
       {/* Data Export */}
-      <DataExportCard />
+      {dataExportEnabled && <DataExportCard />}
 
       {/* Danger Zone — Account Deletion */}
       <Card className="border-destructive/30 shadow-sm">

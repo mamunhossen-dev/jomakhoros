@@ -18,6 +18,8 @@ import { useCategories } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
 import { formatTaka } from '@/lib/currency';
 import { PageMeta } from '@/components/PageMeta';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { Navigate } from 'react-router-dom';
 
 const FREQ_LABEL: Record<Frequency, string> = {
   daily: 'প্রতিদিন',
@@ -57,6 +59,7 @@ const blankForm = (): FormState => ({
 });
 
 export default function RecurringPage() {
+  const { enabled: featureEnabled, isLoading: flagLoading } = useFeatureFlag('recurring_transactions', true);
   const { data: items = [], isLoading } = useRecurring();
   const { data: categories = [] } = useCategories();
   const { data: wallets = [] } = useWallets();
@@ -116,6 +119,10 @@ export default function RecurringPage() {
   };
 
   const filteredCategories = categories.filter((c: any) => c.type === form.type);
+
+  if (!flagLoading && !featureEnabled) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="space-y-6">

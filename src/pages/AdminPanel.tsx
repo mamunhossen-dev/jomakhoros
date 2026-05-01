@@ -41,7 +41,8 @@ import { SupportStatsBar, ThreadPriorityBadge, QuickReplyButton, SupportTemplate
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { AuditLogViewer, logAdminAction } from '@/components/admin/AuditLogViewer';
 import { AdminRequestsPanel } from '@/components/admin/AdminRequestsPanel';
-import { BarChart3, ShieldCheck } from 'lucide-react';
+import { FeatureFlagsEditor } from '@/components/admin/FeatureFlagsEditor';
+import { BarChart3, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function AdminPanel() {
   const { isAdmin, isModerator } = useSubscription();
@@ -1510,6 +1511,9 @@ export default function AdminPanel() {
               <ScrollArea className="w-full whitespace-nowrap rounded-md">
                 <TabsList className="inline-flex h-auto w-full flex-wrap justify-start gap-1 bg-primary/5 p-1 border border-primary/10">
                   <TabsTrigger value="general" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">সাধারণ</TabsTrigger>
+                  <TabsTrigger value="features" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
+                    <Sparkles className="mr-1 h-3.5 w-3.5" /> ফিচার
+                  </TabsTrigger>
                   <TabsTrigger value="branding" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">ব্র্যান্ডিং</TabsTrigger>
                   <TabsTrigger value="pages" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">পেইজ কন্টেন্ট</TabsTrigger>
                   <TabsTrigger value="auth" className="text-xs sm:text-sm data-[state=active]:bg-primary/15 data-[state=active]:text-primary">অথ ও সাবস্ক্রিপশন</TabsTrigger>
@@ -1544,6 +1548,11 @@ export default function AdminPanel() {
                   </CardContent>
                 </Card>
                 <SiteSettingsEditor />
+              </TabsContent>
+
+              {/* Features */}
+              <TabsContent value="features" className="mt-4">
+                <FeatureFlagsEditor />
               </TabsContent>
 
               {/* Branding */}
