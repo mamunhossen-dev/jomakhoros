@@ -11,6 +11,9 @@ import { lovable } from '@/integrations/lovable';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { useBrand } from '@/hooks/useBrand';
 import { DEFAULT_AUTH, type AuthPagesContent } from '@/components/admin/AuthPagesEditor';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { Card, CardContent } from '@/components/ui/card';
+import { Lock } from 'lucide-react';
 
 const fmt = (s: string, brand: string) => s.replace(/\{brand\}/g, brand);
 
@@ -23,6 +26,8 @@ export default function Register() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: termsEnabled = true } = useAppSetting<boolean>('terms_checkbox_enabled', true);
+  const { enabled: registrationEnabled, flag: regFlag, isLoading: regFlagLoading } = useFeatureFlag('user_registration', { defaultEnabled: true, label: 'নতুন রেজিস্ট্রেশন', category: 'auth' });
+  const { enabled: googleSignupEnabled } = useFeatureFlag('google_signup', { defaultEnabled: true, label: 'Google সাইন-আপ', category: 'auth' });
   const { data: authData } = useAppSetting<AuthPagesContent>('auth_pages_content', DEFAULT_AUTH);
   const a: AuthPagesContent = { ...DEFAULT_AUTH, ...(authData ?? {}) };
   const brand = useBrand();
