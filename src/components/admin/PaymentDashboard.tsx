@@ -324,7 +324,8 @@ export function PaymentDashboard() {
       <Card className="border-0 shadow-sm">
         <CardContent className="p-3 flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
-            <UserPlus className="h-3.5 w-3.5 mr-1" /> ম্যানুয়ালি প্ল্যান দিন
+            <UserPlus className="h-3.5 w-3.5 mr-1" />
+            {isAdmin ? 'ম্যানুয়ালি প্ল্যান দিন' : 'প্ল্যানের জন্য রিকোয়েস্ট করুন'}
           </Button>
           <Button size="sm" variant="outline" onClick={exportCsv}>
             <Download className="h-3.5 w-3.5 mr-1" /> CSV এক্সপোর্ট
