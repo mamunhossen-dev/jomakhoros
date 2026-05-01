@@ -15,6 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format, startOfMonth, endOfMonth, subDays, isAfter } from 'date-fns';
 import { toast } from 'sonner';
 import { logAdminAction } from '@/components/admin/AuditLogViewer';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 type PaymentStats = {
   total: number;
@@ -29,6 +31,8 @@ type PaymentStats = {
 
 export function PaymentDashboard() {
   const qc = useQueryClient();
+  const { isAdmin, isModerator } = useSubscription();
+  const { user } = useAuth();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
   const [bulkRejectNote, setBulkRejectNote] = useState('');
@@ -163,9 +167,43 @@ export function PaymentDashboard() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Manual plan assignment (no payment record needed)
+  // Manual plan assignment
+  // - Admin: applies directly to profile
+  // - Moderator: creates an admin_request that, once approved by an admin, auto-applies
   const assignPlanMut = useMutation({
     mutationFn: async ({ user_id, plan }: { user_id: string; plan: '1m' | '6m' | '1y' | 'lifetime' }) => {
+      const planLabel = plan === 'lifetime' ? 'লাইফটাইম' : plan === '1m' ? '১ মাস' : plan === '6m' ? '৬ মাস' : '১ বছর';
+      const months = plan === '1m' ? 1 : plan === '6m' ? 6 : plan === '1y' ? 12 : 0;
+      const lifetime = plan === 'lifetime';
+
+      // Moderator path → admin_request flow
+      if (!isAdmin && isModerator) {
+        if (!user) throw new Error('লগইন প্রয়োজন');
+        const target = (profiles || []).find((p: any) => p.user_id === user_id);
+        const displayName = target?.display_name || emailByUser.get(user_id) || user_id.slice(0, 8);
+        const { error: reqErr } = await supabase.from('admin_requests').insert({
+          requester_id: user.id,
+          request_type: 'manual_pro_grant',
+          title: `ম্যানুয়াল প্রো প্ল্যান (${planLabel}) — ${displayName}`,
+          description: `মডারেটর ম্যানুয়ালি ${planLabel} প্রো প্ল্যান সক্রিয় করার অনুরোধ করেছেন। অ্যাডমিন অনুমোদন করলে স্বয়ংক্রিয়ভাবে কার্যকর হবে।`,
+          target_user_id: user_id,
+          priority: 'high',
+          meta: { target_user_id: user_id, months, lifetime },
+        });
+        if (reqErr) throw reqErr;
+
+        await supabase.from('user_notifications').insert({
+          user_id,
+          type: 'pro_grant_requested',
+          title: '⏳ প্রো প্ল্যান অনুমোদনের অপেক্ষায়',
+          body: `একজন মডারেটর আপনার অ্যাকাউন্টে ${planLabel} প্রো প্ল্যান সক্রিয় করার জন্য অ্যাডমিনকে অনুরোধ পাঠিয়েছেন। অ্যাডমিন অনুমোদন করলে প্ল্যানটি কার্যকর হবে এবং আপনি আরেকটি নোটিফিকেশন পাবেন।`,
+          link: '/subscription',
+          meta: { months, lifetime },
+        });
+        return { mode: 'request' as const };
+      }
+
+      // Admin path → direct apply
       const subStart = new Date();
       const subEnd = new Date();
       if (plan === '1m') subEnd.setMonth(subEnd.getMonth() + 1);
@@ -181,24 +219,17 @@ export function PaymentDashboard() {
       }).eq('user_id', user_id);
       if (error) throw error;
 
-      // Notify user
-      await supabase.from('user_notifications').insert({
-        user_id,
-        type: 'payment_approved',
-        title: '🎉 প্রো প্ল্যান সক্রিয়!',
-        body: `অ্যাডমিন আপনাকে ম্যানুয়ালি প্রো প্ল্যান (${plan === 'lifetime' ? 'লাইফটাইম' : plan === '1m' ? '১ মাস' : plan === '6m' ? '৬ মাস' : '১ বছর'}) দিয়েছেন।`,
-        link: '/subscription',
-      });
-
       await logAdminAction('plan_assigned', 'profile', {
         target_user_id: user_id,
         details: { plan, subscription_end: subEnd.toISOString() },
       });
+      return { mode: 'applied' as const };
     },
-    onSuccess: () => {
+    onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ['admin_users_full'] });
       qc.invalidateQueries({ queryKey: ['admin_users'] });
-      toast.success('প্ল্যান অ্যাসাইন হয়েছে');
+      qc.invalidateQueries({ queryKey: ['admin_requests'] });
+      toast.success(r?.mode === 'request' ? 'অ্যাডমিনের কাছে রিকোয়েস্ট পাঠানো হয়েছে' : 'প্ল্যান অ্যাসাইন হয়েছে');
       setAssignOpen(false); setAssignUser(null); setAssignSearch('');
     },
     onError: (e: any) => toast.error(e.message),
@@ -293,7 +324,8 @@ export function PaymentDashboard() {
       <Card className="border-0 shadow-sm">
         <CardContent className="p-3 flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
-            <UserPlus className="h-3.5 w-3.5 mr-1" /> ম্যানুয়ালি প্ল্যান দিন
+            <UserPlus className="h-3.5 w-3.5 mr-1" />
+            {isAdmin ? 'ম্যানুয়ালি প্ল্যান দিন' : 'প্ল্যানের জন্য রিকোয়েস্ট করুন'}
           </Button>
           <Button size="sm" variant="outline" onClick={exportCsv}>
             <Download className="h-3.5 w-3.5 mr-1" /> CSV এক্সপোর্ট
@@ -455,7 +487,14 @@ export function PaymentDashboard() {
       {/* Manual assign dialog */}
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>ম্যানুয়ালি প্রো প্ল্যান অ্যাসাইন</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{isAdmin ? 'ম্যানুয়ালি প্রো প্ল্যান অ্যাসাইন' : 'প্রো প্ল্যান অ্যাসাইনের জন্য রিকোয়েস্ট'}</DialogTitle>
+          </DialogHeader>
+          {!isAdmin && isModerator && (
+            <p className="text-xs rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 p-2">
+              ⚠️ মডারেটর সরাসরি প্ল্যান কার্যকর করতে পারেন না। আপনার রিকোয়েস্ট অ্যাডমিনের কাছে যাবে; অ্যাডমিন অনুমোদন করলে ইউজারের অ্যাকাউন্টে স্বয়ংক্রিয়ভাবে কার্যকর হবে।
+            </p>
+          )}
           <div className="space-y-3">
             <div className="space-y-2">
               <Label>ইউজার খুঁজুন (নাম/ইমেইল/ফোন)</Label>
@@ -495,7 +534,9 @@ export function PaymentDashboard() {
             <Button variant="outline" onClick={() => setAssignOpen(false)}>বাতিল</Button>
             <Button disabled={!assignUser || assignPlanMut.isPending}
               onClick={() => assignUser && assignPlanMut.mutate({ user_id: assignUser.user_id, plan: assignPlan })}>
-              {assignPlanMut.isPending ? 'অ্যাসাইন হচ্ছে...' : 'অ্যাসাইন করুন'}
+              {assignPlanMut.isPending
+                ? (isAdmin ? 'অ্যাসাইন হচ্ছে...' : 'রিকোয়েস্ট পাঠানো হচ্ছে...')
+                : (isAdmin ? 'অ্যাসাইন করুন' : 'রিকোয়েস্ট পাঠান')}
             </Button>
           </DialogFooter>
         </DialogContent>
