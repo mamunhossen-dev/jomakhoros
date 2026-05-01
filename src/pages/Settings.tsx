@@ -284,7 +284,7 @@ export default function Settings() {
       </Card>
 
       {/* Data Export */}
-      <DataExportGate />
+      {dataExportEnabled && <DataExportCard />}
 
       {/* Danger Zone — Account Deletion */}
       <Card className="border-destructive/30 shadow-sm">
