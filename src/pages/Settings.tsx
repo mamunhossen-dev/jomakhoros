@@ -125,6 +125,7 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
+      <PageMeta title="সেটিংস | JomaKhoros" description="অ্যাকাউন্ট সেটিংস, প্রোফাইল ও ডেটা পরিচালনা।" canonicalPath="/settings" />
       <div>
         <h1 className="font-display text-2xl font-bold">সেটিংস</h1>
         <p className="text-muted-foreground">আপনার অ্যাকাউন্ট সেটিংস পরিচালনা করুন।</p>
