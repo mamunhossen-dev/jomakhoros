@@ -158,6 +158,9 @@ export default function Register() {
                 <li><span className="text-primary">ভালো উদাহরণ:</span> <code className="font-mono">নীল-হাতি-৪২-চাঁদ</code> বা <code className="font-mono">Mango$Sky7Run!</code></li>
               </ul>
               <p className="pt-1 text-[11px]">⚠️ যদি "পাসওয়ার্ড গ্রহণযোগ্য নয়" বলে — পাসওয়ার্ডটি আগে অনলাইন লিকে ফাঁস হয়েছে। সম্পূর্ণ আলাদা একটি দিন।</p>
+              <div className="mt-2 rounded-md bg-background/60 p-2 text-[11px] border border-border/50">
+                💡 <strong>সহজ বিকল্প:</strong> পাসওয়ার্ড মনে রাখা ঝামেলার মনে হলে নিচের <strong>"Google দিয়ে সাইন-আপ"</strong> বাটনে ক্লিক করুন — এক ক্লিকেই অ্যাকাউন্ট তৈরি, পাসওয়ার্ড লাগবে না, পরে লগইনও সহজ।
+              </div>
             </div>
 
             {termsEnabled && (
