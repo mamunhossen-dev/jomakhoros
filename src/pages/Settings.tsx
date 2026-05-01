@@ -18,6 +18,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useNavigate } from 'react-router-dom';
+import { DataExportCard } from '@/components/DataExportCard';
+import { PageMeta } from '@/components/PageMeta';
 
 export default function Settings() {
   const { user } = useAuth();
