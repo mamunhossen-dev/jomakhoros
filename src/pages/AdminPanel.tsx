@@ -105,7 +105,7 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin || isModerator,
   });
 
   // Fetch all user roles
@@ -116,7 +116,7 @@ export default function AdminPanel() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin,
+    enabled: isAdmin || isModerator,
   });
 
   // Fetch all feedback
@@ -252,6 +252,42 @@ export default function AdminPanel() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin_all_roles'] });
       toast.success('ভূমিকা আপডেট হয়েছে');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  // Moderator: request manual Pro plan grant (creates admin_request + notifies user)
+  const requestProGrant = useMutation({
+    mutationFn: async ({
+      userId, months, lifetime, displayName,
+    }: { userId: string; months: number; lifetime?: boolean; displayName?: string }) => {
+      if (!user) throw new Error('লগইন প্রয়োজন');
+      const label = lifetime ? 'লাইফটাইম' : `${months} মাস`;
+      const { error: reqErr } = await supabase.from('admin_requests').insert({
+        requester_id: user.id,
+        request_type: 'manual_pro_grant',
+        title: `ম্যানুয়াল প্রো প্ল্যান (${label}) — ${displayName || userId.slice(0, 8)}`,
+        description: `মডারেটর ম্যানুয়ালি ${label} প্রো প্ল্যান সক্রিয় করার অনুরোধ করেছেন। অ্যাডমিন অনুমোদন করলে স্বয়ংক্রিয়ভাবে কার্যকর হবে।`,
+        target_user_id: userId,
+        priority: 'high',
+        meta: { target_user_id: userId, months, lifetime: !!lifetime },
+      });
+      if (reqErr) throw reqErr;
+
+      // Inform the target user that a request has been submitted
+      const { error: nErr } = await supabase.from('user_notifications').insert({
+        user_id: userId,
+        type: 'pro_grant_requested',
+        title: '⏳ প্রো প্ল্যান অনুমোদনের অপেক্ষায়',
+        body: `একজন মডারেটর আপনার অ্যাকাউন্টে ${label} প্রো প্ল্যান সক্রিয় করার জন্য অ্যাডমিনকে অনুরোধ পাঠিয়েছেন। অ্যাডমিন অনুমোদন করলে প্ল্যানটি কার্যকর হবে এবং আপনি আরেকটি নোটিফিকেশন পাবেন।`,
+        link: '/subscription',
+        meta: { months, lifetime: !!lifetime },
+      });
+      if (nErr) throw nErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin_requests'] });
+      toast.success('অ্যাডমিনের কাছে রিকোয়েস্ট পাঠানো হয়েছে');
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -583,7 +619,7 @@ export default function AdminPanel() {
           {isAdmin && <TabsTrigger value="analytics"><BarChart3 className="mr-1 h-3.5 w-3.5" /> অ্যানালিটিক্স</TabsTrigger>}
           {isAdmin && <TabsTrigger value="audit"><ShieldCheck className="mr-1 h-3.5 w-3.5" /> অডিট লগ</TabsTrigger>}
           {isAdmin && <TabsTrigger value="notifications"><Bell className="mr-1 h-3.5 w-3.5" /> নোটিফিকেশন</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
+          {(isAdmin || isModerator) && <TabsTrigger value="users"><Users className="mr-1 h-3.5 w-3.5" /> ব্যবহারকারী</TabsTrigger>}
           {isAdmin && <TabsTrigger value="block"><Lock className="mr-1 h-3.5 w-3.5" /> ইউজার টুলস</TabsTrigger>}
           <TabsTrigger value="admin-requests"><Inbox className="mr-1 h-3.5 w-3.5" /> এডমিন রিকোয়েস্ট</TabsTrigger>
           {isAdmin && <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-3.5 w-3.5" /> সেটিংস</TabsTrigger>}
@@ -837,8 +873,8 @@ export default function AdminPanel() {
           </Card>
         </TabsContent>
 
-        {/* Users Tab (Admin only) */}
-        {isAdmin && (
+        {/* Users Tab (Admin & Moderator) */}
+        {(isAdmin || isModerator) && (
           <TabsContent value="users">
             <Card className="border-0 shadow-sm">
               <CardHeader>
@@ -891,63 +927,96 @@ export default function AdminPanel() {
                           </div>
 
                           {/* Row 3: Actions */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {/* Account type */}
-                            <Select
-                              value={u.account_type}
-                              onValueChange={async (val) => {
-                                const updateData: Record<string, any> = { account_type: val };
-                                if (val === 'pro') {
-                                  const subEnd = new Date();
-                                  subEnd.setMonth(subEnd.getMonth() + 1);
-                                  updateData.subscription_start = new Date().toISOString();
-                                  updateData.subscription_end = subEnd.toISOString();
-                                  updateData.payment_status = 'paid';
-                                }
-                                const { error } = await supabase.from('profiles').update(updateData).eq('user_id', u.user_id);
+                          {isAdmin ? (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Account type */}
+                              <Select
+                                value={u.account_type}
+                                onValueChange={async (val) => {
+                                  const updateData: Record<string, any> = { account_type: val };
+                                  if (val === 'pro') {
+                                    const subEnd = new Date();
+                                    subEnd.setMonth(subEnd.getMonth() + 1);
+                                    updateData.subscription_start = new Date().toISOString();
+                                    updateData.subscription_end = subEnd.toISOString();
+                                    updateData.payment_status = 'paid';
+                                  }
+                                  const { error } = await supabase.from('profiles').update(updateData).eq('user_id', u.user_id);
+                                  if (error) { toast.error(error.message); return; }
+                                  qc.invalidateQueries({ queryKey: ['admin_users'] });
+                                  toast.success('স্ট্যাটাস আপডেট হয়েছে');
+                                }}
+                              >
+                                <SelectTrigger className="h-7 w-[80px] text-[11px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="trial">ট্রায়াল</SelectItem>
+                                  <SelectItem value="free">ফ্রি</SelectItem>
+                                  <SelectItem value="pro">প্রো</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              {/* Role */}
+                              <Select
+                                value={role}
+                                onValueChange={(val) => changeRole.mutate({ userId: u.user_id, role: val })}
+                              >
+                                <SelectTrigger className="h-7 w-[90px] text-[11px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">ইউজার</SelectItem>
+                                  <SelectItem value="moderator">মডারেটর</SelectItem>
+                                  <SelectItem value="admin">অ্যাডমিন</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              {/* Reset onboarding */}
+                              <Button variant="outline" size="sm" className="h-7 text-[11px]" onClick={async () => {
+                                const { error } = await supabase.from('profiles').update({ onboarding_completed: false }).eq('user_id', u.user_id);
                                 if (error) { toast.error(error.message); return; }
                                 qc.invalidateQueries({ queryKey: ['admin_users'] });
-                                toast.success('স্ট্যাটাস আপডেট হয়েছে');
-                              }}
-                            >
-                              <SelectTrigger className="h-7 w-[80px] text-[11px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="trial">ট্রায়াল</SelectItem>
-                                <SelectItem value="free">ফ্রি</SelectItem>
-                                <SelectItem value="pro">প্রো</SelectItem>
-                              </SelectContent>
-                            </Select>
+                                toast.success('অনবোর্ডিং রিসেট হয়েছে');
+                              }}>
+                                <RotateCcw className="h-3 w-3 mr-1" /> রিসেট
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[11px] text-muted-foreground">প্রো প্ল্যান রিকোয়েস্ট:</span>
+                              {[1, 3, 6, 12].map(m => (
+                                <Button
+                                  key={m}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-[11px] px-2"
+                                  disabled={requestProGrant.isPending}
+                                  onClick={() => {
+                                    if (!confirm(`${u.display_name || 'ইউজার'} এর জন্য ${m} মাস প্রো প্ল্যান অ্যাডমিনকে রিকোয়েস্ট করবেন?`)) return;
+                                    requestProGrant.mutate({ userId: u.user_id, months: m, displayName: u.display_name });
+                                  }}
+                                >
+                                  +{m}মা
+                                </Button>
+                              ))}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-[11px] px-2 border-primary/40 text-primary"
+                                disabled={requestProGrant.isPending}
+                                onClick={() => {
+                                  if (!confirm(`${u.display_name || 'ইউজার'} এর জন্য লাইফটাইম প্রো রিকোয়েস্ট করবেন?`)) return;
+                                  requestProGrant.mutate({ userId: u.user_id, months: 0, lifetime: true, displayName: u.display_name });
+                                }}
+                              >
+                                ♾ লাইফটাইম
+                              </Button>
+                            </div>
+                          )}
 
-                            {/* Role */}
-                            <Select
-                              value={role}
-                              onValueChange={(val) => changeRole.mutate({ userId: u.user_id, role: val })}
-                            >
-                              <SelectTrigger className="h-7 w-[90px] text-[11px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="user">ইউজার</SelectItem>
-                                <SelectItem value="moderator">মডারেটর</SelectItem>
-                                <SelectItem value="admin">অ্যাডমিন</SelectItem>
-                              </SelectContent>
-                            </Select>
-
-                            {/* Reset onboarding */}
-                            <Button variant="outline" size="sm" className="h-7 text-[11px]" onClick={async () => {
-                              const { error } = await supabase.from('profiles').update({ onboarding_completed: false }).eq('user_id', u.user_id);
-                              if (error) { toast.error(error.message); return; }
-                              qc.invalidateQueries({ queryKey: ['admin_users'] });
-                              toast.success('অনবোর্ডিং রিসেট হয়েছে');
-                            }}>
-                              <RotateCcw className="h-3 w-3 mr-1" /> রিসেট
-                            </Button>
-                          </div>
-
-                          {/* Row 3b: Pro subscription end date editor */}
-                          {u.account_type === 'pro' && (
+                          {/* Row 3b: Pro subscription end date editor (Admin only) */}
+                          {isAdmin && u.account_type === 'pro' && (
                             <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-border/30">
                               <Label className="text-[11px] text-muted-foreground">প্রো মেয়াদ শেষ:</Label>
                               <Input

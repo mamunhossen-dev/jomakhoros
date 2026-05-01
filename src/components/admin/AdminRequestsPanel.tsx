@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 
 // Actions a moderator CANNOT do alone — needs admin assistance
 const REQUEST_TYPES = [
+  { value: 'manual_pro_grant', label: '⭐ ম্যানুয়াল প্রো প্ল্যান গ্রান্ট' },
   { value: 'user_delete', label: '🗑️ ইউজার অ্যাকাউন্ট ডিলিট' },
   { value: 'user_block', label: '🚫 ইউজার ব্লক / আনব্লক' },
   { value: 'role_change', label: '👑 রোল পরিবর্তন (admin/moderator/user)' },

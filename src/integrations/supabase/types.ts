@@ -65,6 +65,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          meta: Json | null
           priority: string
           related_entity_id: string | null
           related_entity_type: string | null
@@ -82,6 +83,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          meta?: Json | null
           priority?: string
           related_entity_id?: string | null
           related_entity_type?: string | null
@@ -99,6 +101,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          meta?: Json | null
           priority?: string
           related_entity_id?: string | null
           related_entity_type?: string | null
