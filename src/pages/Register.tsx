@@ -103,6 +103,29 @@ export default function Register() {
     );
   };
 
+  if (!regFlagLoading && !registrationEnabled) {
+    const mode = regFlag?.disable_mode ?? 'hide';
+    const msg = regFlag?.disabled_message;
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4 bg-muted/20">
+        <Card className="max-w-md w-full">
+          <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
+            <Lock className="h-10 w-10 text-muted-foreground" />
+            <h1 className="font-display text-xl font-semibold">
+              {mode === 'coming_soon' ? 'শীঘ্রই আসছে' : 'রেজিস্ট্রেশন বন্ধ'}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {msg || 'নতুন রেজিস্ট্রেশন বর্তমানে সাময়িকভাবে বন্ধ রয়েছে। অনুগ্রহ করে পরে চেষ্টা করুন।'}
+            </p>
+            <Button asChild variant="outline">
+              <Link to="/login">লগইনে ফিরে যান</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen">
       <div className="hidden lg:flex lg:w-2/5 xl:w-1/3 flex-col justify-between bg-sidebar p-10">
