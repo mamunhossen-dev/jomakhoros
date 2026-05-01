@@ -20,24 +20,25 @@ import { NavLink } from '@/components/NavLink';
 import { Link } from 'react-router-dom';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 import { useBrand } from '@/hooks/useBrand';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from '@/components/ui/sidebar';
 
-const mainItems = [
-  { title: 'ড্যাশবোর্ড', url: '/', icon: LayoutDashboard },
-  { title: 'লেনদেন', url: '/transactions', icon: ArrowUpDown },
-  { title: 'পুনরাবৃত্তি', url: '/recurring', icon: Repeat },
-  { title: 'ক্যাটাগরি', url: '/categories', icon: Tag },
-  { title: 'ওয়ালেট', url: '/wallets', icon: Smartphone },
-  { title: 'দেনা/পাওনা', url: '/loans', icon: HandCoins },
-  { title: 'বাজেট', url: '/budgets', icon: Wallet },
-  { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart },
-  { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare },
-  { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard },
-  { title: 'About', url: '/about', icon: Info },
+const baseMainItems = [
+  { title: 'ড্যাশবোর্ড', url: '/', icon: LayoutDashboard, key: 'dashboard' },
+  { title: 'লেনদেন', url: '/transactions', icon: ArrowUpDown, key: 'transactions' },
+  { title: 'পুনরাবৃত্তি', url: '/recurring', icon: Repeat, key: 'recurring_transactions' },
+  { title: 'ক্যাটাগরি', url: '/categories', icon: Tag, key: 'categories' },
+  { title: 'ওয়ালেট', url: '/wallets', icon: Smartphone, key: 'wallets' },
+  { title: 'দেনা/পাওনা', url: '/loans', icon: HandCoins, key: 'loans' },
+  { title: 'বাজেট', url: '/budgets', icon: Wallet, key: 'budgets' },
+  { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart, key: 'analytics' },
+  { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare, key: 'feedback' },
+  { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard, key: 'subscription' },
+  { title: 'About', url: '/about', icon: Info, key: 'about' },
 ];
 
 export function AppSidebar() {
@@ -46,6 +47,12 @@ export function AppSidebar() {
   const { isAdmin, isModerator } = useSubscription();
   const isMobile = useIsMobile();
   const brand = useBrand();
+  const { enabled: recurringEnabled } = useFeatureFlag('recurring_transactions', true);
+
+  const mainItems = baseMainItems.filter((item) => {
+    if (item.key === 'recurring_transactions' && !recurringEnabled) return false;
+    return true;
+  });
 
   const closeMobileSidebar = () => {
     if (isMobile) setOpenMobile(false);
