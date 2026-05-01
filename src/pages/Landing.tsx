@@ -13,6 +13,7 @@ import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_LANDING, type LandingContent } from '@/components/admin/LandingPageEditor';
 import { DEFAULT_SITE, type SiteSettings } from '@/components/admin/SiteSettingsEditor';
 import { useBrand } from '@/hooks/useBrand';
+import { PageMeta } from '@/components/PageMeta';
 
 const featureIcons = [Wallet, Tag, BarChart3, PiggyBank, Bell, Smartphone, FileText, Target, Globe];
 const featureColors = [
@@ -45,6 +46,11 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta
+        title={site.site_title}
+        description={site.meta_description}
+        canonicalPath="/"
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
