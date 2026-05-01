@@ -43,6 +43,8 @@ const AdminGuide = lazy(() => import("./pages/AdminGuide"));
 const About = lazy(() => import("./pages/About"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Recurring = lazy(() => import("./pages/Recurring"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 function PageFallback() {
   return (
