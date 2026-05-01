@@ -487,7 +487,14 @@ export function PaymentDashboard() {
       {/* Manual assign dialog */}
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>ম্যানুয়ালি প্রো প্ল্যান অ্যাসাইন</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{isAdmin ? 'ম্যানুয়ালি প্রো প্ল্যান অ্যাসাইন' : 'প্রো প্ল্যান অ্যাসাইনের জন্য রিকোয়েস্ট'}</DialogTitle>
+          </DialogHeader>
+          {!isAdmin && isModerator && (
+            <p className="text-xs rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 p-2">
+              ⚠️ মডারেটর সরাসরি প্ল্যান কার্যকর করতে পারেন না। আপনার রিকোয়েস্ট অ্যাডমিনের কাছে যাবে; অ্যাডমিন অনুমোদন করলে ইউজারের অ্যাকাউন্টে স্বয়ংক্রিয়ভাবে কার্যকর হবে।
+            </p>
+          )}
           <div className="space-y-3">
             <div className="space-y-2">
               <Label>ইউজার খুঁজুন (নাম/ইমেইল/ফোন)</Label>
@@ -527,7 +534,9 @@ export function PaymentDashboard() {
             <Button variant="outline" onClick={() => setAssignOpen(false)}>বাতিল</Button>
             <Button disabled={!assignUser || assignPlanMut.isPending}
               onClick={() => assignUser && assignPlanMut.mutate({ user_id: assignUser.user_id, plan: assignPlan })}>
-              {assignPlanMut.isPending ? 'অ্যাসাইন হচ্ছে...' : 'অ্যাসাইন করুন'}
+              {assignPlanMut.isPending
+                ? (isAdmin ? 'অ্যাসাইন হচ্ছে...' : 'রিকোয়েস্ট পাঠানো হচ্ছে...')
+                : (isAdmin ? 'অ্যাসাইন করুন' : 'রিকোয়েস্ট পাঠান')}
             </Button>
           </DialogFooter>
         </DialogContent>
