@@ -9,6 +9,8 @@ import { TransactionFormDialog } from '@/components/transactions/TransactionForm
 import { formatTaka } from '@/lib/currency';
 import { addMonths, format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { DashboardTour } from '@/components/DashboardTour';
+import { PageMeta } from '@/components/PageMeta';
 
 const IncomeExpenseChart = lazy(() =>
   import('@/components/dashboard/IncomeExpenseChart').then((module) => ({ default: module.IncomeExpenseChart }))
@@ -66,6 +68,8 @@ export default function Index() {
 
   return (
     <div className="space-y-6">
+      <PageMeta title="ড্যাশবোর্ড | JomaKhoros" description="আপনার আয়, ব্যয় ও ব্যালেন্সের সারসংক্ষেপ।" canonicalPath="/" />
+      <DashboardTour />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold">ড্যাশবোর্ড</h1>

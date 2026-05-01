@@ -1,0 +1,26 @@
+{
+  "name": "JomaKhoros - আপনার আর্থিক সহচর",
+  "short_name": "JomaKhoros",
+  "description": "আয়, ব্যয়, বাজেট ও আর্থিক রিপোর্ট ট্র্যাক করুন এক জায়গায়।",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0D9668",
+  "lang": "bn",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -708,6 +708,78 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_transactions: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          frequency: string
+          id: string
+          interval_count: number
+          is_active: boolean
+          last_run_at: string | null
+          next_run_date: string
+          start_date: string
+          type: string
+          updated_at: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          frequency: string
+          id?: string
+          interval_count?: number
+          is_active?: boolean
+          last_run_at?: string | null
+          next_run_date: string
+          start_date?: string
+          type: string
+          updated_at?: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          interval_count?: number
+          is_active?: boolean
+          last_run_at?: string | null
+          next_run_date?: string
+          start_date?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_messages: {
         Row: {
           created_at: string
@@ -985,6 +1057,7 @@ export type Database = {
         }
         Returns: string
       }
+      process_recurring_transactions: { Args: never; Returns: number }
       touch_last_login: { Args: never; Returns: undefined }
     }
     Enums: {

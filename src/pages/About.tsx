@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_ABOUT, type AboutContent } from '@/components/admin/AboutPageEditor';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageMeta } from '@/components/PageMeta';
 
 export default function About() {
   const { data, isLoading } = useAppSetting<AboutContent>('about_page', DEFAULT_ABOUT);
@@ -15,6 +16,11 @@ export default function About() {
 
   return (
     <div className="mx-auto max-w-3xl">
+      <PageMeta
+        title={`${content.title} | JomaKhoros`}
+        description={content.subtitle || 'JomaKhoros সম্পর্কে জানুন।'}
+        canonicalPath="/about"
+      />
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-accent/10 p-8 sm:p-12 mb-8">
         <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />

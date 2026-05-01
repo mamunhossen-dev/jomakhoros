@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   BookOpen,
   Info,
+  Repeat,
   X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
@@ -28,6 +29,7 @@ import {
 const mainItems = [
   { title: 'ড্যাশবোর্ড', url: '/', icon: LayoutDashboard },
   { title: 'লেনদেন', url: '/transactions', icon: ArrowUpDown },
+  { title: 'পুনরাবৃত্তি', url: '/recurring', icon: Repeat },
   { title: 'ক্যাটাগরি', url: '/categories', icon: Tag },
   { title: 'ওয়ালেট', url: '/wallets', icon: Smartphone },
   { title: 'দেনা/পাওনা', url: '/loans', icon: HandCoins },

@@ -18,6 +18,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useNavigate } from 'react-router-dom';
+import { DataExportCard } from '@/components/DataExportCard';
+import { PageMeta } from '@/components/PageMeta';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -123,6 +125,7 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
+      <PageMeta title="সেটিংস | JomaKhoros" description="অ্যাকাউন্ট সেটিংস, প্রোফাইল ও ডেটা পরিচালনা।" canonicalPath="/settings" />
       <div>
         <h1 className="font-display text-2xl font-bold">সেটিংস</h1>
         <p className="text-muted-foreground">আপনার অ্যাকাউন্ট সেটিংস পরিচালনা করুন।</p>
@@ -278,6 +281,9 @@ export default function Settings() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Data Export */}
+      <DataExportCard />
 
       {/* Danger Zone — Account Deletion */}
       <Card className="border-destructive/30 shadow-sm">
