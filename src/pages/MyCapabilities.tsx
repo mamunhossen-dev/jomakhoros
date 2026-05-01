@@ -4,9 +4,9 @@ import { USER_GUIDE } from '@/lib/roleCapabilities';
 export default function MyCapabilities() {
   return (
     <RoleGuideView
-      title="আমার ক্ষমতা ও সুবিধা"
+      title="ইউজার গাইড"
       subtitle="JomaKhoros-এ আপনি কী কী করতে পারবেন — পরিষ্কার ভাষায় একসাথে।"
-      badgeLabel="ইউজার"
+      badgeLabel="ইউজার গাইড"
       badgeClass="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
       sections={USER_GUIDE}
       intro={

@@ -1,4 +1,4 @@
-import { User as UserIcon, Settings as SettingsIcon, LogOut, UserCog, BookOpen } from 'lucide-react';
+import { User as UserIcon, Settings as SettingsIcon, LogOut, UserCog } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
@@ -49,9 +49,6 @@ export function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/settings')}>
           <UserCog className="mr-2 h-4 w-4" /> প্রোফাইল এডিট
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/user-guide')}>
-          <BookOpen className="mr-2 h-4 w-4" /> ব্যবহার নির্দেশিকা
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/settings')}>
           <SettingsIcon className="mr-2 h-4 w-4" /> সেটিংস
