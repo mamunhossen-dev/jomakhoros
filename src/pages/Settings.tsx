@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useNavigate } from 'react-router-dom';
 import { DataExportCard } from '@/components/DataExportCard';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 import { PageMeta } from '@/components/PageMeta';
 
 export default function Settings() {
@@ -283,7 +284,7 @@ export default function Settings() {
       </Card>
 
       {/* Data Export */}
-      <DataExportCard />
+      <DataExportGate />
 
       {/* Danger Zone — Account Deletion */}
       <Card className="border-destructive/30 shadow-sm">
