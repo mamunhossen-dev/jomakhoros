@@ -33,6 +33,10 @@ export default function Register() {
       toast({ title: 'ত্রুটি', description: 'শর্তাবলীতে সম্মত হতে হবে।', variant: 'destructive' });
       return;
     }
+    if (password.length < 6) {
+      toast({ title: 'পাসওয়ার্ড খুব ছোট', description: 'কমপক্ষে ৬ অক্ষর দিন।', variant: 'destructive' });
+      return;
+    }
     if (password !== confirmPassword) {
       toast({ title: 'ত্রুটি', description: 'পাসওয়ার্ড মেলেনি', variant: 'destructive' });
       return;
@@ -46,7 +50,20 @@ export default function Register() {
     setLoading(false);
 
     if (error) {
-      toast({ title: 'রেজিস্ট্রেশন ব্যর্থ', description: error.message, variant: 'destructive' });
+      const msg = error.message?.toLowerCase() ?? '';
+      const isLeaked =
+        msg.includes('pwned') ||
+        msg.includes('compromised') ||
+        msg.includes('leaked') ||
+        msg.includes('breach') ||
+        msg.includes('weak');
+      toast({
+        title: 'রেজিস্ট্রেশন ব্যর্থ',
+        description: isLeaked
+          ? 'এই পাসওয়ার্ডটি আগে অনলাইন ডেটা লিকে ফাঁস হয়েছে। অনুগ্রহ করে সম্পূর্ণ ইউনিক একটি পাসওয়ার্ড দিন — যেমন ৪টি random শব্দ একসাথে (উদাহরণ: নীল-হাতি-৪২-চাঁদ)।'
+          : error.message,
+        variant: 'destructive',
+      });
     } else {
       toast({ title: 'ইমেইল চেক করুন', description: 'আমরা আপনাকে একটি নিশ্চিতকরণ লিংক পাঠিয়েছি। লিংকে ক্লিক করলে স্বয়ংক্রিয়ভাবে লগইন হবে।' });
     }
@@ -125,11 +142,22 @@ export default function Register() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{a.register_password_label}</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">{a.register_confirm_label}</Label>
-              <Input id="confirm-password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+              <Input id="confirm-password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} />
+            </div>
+
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground space-y-1.5">
+              <p className="font-medium text-foreground">🔒 নিরাপদ পাসওয়ার্ড গাইড</p>
+              <ul className="space-y-0.5 list-disc pl-4">
+                <li>কমপক্ষে <strong>৬ অক্ষর</strong> (বেশি হলে আরও ভালো)</li>
+                <li><strong>ইউনিক</strong> হতে হবে — অন্য কোথাও ব্যবহার করেননি এমন</li>
+                <li><span className="text-destructive">এড়িয়ে চলুন:</span> Password@123, Admin@2024, Qwerty123, 123456, নিজের নাম/ফোন</li>
+                <li><span className="text-primary">ভালো উদাহরণ:</span> <code className="font-mono">নীল-হাতি-৪২-চাঁদ</code> বা <code className="font-mono">Mango$Sky7Run!</code></li>
+              </ul>
+              <p className="pt-1 text-[11px]">⚠️ যদি "পাসওয়ার্ড গ্রহণযোগ্য নয়" বলে — পাসওয়ার্ডটি আগে অনলাইন লিকে ফাঁস হয়েছে। সম্পূর্ণ আলাদা একটি দিন।</p>
             </div>
 
             {termsEnabled && (
