@@ -91,7 +91,12 @@ export default function Login() {
               <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{a.login_password_label}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{a.login_password_label}</Label>
+                <Link to="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                  পাসওয়ার্ড ভুলে গেছেন?
+                </Link>
+              </div>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
