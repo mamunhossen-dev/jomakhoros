@@ -6,6 +6,7 @@ import { useAppSetting } from '@/hooks/useAppSetting';
 import { DEFAULT_TERMS, type TermsContent } from '@/components/admin/TermsEditor';
 import { useBrand } from '@/hooks/useBrand';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageMeta } from '@/components/PageMeta';
 
 export default function Terms() {
   const { data, isLoading } = useAppSetting<TermsContent>('terms_page', DEFAULT_TERMS);
@@ -18,6 +19,11 @@ export default function Terms() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta
+        title={`${content.page_title} | ${brand.name}`}
+        description={`${brand.name}-এর শর্তাবলী ও ব্যবহারের নিয়ম।`}
+        canonicalPath="/terms"
+      />
       <div className="mx-auto max-w-3xl px-4 py-10">
         <Link to="/" className="flex items-center gap-2 mb-8">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
