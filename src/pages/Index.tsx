@@ -68,6 +68,8 @@ export default function Index() {
 
   return (
     <div className="space-y-6">
+      <PageMeta title="ড্যাশবোর্ড | JomaKhoros" description="আপনার আয়, ব্যয় ও ব্যালেন্সের সারসংক্ষেপ।" canonicalPath="/" />
+      <DashboardTour />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold">ড্যাশবোর্ড</h1>
