@@ -43,6 +43,8 @@ const AdminGuide = lazy(() => import("./pages/AdminGuide"));
 const About = lazy(() => import("./pages/About"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Recurring = lazy(() => import("./pages/Recurring"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 function PageFallback() {
   return (
@@ -127,6 +129,8 @@ const App = () => (
           <Routes>
             <Route path="/login" element={lazyPage(<Login />)} />
             <Route path="/register" element={lazyPage(<Register />)} />
+            <Route path="/forgot-password" element={lazyPage(<ForgotPassword />)} />
+            <Route path="/reset-password" element={lazyPage(<ResetPassword />)} />
             <Route
               path="/onboarding"
               element={
