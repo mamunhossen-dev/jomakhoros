@@ -33,6 +33,10 @@ export default function Register() {
       toast({ title: 'ত্রুটি', description: 'শর্তাবলীতে সম্মত হতে হবে।', variant: 'destructive' });
       return;
     }
+    if (password.length < 6) {
+      toast({ title: 'পাসওয়ার্ড খুব ছোট', description: 'কমপক্ষে ৬ অক্ষর দিন।', variant: 'destructive' });
+      return;
+    }
     if (password !== confirmPassword) {
       toast({ title: 'ত্রুটি', description: 'পাসওয়ার্ড মেলেনি', variant: 'destructive' });
       return;
@@ -46,7 +50,20 @@ export default function Register() {
     setLoading(false);
 
     if (error) {
-      toast({ title: 'রেজিস্ট্রেশন ব্যর্থ', description: error.message, variant: 'destructive' });
+      const msg = error.message?.toLowerCase() ?? '';
+      const isLeaked =
+        msg.includes('pwned') ||
+        msg.includes('compromised') ||
+        msg.includes('leaked') ||
+        msg.includes('breach') ||
+        msg.includes('weak');
+      toast({
+        title: 'রেজিস্ট্রেশন ব্যর্থ',
+        description: isLeaked
+          ? 'এই পাসওয়ার্ডটি আগে অনলাইন ডেটা লিকে ফাঁস হয়েছে। অনুগ্রহ করে সম্পূর্ণ ইউনিক একটি পাসওয়ার্ড দিন — যেমন ৪টি random শব্দ একসাথে (উদাহরণ: নীল-হাতি-৪২-চাঁদ)।'
+          : error.message,
+        variant: 'destructive',
+      });
     } else {
       toast({ title: 'ইমেইল চেক করুন', description: 'আমরা আপনাকে একটি নিশ্চিতকরণ লিংক পাঠিয়েছি। লিংকে ক্লিক করলে স্বয়ংক্রিয়ভাবে লগইন হবে।' });
     }
