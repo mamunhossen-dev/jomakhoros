@@ -204,33 +204,48 @@ export type Database = {
       }
       feature_flags: {
         Row: {
+          category: string
           config: Json
           created_at: string
           description: string | null
+          disable_mode: string
+          disabled_message: string | null
           enabled: boolean
           feature_key: string
           id: string
           label: string
+          min_plan: string
+          min_role: string
           updated_at: string
         }
         Insert: {
+          category?: string
           config?: Json
           created_at?: string
           description?: string | null
+          disable_mode?: string
+          disabled_message?: string | null
           enabled?: boolean
           feature_key: string
           id?: string
           label: string
+          min_plan?: string
+          min_role?: string
           updated_at?: string
         }
         Update: {
+          category?: string
           config?: Json
           created_at?: string
           description?: string | null
+          disable_mode?: string
+          disabled_message?: string | null
           enabled?: boolean
           feature_key?: string
           id?: string
           label?: string
+          min_plan?: string
+          min_role?: string
           updated_at?: string
         }
         Relationships: []

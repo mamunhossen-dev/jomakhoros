@@ -20,13 +20,14 @@ import { NavLink } from '@/components/NavLink';
 import { Link } from 'react-router-dom';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { useFeatureFlag, useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useBrand } from '@/hooks/useBrand';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from '@/components/ui/sidebar';
 
+// Each item can optionally specify a feature_key — if that flag exists and is disabled, the item is hidden
 const baseMainItems = [
   { title: 'ড্যাশবোর্ড', url: '/', icon: LayoutDashboard, key: 'dashboard' },
   { title: 'লেনদেন', url: '/transactions', icon: ArrowUpDown, key: 'transactions' },
@@ -36,7 +37,7 @@ const baseMainItems = [
   { title: 'দেনা/পাওনা', url: '/loans', icon: HandCoins, key: 'loans' },
   { title: 'বাজেট', url: '/budgets', icon: Wallet, key: 'budgets' },
   { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart, key: 'analytics' },
-  { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare, key: 'feedback' },
+  { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare, key: 'feedback_form' },
   { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard, key: 'subscription' },
   { title: 'About', url: '/about', icon: Info, key: 'about' },
 ];
@@ -47,10 +48,12 @@ export function AppSidebar() {
   const { isAdmin, isModerator } = useSubscription();
   const isMobile = useIsMobile();
   const brand = useBrand();
-  const { enabled: recurringEnabled } = useFeatureFlag('recurring_transactions', true);
+  const { data: allFlags } = useFeatureFlags();
 
   const mainItems = baseMainItems.filter((item) => {
-    if (item.key === 'recurring_transactions' && !recurringEnabled) return false;
+    // If a flag with this key exists, respect its enabled state
+    const flag = allFlags?.find((f) => f.feature_key === item.key);
+    if (flag && !flag.enabled && flag.disable_mode === 'hide') return false;
     return true;
   });
 
