@@ -60,7 +60,7 @@ export default function Register() {
       toast({
         title: 'রেজিস্ট্রেশন ব্যর্থ',
         description: isLeaked
-          ? 'এই পাসওয়ার্ডটি আগে অনলাইন ডেটা লিকে ফাঁস হয়েছে। অনুগ্রহ করে সম্পূর্ণ ইউনিক একটি পাসওয়ার্ড দিন — যেমন ৪টি random শব্দ একসাথে (উদাহরণ: নীল-হাতি-৪২-চাঁদ)।'
+          ? 'এই পাসওয়ার্ডটি আগে অনলাইন ডেটা লিকে ফাঁস হয়েছে। সম্পূর্ণ ইউনিক একটি দিন (যেমন: নীল-হাতি-৪২-চাঁদ), অথবা আরও সহজে — নিচের "Google দিয়ে সাইন-আপ" বাটন ব্যবহার করুন, পাসওয়ার্ড লাগবে না।'
           : error.message,
         variant: 'destructive',
       });
@@ -158,6 +158,9 @@ export default function Register() {
                 <li><span className="text-primary">ভালো উদাহরণ:</span> <code className="font-mono">নীল-হাতি-৪২-চাঁদ</code> বা <code className="font-mono">Mango$Sky7Run!</code></li>
               </ul>
               <p className="pt-1 text-[11px]">⚠️ যদি "পাসওয়ার্ড গ্রহণযোগ্য নয়" বলে — পাসওয়ার্ডটি আগে অনলাইন লিকে ফাঁস হয়েছে। সম্পূর্ণ আলাদা একটি দিন।</p>
+              <div className="mt-2 rounded-md bg-background/60 p-2 text-[11px] border border-border/50">
+                💡 <strong>সহজ বিকল্প:</strong> পাসওয়ার্ড মনে রাখা ঝামেলার মনে হলে নিচের <strong>"Google দিয়ে সাইন-আপ"</strong> বাটনে ক্লিক করুন — এক ক্লিকেই অ্যাকাউন্ট তৈরি, পাসওয়ার্ড লাগবে না, পরে লগইনও সহজ।
+              </div>
             </div>
 
             {termsEnabled && (
