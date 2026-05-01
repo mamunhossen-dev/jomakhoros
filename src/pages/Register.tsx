@@ -142,11 +142,22 @@ export default function Register() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{a.register_password_label}</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">{a.register_confirm_label}</Label>
-              <Input id="confirm-password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+              <Input id="confirm-password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} />
+            </div>
+
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground space-y-1.5">
+              <p className="font-medium text-foreground">🔒 নিরাপদ পাসওয়ার্ড গাইড</p>
+              <ul className="space-y-0.5 list-disc pl-4">
+                <li>কমপক্ষে <strong>৬ অক্ষর</strong> (বেশি হলে আরও ভালো)</li>
+                <li><strong>ইউনিক</strong> হতে হবে — অন্য কোথাও ব্যবহার করেননি এমন</li>
+                <li><span className="text-destructive">এড়িয়ে চলুন:</span> Password@123, Admin@2024, Qwerty123, 123456, নিজের নাম/ফোন</li>
+                <li><span className="text-primary">ভালো উদাহরণ:</span> <code className="font-mono">নীল-হাতি-৪২-চাঁদ</code> বা <code className="font-mono">Mango$Sky7Run!</code></li>
+              </ul>
+              <p className="pt-1 text-[11px]">⚠️ যদি "পাসওয়ার্ড গ্রহণযোগ্য নয়" বলে — পাসওয়ার্ডটি আগে অনলাইন লিকে ফাঁস হয়েছে। সম্পূর্ণ আলাদা একটি দিন।</p>
             </div>
 
             {termsEnabled && (
