@@ -9,6 +9,8 @@ import { TransactionFormDialog } from '@/components/transactions/TransactionForm
 import { formatTaka } from '@/lib/currency';
 import { addMonths, format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { DashboardTour } from '@/components/DashboardTour';
+import { PageMeta } from '@/components/PageMeta';
 
 const IncomeExpenseChart = lazy(() =>
   import('@/components/dashboard/IncomeExpenseChart').then((module) => ({ default: module.IncomeExpenseChart }))
