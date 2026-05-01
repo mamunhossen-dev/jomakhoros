@@ -80,6 +80,10 @@ export default function ResetPassword() {
               disabled={!ready}
             />
           </div>
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">🔒 টিপস</p>
+            <p>কমপক্ষে ৬ অক্ষর। সম্পূর্ণ ইউনিক রাখুন। <code className="font-mono">Password@123</code> বা <code className="font-mono">Admin@2024</code> এর মতো জনপ্রিয় পাসওয়ার্ড ব্যবহার করবেন না — সিস্টেম এগুলো রিজেক্ট করবে।</p>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="confirm">পাসওয়ার্ড নিশ্চিত করুন</Label>
             <Input
