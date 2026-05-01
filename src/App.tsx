@@ -129,6 +129,8 @@ const App = () => (
           <Routes>
             <Route path="/login" element={lazyPage(<Login />)} />
             <Route path="/register" element={lazyPage(<Register />)} />
+            <Route path="/forgot-password" element={lazyPage(<ForgotPassword />)} />
+            <Route path="/reset-password" element={lazyPage(<ResetPassword />)} />
             <Route
               path="/onboarding"
               element={
