@@ -15,6 +15,7 @@ import {
   Info,
   Repeat,
   X,
+  UserCheck,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { Link } from 'react-router-dom';
@@ -39,6 +40,7 @@ const baseMainItems = [
   { title: 'বিশ্লেষণ', url: '/analytics', icon: PieChart, key: 'analytics' },
   { title: 'ফিডব্যাক', url: '/feedback', icon: MessageSquare, key: 'feedback_form' },
   { title: 'সাবস্ক্রিপশন', url: '/subscription', icon: CreditCard, key: 'subscription' },
+  { title: 'আমার ক্ষমতা', url: '/my-capabilities', icon: UserCheck, key: 'my_capabilities' },
   { title: 'About', url: '/about', icon: Info, key: 'about' },
 ];
 

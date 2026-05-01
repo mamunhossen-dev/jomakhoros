@@ -40,6 +40,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const UserGuide = lazy(() => import("./pages/UserGuide"));
 const ModeratorGuide = lazy(() => import("./pages/ModeratorGuide"));
 const AdminGuide = lazy(() => import("./pages/AdminGuide"));
+const MyCapabilities = lazy(() => import("./pages/MyCapabilities"));
 const About = lazy(() => import("./pages/About"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Recurring = lazy(() => import("./pages/Recurring"));
@@ -166,6 +167,7 @@ const App = () => (
               <Route path="/admin" element={<AdminRoute>{lazyPage(<AdminPanel />)}</AdminRoute>} />
               <Route path="/moderator-guide" element={<ModeratorOnlyRoute>{lazyPage(<ModeratorGuide />)}</ModeratorOnlyRoute>} />
               <Route path="/admin-guide" element={<AdminOnlyRoute>{lazyPage(<AdminGuide />)}</AdminOnlyRoute>} />
+              <Route path="/my-capabilities" element={lazyPage(<MyCapabilities />)} />
               <Route path="/settings" element={lazyPage(<Settings />)} />
               <Route path="/about" element={lazyPage(<About />)} />
               <Route path="/notifications" element={lazyPage(<Notifications />)} />
