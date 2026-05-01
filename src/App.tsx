@@ -42,6 +42,7 @@ const ModeratorGuide = lazy(() => import("./pages/ModeratorGuide"));
 const AdminGuide = lazy(() => import("./pages/AdminGuide"));
 const About = lazy(() => import("./pages/About"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const Recurring = lazy(() => import("./pages/Recurring"));
 
 function PageFallback() {
   return (
@@ -164,6 +165,7 @@ const App = () => (
               <Route path="/settings" element={lazyPage(<Settings />)} />
               <Route path="/about" element={lazyPage(<About />)} />
               <Route path="/notifications" element={lazyPage(<Notifications />)} />
+              <Route path="/recurring" element={lazyPage(<Recurring />)} />
             </Route>
             <Route path="*" element={lazyPage(<NotFound />)} />
           </Routes>
