@@ -64,7 +64,7 @@ export default function Landing() {
             <Button asChild variant="ghost" size="sm"><a href="#features">ফিচার</a></Button>
             <Button asChild variant="ghost" size="sm"><a href="#how">কীভাবে কাজ করে</a></Button>
             <Button asChild variant="ghost" size="sm"><a href="#faq">FAQ</a></Button>
-            <Button asChild variant="ghost" size="sm"><Link to="/user-guide">গাইড</Link></Button>
+            
           </nav>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm"><Link to="/login">লগইন</Link></Button>
